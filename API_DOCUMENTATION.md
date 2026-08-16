@@ -8,7 +8,7 @@
 ## 1. Tổng quan
 
 FoodX là một REST API được xây dựng bằng **Spring Boot 4.1.0** (Java 17). Tài liệu này mô tả **toàn bộ các API đang có trong dự án**, bao gồm:
-
+| 🤖 **AI** | `/api/ai` | Gợi ý công thức, trợ lý AI nấu ăn |
 | Nhóm API | Base path | Mô tả |
 |----------|-----------|-------|
 | 🔐 **Auth** | `/api/auth` | Đăng ký, đăng nhập, cấp JWT |

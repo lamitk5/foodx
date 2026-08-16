@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoodX - Test Trợ lý AI Nấu ăn</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --primary:#ff6b35; --primary-dark:#e85a2a; --bg:#f6f7fb;
+    --card:#fff; --text:#2b2b2b; --muted:#8a8f98; --border:#e8eaf0;
+    --user:#e8f5ec; --ai:#f1f2f6; --green:#28a745;
+  }
+  body{ font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+  .banner{ background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:#fff; padding:26px 32px; box-shadow:0 4px 18px rgba(255,107,53,.3); }
+  .banner h1{ font-size:22px; font-weight:700; }
+  .banner p{ font-size:13px; opacity:.9; margin-top:4px; }
+  .status-chips{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
+  .chip{ background:rgba(255,255,255,.18); padding:5px 14px; border-radius:20px; font-size:12px; font-weight:600; display:flex; align-items:center; gap:6px; }
+  .dot{ width:8px; height:8px; border-radius:50%; background:#fff; }
+  .dot.green{ background:#7CFC00; box-shadow:0 0 0 3px rgba(124,252,0,.35); }
+  .dot.amber{ background:#ffd700; box-shadow:0 0 0 3px rgba(255,215,0,.35); }
+  .wrap{ max-width:1100px; margin:24px auto; padding:0 16px; display:grid; grid-template-columns:1fr 380px; gap:20px; }
+  @media(max-width:900px){ .wrap{ grid-template-columns:1fr; } }
+  .card{ background:var(--card); border-radius:16px; box-shadow:0 6px 24px rgba(0,0,0,.06); overflow:hidden; }
+  .tabs{ display:flex; border-bottom:1px solid var(--border); background:#fff; }
+  .tab{ flex:1; padding:15px; text-align:center; cursor:pointer; font-weight:600; color:var(--muted); border-bottom:3px solid transparent; transition:.2s; font-size:14px; }
+  .tab.active{ color:var(--primary); border-bottom-color:var(--primary); }
+  .tab-body{ display:none; height:560px; }
+  .tab-body.active{ display:flex; flex-direction:column; }
+  /* Chat area */
+  .chat-area{ flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:12px; background:var(--bg); }
+  .msg{ max-width:80%; padding:11px 15px; border-radius:14px; font-size:14px; line-height:1.55; white-space:pre-wrap; word-break:break-word; }
+  .msg.user{ align-self:flex-end; background:var(--user); border-top-right-radius:4px; }
+  .msg.ai{ align-self:flex-start; background:var(--ai); border-top-left-radius:4px; }
+  .msg.step-msg{ max-width:92%; background:#fffbea; border:1px solid #f3e3c3; }
+  .step{ padding:8px 6px; border-left:3px solid var(--primary); margin:4px 0; background:#fff; border-radius:0 8px 8px 0; }
+  .step b{ color:var(--primary-dark); }
+  .meta{ font-size:11px; color:var(--muted); margin-top:5px; }
+  .typing{ display:inline-flex; gap:4px; padding:12px 16px; background:var(--ai); border-radius:14px; border-top-left-radius:4px; }
+  .typing span{ width:7px; height:7px; border-radius:50%; background:var(--muted); animation:blink 1s infinite; }
+  .typing span:nth-child(2){ animation-delay:.2s; } .typing span:nth-child(3){ animation-delay:.4s; }
+  @keyframes blink{ 0%,80%,100%{opacity:.3} 40%{opacity:1} }
+  .input-bar{ display:flex; gap:10px; padding:14px; background:#fff; border-top:1px solid var(--border); }
+  .input-bar input,.input-bar select{ flex:1; padding:12px 14px; border:1px solid var(--border); border-radius:10px; font-size:14px; outline:none; transition:.2s; }
+  .input-bar input:focus{ border-color:var(--primary); }
+  .btn{ padding:12px 20px; border:none; border-radius:10px; cursor:pointer; font-size:14px; font-weight:600; transition:.2s; }
+  .btn-primary{ background:var(--primary); color:#fff; }
+  .btn-primary:hover{ background:var(--primary-dark); }
+  .btn-primary:disabled{ background:#d9a08a; cursor:not-allowed; }
+  .btn-ghost{ background:var(--border); color:var(--text); }
+  .btn-ghost:hover{ background:#d8dce4; }
+  .mode-select{ max-width:130px; }
+  .ing-chips{ display:flex; flex-wrap:wrap; gap:8px; padding:8px 14px 0; }
+  .tag{ background:var(--primary); color:#fff; padding:4px 10px; border-radius:16px; font-size:12px; display:flex; align-items:center; gap:6px; }
+  .tag button{ background:none; border:none; color:#fff; cursor:pointer; font-size:14px; line-height:1; }
+  /* Sidebar */
+  .side-content{ padding:20px; overflow-y:auto; height:560px; }
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:var(--muted); }
+  .field input,.field select,.field textarea{ width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:10px; font-size:14px; outline:none; }
+  .field textarea{ resize:vertical; min-height:70px; }
+  .add-row{ display:flex; gap:8px; }
+  .add-row input{ flex:1; }
+  .suggest-list{ margin-top:16px; display:flex; flex-direction:column; gap:12px; }
+  .sug{ border:1px solid var(--border); border-radius:12px; padding:14px; background:#fff; }
+  .sug h4{ color:var(--primary-dark); font-size:15px; margin-bottom:4px; }
+  .sug .tags{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .sug .tags span{ background:var(--ai); padding:3px 8px; border-radius:10px; font-size:11px; color:var(--muted); }
+  .sug pre{ white-space:pre-wrap; font-family:inherit; font-size:13px; margin-top:8px; color:#555; line-height:1.5; }
+  .sug .time{ color:var(--green); font-size:12px; font-weight:700; margin-top:6px; }
+  .empty{ text-align:center; color:var(--muted); padding:30px; font-size:14px; }
+  .note{ font-size:12px; color:var(--muted); background:#fff7ec; border:1px solid #f3d9b9; padding:10px 12px; border-radius:10px; margin-bottom:14px; line-height:1.5; }
+</style>
+</head>
+<body>
+  <div class="banner">
+    <h1>🍳 FoodX — Test Trợ lý AI Nấu ăn</h1>
+    <p>Kiểm thử chat AI, nấu từng bước và gợi ý món ăn. Không cần database, hỗ trợ dữ liệu mẫu (mock).</p>
+    <div class="status-chips">
+      <div class="chip"><span class="dot amber" id="dot"></span><span id="statusText">Đang kiểm tra...</span></div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- Main panel -->
+    <div class="card">
+      <div class="tabs">
+        <div class="tab active" data-tab="chat">💬 Chat AI</div>
+        <div class="tab" data-tab="step">👨‍🍳 Nấu theo bước</div>
+        <div class="tab" data-tab="suggest">✨ Gợi ý món ăn</div>
+      </div>
+
+      <!-- Chat tab -->
+      <div class="tab-body active" id="tab-chat">
+        <div class="chat-area" id="chatBox"></div>
+        <div class="input-bar">
+          <input id="chatInput" placeholder="Hỏi trợ lý nấu ăn... (vd: Cách nấu phở?)" onkeydown="if(event.key==='Enter')sendChat('chat')">
+          <button class="btn btn-primary" id="chatSendBtn" onclick="sendChat('chat')">Gửi</button>
+        </div>
+      </div>
+
+      <!-- Step tab -->
+      <div class="tab-body" id="tab-step">
+        <div class="chat-area" id="stepBox"></div>
+        <div class="input-bar">
+          <input id="stepInput" placeholder="Nhập tên món cần nấu từng bước... (vd: Cơm chiên trứng)" onkeydown="if(event.key==='Enter')sendChat('step')">
+          <button class="btn btn-primary" onclick="sendChat('step')">Nấu</button>
+        </div>
+      </div>
+
+      <!-- Suggest tab -->
+      <div class="tab-body" id="tab-suggest">
+        <div class="side-content" style="height:560px;background:var(--bg);">
+          <div class="suggest-list" id="suggestList">
+            <div class="empty">Nhập nguyên liệu ở bên phải và bấm <b>"Gợi ý món ăn"</b>.<br>Kết quả sẽ hiển thị tại đây.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="card">
+      <div class="side-content">
+        <h3 style="margin-bottom:12px;">🧺 Nguyên liệu &amp; Tuỳ chọn</h3>
+        <div class="note" id="modeNote">⏳ Bạn đang ở chế độ <b>dữ liệu mẫu (mock)</b> — kết quả do hệ thống tự sinh, chưa dùng Gemini thật.</div>
+
+        <div class="field">
+          <label>Thêm nguyên liệu</label>
+          <div class="add-row">
+            <input id="ingInput" placeholder="vd: trứng, cà chua, hành">
+            <button class="btn btn-ghost" onclick="addIngredient()">+ Thêm</button>
+          </div>
+          <div class="ing-chips" id="ingChips"></div>
+        </div>
+
+        <div class="field">
+          <label>Yêu cầu / Sở thích</label>
+          <input id="prefInput" placeholder="vd: không dùng thịt, ít dầu">
+        </div>
+
+        <div class="field">
+          <label>Loại bữa</label>
+          <select id="mealSelect">
+            <option value="">Bất kỳ</option>
+            <option value="sáng">Bữa sáng</option>
+            <option value="trưa">Bữa trưa</option>
+            <option value="tối">Bữa tối</option>
+            <option value="tráng miệng">Tráng miệng</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>FAQ mẫu (nguyên liệu nhanh)</label>
+          <select onchange="loadFaq(this.value)">
+            <option value="">Chọn mẫu...</option>
+            <option value="trứng|cà chua|hành">Trứng + Cà chua + Hành</option>
+            <option value="gạo|rau|thịt bò">Gạo + Rau + Thịt bò</option>
+            <option value="mì|tôm|cà rốt">Mì + Tôm + Cà rốt</option>
+          </select>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:6px;">
+          <button class="btn btn-primary" style="flex:1" onclick="suggestDishes()">✨ Gợi ý món ăn</button>
+          <button class="btn btn-ghost" onclick="clearAll()">Xoá</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const API = '/api/ai';
+  let aiMock = true;
+  const ingredients = new Set();
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initTabs();
+    initStatus();
+    addGreeting();
+  });
+
+  function initTabs(){
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-body').forEach(b => b.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('tab-'+tab.dataset.tab).classList.add('active');
+      });
+    });
+  }
+
+  async function initStatus(){
+    try{
+      const r = await fetch(API+'/status');
+      const j = await r.json();
+      aiMock = j.data && j.data.mock;
+      const dot = document.getElementById('dot');
+      const txt = document.getElementById('statusText');
+      dot.className = 'dot ' + (aiMock ? 'amber' : 'green');
+      txt.textContent = aiMock ? 'Chế độ dữ liệu mẫu (mock)' : 'Gemini AI thật';
+      document.getElementById('modeNote').innerHTML = aiMock
+        ? '⏳ Bạn đang ở chế độ <b>dữ liệu mẫu (mock)</b> — tự sinh cục bộ, không gọi Gemini.'
+        : '✅ Đang dùng <b>Gemini AI thật</b>.';
+    }catch(e){ console.warn(e); }
+  }
+
+  function addGreeting(){
+    addMsg('chatBox', 'Xin chào! Mình là trợ lý nấu ăn của FoodX. 👋<br>Bạn có thể hỏi mình cách nấu món bất kỳ. Ở chế độ <b>nấu theo bước</b>, mình sẽ liệt kê từng bước chi tiết.', 'ai');
+  }
+
+  function addMsg(boxId, text, who, steps){
+    const box = document.getElementById(boxId);
+    const div = document.createElement('div');
+    div.className = 'msg ' + (who === 'user' ? 'user' : 'ai');
+    div.innerHTML = text;
+    box.appendChild(div);
+    if(steps && steps.length){
+      const wrap = document.createElement('div');
+      wrap.className = 'msg ai step-msg';
+      steps.forEach((s,i) => {
+        const p = document.createElement('div');
+        p.className = 'step';
+        p.innerHTML = '<b>Bước ' + (i+1) + ':</b> ' + s;
+        wrap.appendChild(p);
+      });
+      box.appendChild(wrap);
+    }
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function typing(boxId, on){
+    const box = document.getElementById(boxId);
+    if(on){
+      const t = document.createElement('div');
+      t.className = 'typing';
+      t.id = boxId + '_typing';
+      t.innerHTML = '<span></span><span></span><span></span>';
+      box.appendChild(t);
+      box.scrollTop = box.scrollHeight;
+    }else{
+      const t = document.getElementById(boxId + '_typing');
+      if(t) t.remove();
+    }
+  }
+
+  async function sendChat(mode){
+    const id = mode === 'step' ? 'stepInput' : 'chatInput';
+    const boxId = mode === 'step' ? 'stepBox' : 'chatBox';
+    const input = document.getElementById(id);
+    const msg = input.value.trim();
+    if(!msg){ return; }
+    input.value = '';
+    const btn = mode === 'step' ? null : document.getElementById('chatSendBtn');
+    if(btn) btn.disabled = true;
+
+    addMsg(boxId, escapeHtml(msg), 'user');
+    typing(boxId, true);
+
+    try{
+      const res = await fetch(API + '/chat', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          message: msg,
+          availableIngredients: [...ingredients],
+          mode: mode
+        })
+      });
+      const j = await res.json();
+      typing(boxId, false);
+      if(!j.success){
+        addMsg(boxId, '⚠️ ' + escapeHtml(j.message || 'Có lỗi xảy ra'), 'ai');
+        return;
+      }
+      addMsg(boxId, escapeHtml(j.data.reply).replace(/\n/g,'<br>'), 'ai');
+      if(j.data.steps && j.data.steps.length){
+        addMsg(boxId, '<b>📋 Các bước thực hiện:</b>', 'ai', j.data.steps);
+      }
+    }catch(err){
+      typing(boxId, false);
+      addMsg(boxId, '❌ Không kết nối được server.', 'ai');
+    }finally{
+      if(btn) btn.disabled = false;
+      input.focus();
+    }
+  }
+
+  async function suggestDishes(){
+    const list = document.getElementById('suggestList');
+    if(ingredients.size === 0){
+      list.innerHTML = '<div class="empty">⚠️ Hãy thêm ít nhất một nguyên liệu ở bảng bên phải.</div>';
+      return;
+    }
+    list.innerHTML = '<div class="empty"><b>Đang gợi ý...</b> ⏳</div>';
+    try{
+      const res = await fetch(API + '/suggest', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          availableIngredients: [...ingredients],
+          preference: document.getElementById('prefInput').value,
+          mealType: document.getElementById('mealSelect').value,
+          maxSuggestions: 5
+        })
+      });
+      const j = await res.json();
+      if(!j.success){
+        list.innerHTML = '<div class="empty">⚠️ ' + escapeHtml(j.message || 'Có lỗi') + '</div>';
+        return;
+      }
+      const s = j.data.suggestions || [];
+      if(!s.length){ list.innerHTML = '<div class="empty">Không có gợi ý nào.</div>'; return; }
+      list.innerHTML = s.map(x => `
+        <div class="sug">
+          <h4>🍽️ ${escapeHtml(x.title)}</h4>
+          <div style="font-size:13px;color:var(--muted)">${escapeHtml(x.description)}</div>
+          <div class="tags">${(x.ingredients||[]).map(i=>`<span>${escapeHtml(i)}</span>`).join('')}</div>
+          <pre>${escapeHtml(x.instructions)}</pre>
+          ${x.estimatedTime ? `<div class="time">⏱️ ${escapeHtml(x.estimatedTime)}</div>` : ''}
+        </div>`).join('');
+    }catch(err){
+      list.innerHTML = '<div class="empty">❌ Không kết nối được server.</div>';
+    }
+  }
+
+  function addIngredient(){
+    const input = document.getElementById('ingInput');
+    const val = input.value.trim();
+    if(!val) return;
+    ingredients.add(val);
+    input.value = '';
+    renderChips();
+  }
+  function renderChips(){
+    const box = document.getElementById('ingChips');
+    box.innerHTML = [...ingredients].map(i =>
+      `<span class="tag">${escapeHtml(i)} <button onclick="removeIng('${i.replace(/'/g,"\\'")}')">×</button></span>`
+    ).join('');
+    if([...ingredients].length === 0) box.innerHTML = '';
+  }
+  function removeIng(name){
+    ingredients.delete(name);
+    renderChips();
+  }
+  function loadFaq(val){
+    if(!val) return;
+    const parts = val.split('|');
+    ingredients.clear();
+    parts.forEach(p => ingredients.add(p));
+    document.getElementById('prefInput').value = 'món đơn giản, mau chóng';
+    renderChips();
+  }
+  function clearAll(){
+    ingredients.clear();
+    renderChips();
+    document.getElementById('prefInput').value = '';
+    document.getElementById('mealSelect').value = '';
+    document.getElementById('ingInput').value = '';
+  }
+  function escapeHtml(s){
+    return String(s==null?'':s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    })[c]);
+  }
+</script>
+</body>
+</html>
