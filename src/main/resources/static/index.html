@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodX - Quản Lý Ẩm Thực</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#16a34a',
+                        'primary-dark': '#15803d',
+                        'primary-light': '#22c55e',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 2px 16px -4px rgba(0,0,0,0.06)',
+                        'card': '0 8px 30px rgba(0,0,0,0.04)',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(12px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f9fafb; }
+        .sidebar-item { position: relative; transition: all .2s; }
+        .sidebar-item.active { background: linear-gradient(90deg, #16a34a, #22c55e); color: white; font-weight: 600; }
+        .sidebar-item.active::before { content:''; position:absolute; left:0; top:18%; bottom:18%; width:4px; border-radius:0 4px 4px 0; background:#fff; }
+        .sidebar-item:not(.active):hover { background:#f0fdf4; color:#16a34a; }
+        .filter-btn.active { background:#16a34a; color:white; border-color:#16a34a; }
+        .card-item { transition: all .3s cubic-bezier(.4,0,.2,1); }
+        .card-item:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(22,163,74,0.12); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-thumb { background:#d1d5db; border-radius: 4px; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-gray-800">
+
+    <!-- Sidebar -->
+    <aside class="w-72 bg-white shadow-soft h-full flex flex-col z-20 border-r border-gray-100">
+        <div class="p-7 flex items-center gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center shadow-lg shadow-green-200">
+                <i class="fa-solid fa-carrot text-white text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-extrabold text-gray-900 tracking-tight">Food<span class="text-primary">X</span></h1>
+                <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold">Quản Lý Ẩm Thực</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 px-4 space-y-1">
+            <p class="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-3 px-4">Menu</p>
+            <a href="#" class="sidebar-item active flex items-center px-4 py-3.5 text-gray-600 rounded-xl text-sm font-medium">
+                <i class="fa-solid fa-box w-5 text-center"></i> <span class="ml-3">Tủ Lạnh Ảo</span>
+                <span class="ml-auto text-[10px] bg-green-100 text-primary px-2 py-0.5 rounded-full font-bold">Fridge</span>
+            </a>
+            <a href="#" class="sidebar-item flex items-center px-4 py-3.5 text-gray-600 rounded-xl text-sm font-medium">
+                <i class="fa-solid fa-wand-magic-sparkles w-5 text-center"></i> <span class="ml-3">Công Thức AI</span>
+                <span class="ml-auto text-[10px] bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full font-bold">New</span>
+            </a>
+            <a href="#" class="sidebar-item flex items-center px-4 py-3.5 text-gray-600 rounded-xl text-sm font-medium">
+                <i class="fa-solid fa-calendar-check w-5 text-center"></i> <span class="ml-3">Lên Thực Đơn</span>
+            </a>
+            <a href="#" class="sidebar-item flex items-center px-4 py-3.5 text-gray-600 rounded-xl text-sm font-medium">
+                <i class="fa-solid fa-cart-shopping w-5 text-center"></i> <span class="ml-3">Mua Sắm</span>
+            </a>
+        </nav>
+
+        <nav class="px-4 mt-2 space-y-1">
+            <p class="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-3 px-4">Cài đặt</p>
+            <a href="#" class="sidebar-item flex items-center px-4 py-3.5 text-gray-600 rounded-xl text-sm font-medium">
+                <i class="fa-solid fa-gear w-5 text-center"></i> <span class="ml-3">Cài Đặt</span>
+            </a>
+            <a href="#" class="sidebar-item flex items-center px-4 py-3.5 text-gray-600 rounded-xl text-sm font-medium">
+                <i class="fa-regular fa-circle-question w-5 text-center"></i> <span class="ml-3">Hỗ Trợ</span>
+            </a>
+        </nav>
+
+        <!-- User card -->
+        <div class="p-5 mx-4 mb-4 rounded-2xl bg-gradient-to-br from-primary to-primary-dark text-white">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-white/20 rounded-full overflow-hidden flex items-center justify-center">
+                    <img src="https://ui-avatars.com/api/?name=Food+X&background=ffffff&color=16a34a" alt="Avatar" class="w-full h-full object-cover">
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm font-semibold">User FoodX</p>
+                    <p class="text-[10px] text-green-100">Premium Member</p>
+                </div>
+                <button class="text-green-100 hover:text-white"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-y-auto">
+        <!-- Header -->
+        <header class="bg-white/80 backdrop-blur-md border-b border-gray-100 px-8 py-3.5 flex items-center justify-between sticky top-0 z-10">
+            <div class="flex items-center gap-4 flex-1 max-w-md">
+                <div class="relative w-full">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                    <input type="text" id="searchInput" oninput="searchItems()" placeholder="Tìm kiếm nguyên liệu, món ăn..." class="w-full pl-11 pr-4 py-2.5 rounded-xl bg-gray-50 border border-transparent focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white focus:border-primary text-sm transition">
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button class="relative w-10 h-10 rounded-xl bg-gray-50 text-gray-500 hover:bg-green-50 hover:text-primary flex items-center justify-center transition">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+                <button class="w-10 h-10 rounded-xl bg-gray-50 text-gray-500 hover:bg-green-50 hover:text-primary flex items-center justify-center transition">
+                    <i class="fa-regular fa-moon"></i>
+                </button>
+                <div class="w-9 h-9 rounded-full overflow-hidden ring-2 ring-primary/20">
+                    <img src="https://ui-avatars.com/api/?name=User&background=16a34a&color=fff" alt="Avatar">
+                </div>
+            </div>
+        </header>
+
+        <!-- View: Fridge List -->
+        <div id="view-fridge" class="p-8 flex-1 max-w-7xl mx-auto w-full">
+            <!-- Hero -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary-dark to-emerald-700 text-white p-8 md:p-10 mb-8 shadow-xl shadow-green-200/50">
+                <div class="absolute -right-10 -top-10 w-56 h-56 bg-white/5 rounded-full"></div>
+                <div class="absolute -right-4 top-1/3 w-32 h-32 bg-white/5 rounded-full"></div>
+                <div class="absolute right-16 -bottom-10 w-40 h-40 bg-white/5 rounded-full"></div>
+                <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div class="animate-slide-up">
+                        <p class="text-green-200 text-xs font-bold uppercase tracking-widest mb-2"><i class="fa-solid fa-leaf mr-1"></i> Kho ẩm thực</p>
+                        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">Tủ Lạnh Ảo Của Bạn</h2>
+                        <p class="text-green-100/90 mt-3 max-w-lg text-sm leading-relaxed">Quản lý nguyên liệu thông minh, theo dõi hạn dùng và sắp xếp kho một cách chính xác để bữa ăn luôn hoàn hảo.</p>
+                    </div>
+                    <button onclick="toggleView('view-add')" class="shrink-0 inline-flex items-center gap-2 bg-white text-primary-dark font-semibold px-6 py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all animate-slide-up">
+                        <i class="fa-solid fa-plus"></i> Thêm Nguyên Liệu
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white rounded-2xl p-5 shadow-soft border border-gray-100 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-green-100 text-primary flex items-center justify-center text-lg"><i class="fa-solid fa-box-open"></i></div>
+                    <div>
+                        <p class="text-2xl font-extrabold text-gray-900" id="stat-total">0</p>
+                        <p class="text-xs text-gray-500 font-medium">Tổng nguyên liệu</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl p-5 shadow-soft border border-gray-100 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-orange-100 text-orange-500 flex items-center justify-center text-lg"><i class="fa-solid fa-clock"></i></div>
+                    <div>
+                        <p class="text-2xl font-extrabold text-gray-900" id="stat-expiring">0</p>
+                        <p class="text-xs text-gray-500 font-medium">Sắp hết hạn</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl p-5 shadow-soft border border-gray-100 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center text-lg"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div>
+                        <p class="text-2xl font-extrabold text-gray-900" id="stat-expired">0</p>
+                        <p class="text-xs text-gray-500 font-medium">Hết hạn</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl p-5 shadow-soft border border-gray-100 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center text-lg"><i class="fa-solid fa-layer-group"></i></div>
+                    <div>
+                        <p class="text-2xl font-extrabold text-gray-900" id="stat-category">0</p>
+                        <p class="text-xs text-gray-500 font-medium">Danh mục</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex flex-wrap gap-2" id="category-filters">
+                    <button class="filter-btn active px-4 py-2 rounded-xl border text-sm font-medium transition bg-primary text-white" onclick="filterCategory('Tất Cả', this)"><i class="fa-solid fa-border-all mr-1.5"></i>Tất Cả</button>
+                    <button class="filter-btn px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 bg-white hover:bg-green-50 hover:border-green-300 transition" onclick="filterCategory('Thịt', this)"><i class="fa-solid fa-drumstick-bite mr-1.5 text-red-400"></i>Thịt</button>
+                    <button class="filter-btn px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 bg-white hover:bg-green-50 hover:border-green-300 transition" onclick="filterCategory('Hải Sản', this)"><i class="fa-solid fa-fish mr-1.5 text-blue-400"></i>Hải Sản</button>
+                    <button class="filter-btn px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 bg-white hover:bg-green-50 hover:border-green-300 transition" onclick="filterCategory('Rau Củ', this)"><i class="fa-solid fa-carrot mr-1.5 text-orange-400"></i>Rau Củ</button>
+                    <button class="filter-btn px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 bg-white hover:bg-green-50 hover:border-green-300 transition" onclick="filterCategory('Gia Vị', this)"><i class="fa-solid fa-mortar-pestle mr-1.5 text-yellow-500"></i>Gia Vị</button>
+                </div>
+            </div>
+
+            <!-- Items Grid -->
+            <div id="items-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Items will be injected here by JS -->
+            </div>
+
+            <div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-center">
+                <div class="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center mb-4">
+                    <i class="fa-solid fa-box-open text-green-300 text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-700">Chưa có nguyên liệu</h3>
+                <p class="text-gray-400 text-sm mt-2">Thêm nguyên liệu đầu tiên vào tủ lạnh của bạn</p>
+                <button onclick="toggleView('view-add')" class="mt-6 px-6 py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-dark transition inline-flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Thêm Nguyên Liệu
+                </button>
+            </div>
+        </div>
+
+        <!-- View: Add / Edit Ingredient -->
+        <div id="view-add" class="p-8 flex-1 max-w-5xl mx-auto w-full hidden">
+            <button onclick="toggleView('view-fridge')" class="text-sm font-medium text-gray-500 hover:text-primary mb-6 flex items-center gap-2 transition group">
+                <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> QUAY LẠI KHO
+            </button>
+
+            <div class="bg-white rounded-3xl shadow-card border border-gray-100 overflow-hidden">
+                <div class="bg-gradient-to-r from-primary to-primary-dark text-white px-8 py-6">
+                    <h2 class="text-2xl font-bold flex items-center gap-3">
+                        <i id="formTitleIcon" class="fa-solid fa-plus-circle"></i> <span id="formTitle">Thêm Nguyên Liệu Mới</span>
+                    </h2>
+                    <p id="formSubtitle" class="text-green-100 text-sm mt-1">Cập nhật nguyên liệu mới vào tủ lạnh ảo của bạn</p>
+                </div>
+
+                <form id="addForm" class="p-8 flex flex-col md:flex-row gap-10" onsubmit="submitForm(event)">
+                    <!-- Left: Image -->
+                    <div class="w-full md:w-1/3">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Hình Ảnh Minh Họa</label>
+                        <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl h-64 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:border-primary hover:bg-green-50 transition-all relative overflow-hidden group">
+                            <input type="file" id="imageFile" class="absolute inset-0 opacity-0 cursor-pointer z-10" onchange="previewImage(event)">
+                            <div id="imagePlaceholder" class="flex flex-col items-center">
+                                <div class="w-14 h-14 rounded-2xl bg-white shadow-soft flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                    <i class="fa-solid fa-camera text-xl text-primary"></i>
+                                </div>
+                                <span class="text-sm font-semibold text-gray-600">Tải ảnh lên</span>
+                                <span class="text-xs mt-1">PNG, JPG tối đa 5MB</span>
+                            </div>
+                            <img id="imagePreview" src="" class="hidden absolute inset-0 w-full h-full object-cover">
+                        </div>
+                    </div>
+
+                    <!-- Right: Fields -->
+                    <div class="w-full md:w-2/3 space-y-5">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tên nguyên liệu <span class="text-red-500">*</span></label>
+                            <input type="text" id="itemName" placeholder="VD: Thịt bò thăn" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition">
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-5">
+                            <div class="flex-1">
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Danh mục</label>
+                                <div class="relative">
+                                    <select id="itemCategory" onchange="updateAutoExpiry()" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none pr-10 transition text-gray-700">
+                                        <option value="">Chọn danh mục</option>
+                                        <option value="Thịt">Thịt</option>
+                                        <option value="Hải Sản">Hải Sản</option>
+                                        <option value="Rau Củ">Rau Củ</option>
+                                        <option value="Gia Vị">Gia Vị</option>
+                                    </select>
+                                    <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Ngày thêm nguyên liệu</label>
+                                <input type="date" id="itemAddedDate" onchange="updateAutoExpiry()" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition text-gray-700">
+                                <p id="autoExpiryInfo" class="mt-1.5 text-xs text-gray-500"></p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-5">
+                            <div class="flex-1">
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Số lượng <span class="text-red-500">*</span></label>
+                                <input type="number" step="0.1" id="itemQuantity" placeholder="0" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition">
+                            </div>
+                            <div class="w-36">
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Đơn vị</label>
+                                <div class="relative">
+                                    <select id="itemUnit" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none pr-10 transition text-gray-700">
+                                        <option value="kg">kg</option>
+                                        <option value="g">g</option>
+                                        <option value="lbs">lbs</option>
+                                        <option value="bó">bó</option>
+                                        <option value="lít">lít</option>
+                                        <option value="cái">cái</option>
+                                    </select>
+                                    <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Ghi chú thêm <span class="text-gray-300 normal-case font-normal">(Tùy chọn)</span></label>
+                            <textarea id="itemNote" placeholder="Thêm ghi chú cho nguyên liệu..." rows="3" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition resize-none"></textarea>
+                        </div>
+
+                        <div class="flex justify-end space-x-3 pt-5 border-t border-gray-100">
+                            <button type="button" onclick="toggleView('view-fridge')" class="px-6 py-3 bg-white border border-gray-200 text-gray-600 font-semibold rounded-xl hover:bg-gray-50 transition">HỦY</button>
+                            <button type="submit" class="px-8 py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-dark transition inline-flex items-center gap-2 shadow-lg shadow-green-200">
+                                <i class="fa-solid fa-check"></i> <span id="formSubmitText">Lưu Nguyên Liệu</span>
+                            </button>
+                        </div>
+                    </div>
+            </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Chatbot AI Floating Button -->
+    <button class="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-primary to-primary-light text-white rounded-2xl shadow-xl flex items-center justify-center text-xl transition hover:scale-110 hover:rotate-6 z-50">
+        <i class="fa-solid fa-robot"></i>
+    </button>
+
+    <script>
+        const API_URL = '/api/fridge';
+        const STORAGE_KEY = 'foodx_fridge_items';
+        let currentCategory = 'Tất Cả';
+        let currentSearch = '';
+        let editingId = null; // null = đang thêm mới, có giá trị = đang chỉnh sửa
+
+        // ---------- Local storage helpers (fallback khi API không chạy) ----------
+        function readLocal() {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+            catch (e) { return []; }
+        }
+        function writeLocal(items) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        }
+
+        // Switch views
+        function toggleView(viewId) {
+            document.getElementById('view-fridge').classList.add('hidden');
+            document.getElementById('view-add').classList.add('hidden');
+            document.getElementById(viewId).classList.remove('hidden');
+            if(viewId === 'view-add') prepareAddForm();
+            if(viewId === 'view-fridge') loadItems();
+        }
+
+        // Đặt form về trạng thái "Thêm mới"
+        function prepareAddForm() {
+            editingId = null;
+            document.getElementById('addForm').reset();
+            itemImageUrl = '';
+            document.getElementById('itemAddedDate').value = todayStr();
+            updateAutoExpiry();
+            document.getElementById('imagePlaceholder').classList.remove('hidden');
+            document.getElementById('imagePreview').classList.add('hidden');
+            document.getElementById('formTitle').textContent = 'Thêm Nguyên Liệu Mới';
+            document.getElementById('formSubmitText').textContent = 'Lưu Nguyên Liệu';
+            document.getElementById('formTitleIcon').className = 'fa-solid fa-plus-circle';
+            document.getElementById('formSubtitle').textContent = 'Cập nhật nguyên liệu mới vào tủ lạnh ảo của bạn';
+        }
+
+        // Mở form ở chế độ chỉnh sửa nguyên liệu id
+        function editItem(id) {
+            if (window.__apiLive) {
+                fetch(`${API_URL}/${id}`)
+                    .then(res => res.json())
+                    .then(item => openEditForm(item))
+                    .catch(err => console.warn('Không lấy được item:', err));
+            } else {
+                const item = readLocal().find(i => i.id === id);
+                if (item) openEditForm(item);
+            }
+        }
+
+        // Điền dữ liệu vào form để chỉnh sửa
+        function openEditForm(item) {
+            editingId = item.id;
+            document.getElementById('itemName').value = item.name || '';
+            document.getElementById('itemCategory').value = item.category || '';
+            document.getElementById('itemQuantity').value = item.quantity != null ? item.quantity : '';
+            document.getElementById('itemUnit').value = item.unit || 'kg';
+            document.getElementById('itemNote').value = item.note || '';
+            document.getElementById('itemAddedDate').value = item.dateAdded || (item.createdAt ? item.createdAt.slice(0, 10) : todayStr());
+            updateAutoExpiry();
+            itemImageUrl = item.imageUrl || '';
+
+            const imgPreview = document.getElementById('imagePreview');
+            if (item.imageUrl) {
+                imgPreview.src = item.imageUrl;
+                imgPreview.classList.remove('hidden');
+                document.getElementById('imagePlaceholder').classList.add('hidden');
+            } else {
+                document.getElementById('imagePlaceholder').classList.remove('hidden');
+                imgPreview.classList.add('hidden');
+            }
+
+            document.getElementById('formTitle').textContent = 'Chỉnh Sửa Nguyên Liệu';
+            document.getElementById('formSubmitText').textContent = 'Cập Nhật';
+            document.getElementById('formTitleIcon').className = 'fa-solid fa-pen';
+            document.getElementById('formSubtitle').textContent = 'Cập nhật thông tin nguyên liệu trong tủ lạnh';
+
+            // Switch sang view form
+            document.getElementById('view-fridge').classList.add('hidden');
+            document.getElementById('view-add').classList.remove('hidden');
+        }
+
+        // Image Upload logic: tải ảnh lên server rồi lưu URL (không lưu base64 nữa)
+        let itemImageUrl = ''; // URL ảnh trên server
+
+        async function previewImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const fileInput = event.target;
+
+            // Hiện preview tạm ngay bằng FileReader
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('imagePlaceholder').classList.add('hidden');
+                const imgPreview = document.getElementById('imagePreview');
+                imgPreview.src = e.target.result;
+                imgPreview.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+
+            // Upload lên server để lấy URL thật
+            const fd = new FormData();
+            fd.append('file', file);
+            try {
+                const res = await fetch('/api/upload', { method: 'POST', body: fd });
+                const json = await res.json();
+                if (res.ok && json.url) {
+                    itemImageUrl = json.url;
+                } else {
+                    console.warn('Upload thất bại:', json.error);
+                    // Xoá ảnh preview nếu lỗi
+                    itemImageUrl = '';
+                    document.getElementById('imagePreview').classList.add('hidden');
+                    document.getElementById('imagePlaceholder').classList.remove('hidden');
+                }
+            } catch (err) {
+                console.warn('Upload lỗi:', err);
+                itemImageUrl = '';
+            }
+            // Cho phép chọn lại cùng file nếu cần
+            fileInput.value = '';
+        }
+
+        // Load items: ưu tiên API, fallback về localStorage
+        async function loadItems() {
+            try {
+                let url = API_URL + '?';
+                if (currentCategory !== 'Tất Cả') url += `category=${encodeURIComponent(currentCategory)}&`;
+                if (currentSearch) url += `search=${encodeURIComponent(currentSearch)}`;
+                
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('API ' + res.status);
+                const all = await res.json();
+                window.__apiLive = true;
+                const items = all.filter(i =>
+                    (currentCategory === 'Tất Cả' || i.category === currentCategory) &&
+                    i.name.toLowerCase().includes(currentSearch.toLowerCase())
+                );
+                renderItems(items);
+                renderStats(items);
+            } catch (err) {
+                console.warn('API không khả dụng, dùng localStorage:', err.message);
+                window.__apiLive = false;
+                let items = readLocal();
+                if (items.length === 0) {
+                    items = [
+                        { id: 1, name: 'Thịt Bò Wagyu Cao Cấp', category: 'Thịt', quantity: 2.5, unit: 'kg', expiryDate: '2027-06-15', imageUrl: 'https://images.unsplash.com/photo-1603048297172-c92544798d5e?auto=format&fit=crop&q=80&w=400' },
+                        { id: 2, name: 'Cá Hồi Đại Tây Dương', category: 'Hải Sản', quantity: 4.0, unit: 'lbs', expiryDate: '2027-05-05', imageUrl: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&q=80&w=400' },
+                        { id: 3, name: 'Măng Tây Hữu Cơ', category: 'Rau Củ', quantity: 3, unit: 'bó', expiryDate: '2027-01-01', imageUrl: 'https://images.unsplash.com/photo-1515471209610-dae1c92d8777?auto=format&fit=crop&q=80&w=400' },
+                        { id: 4, name: 'Nhụy Hoa Nghệ Tây', category: 'Gia Vị', quantity: 15, unit: 'g', expiryDate: '2027-02-01', imageUrl: 'https://images.unsplash.com/photo-1596647271424-7e040dfae621?auto=format&fit=crop&q=80&w=400' }
+                    ];
+                    writeLocal(items);
+                }
+                const filtered = items.filter(i =>
+                    (currentCategory === 'Tất Cả' || i.category === currentCategory) &&
+                    i.name.toLowerCase().includes(currentSearch.toLowerCase())
+                );
+                renderItems(filtered);
+                renderStats(filtered);
+            }
+        }
+
+        // Số ngày còn lại đến hạn (0 nếu không có hạn)
+        function daysToExpiry(dateStr) {
+            if (!dateStr) return 9999;
+            const d = new Date(dateStr + 'T00:00:00');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return Math.round((d - today) / 86400000);
+        }
+
+        // Compute statistics in the cards
+        function renderStats(items) {
+            document.getElementById('stat-total').textContent = items.length;
+            document.getElementById('stat-expired').textContent = items.filter(i => i.expiryDate && daysToExpiry(i.expiryDate) < 0).length;
+            // "Sắp hết hạn" = còn 0..3 ngày còn hiệu lực (km hết hạn hẳn)
+            document.getElementById('stat-expiring').textContent = items.filter(i => {
+                const d = daysToExpiry(i.expiryDate);
+                return d >= 0 && d <= 3;
+            }).length;
+            document.getElementById('stat-category').textContent = new Set(items.map(i => i.category).filter(Boolean)).size;
+        }
+
+        // Per-category badge colors
+        const categoryColors = {
+            'Thịt': 'bg-red-100 text-red-600',
+            'Hải Sản': 'bg-blue-100 text-blue-600',
+            'Rau Củ': 'bg-orange-100 text-orange-600',
+            'Gia Vị': 'bg-yellow-100 text-yellow-700'
+        };
+
+        // Số ngày hạn sử dụng mặc định theo danh mục (đồng bộ với backend)
+        function shelfDays(category) {
+            const map = {
+                'Thịt': 5,
+                'Hải Sản': 5,
+                'Rau Củ': 2,
+                'Gia Vị': 30
+            };
+            return (category && map[category]) ? map[category] : 7; // Khác = 7 ngày
+        }
+
+        // Tự tính & hiển thị hạn dùng khi đổi ngày thêm hoặc danh mục
+        function updateAutoExpiry() {
+            const dateInput = document.getElementById('itemAddedDate');
+            const cat = document.getElementById('itemCategory').value;
+            const info = document.getElementById('autoExpiryInfo');
+            if (!dateInput.value) {
+                info.textContent = '';
+                return;
+            }
+            const added = new Date(dateInput.value + 'T00:00:00');
+            const days = shelfDays(cat);
+            const expiry = new Date(added);
+            expiry.setDate(expiry.getDate() + days);
+            const fmt = expiry.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            info.textContent = 'Hạn dùng tự động: ' + fmt + ' (' + days + ' ngày)';
+        }
+
+        // Trả về ngày hôm nay dạng yyyy-mm-dd
+        function todayStr() {
+            const d = new Date();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return d.getFullYear() + '-' + mm + '-' + dd;
+        }
+
+        // Build an expiry badge based on the date
+        function formatExpiry(dateStr) {
+            if (!dateStr) return null;
+            const diff = daysToExpiry(dateStr);
+            const d = new Date(dateStr + 'T00:00:00');
+            const pretty = d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            if (diff < 0) return { text: 'Hết hạn · ' + pretty, color: 'bg-red-50 text-red-600 border-red-200', icon: 'fa-circle-exclamation' };
+            if (diff <= 3) return { text: 'Sắp hết hạn · ' + pretty, color: 'bg-orange-50 text-orange-600 border-orange-200', icon: 'fa-clock' };
+            return { text: 'HSD: ' + pretty, color: 'bg-green-50 text-green-600 border-green-200', icon: 'fa-circle-check' };
+        }
+
+        // Render items to grid
+        function renderItems(items) {
+            const grid = document.getElementById('items-grid');
+            const empty = document.getElementById('empty-state');
+            grid.innerHTML = '';
+
+            empty.classList.toggle('hidden', items.length > 0);
+            empty.classList.toggle('flex', items.length === 0);
+            grid.classList.toggle('hidden', items.length === 0);
+
+            items.forEach((item, index) => {
+                const img = item.imageUrl || 'https://images.unsplash.com/photo-1495195134817-a165d4292e76?auto=format&fit=crop&q=80&w=400';
+                const catColor = categoryColors[item.category] || 'bg-gray-100 text-gray-600';
+                const expiry = formatExpiry(item.expiryDate);
+                const card = document.createElement('div');
+                card.className = 'card-item bg-white rounded-3xl overflow-hidden shadow-soft border border-gray-100 flex flex-col animate-fade-in';
+                card.style.animationDelay = (index * 60) + 'ms';
+                card.innerHTML = `
+                    <div class="h-44 overflow-hidden relative group">
+                        <img src="${img}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.src='https://images.unsplash.com/photo-1495195134817-a165d4292e76?auto=format&fit=crop&q=80&w=400'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                        <span class="absolute top-3 right-3 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide shadow-sm ${catColor}">${item.category}</span>
+                        <div class="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5">
+                            <button onclick="editItem(${item.id})" class="w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm text-primary hover:bg-primary hover:text-white flex items-center justify-center shadow-sm transition" title="Chỉnh sửa">
+                                <i class="fa-solid fa-pen text-xs"></i>
+                            </button>
+                            <button onclick="deleteItem(${item.id})" class="w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center shadow-sm transition" title="Xóa">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
+                        </div>
+                        ${item.note ? '<span class="absolute bottom-3 left-3 text-white text-xs font-medium bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-full max-w-[80%] truncate"><i class="fa-solid fa-sticky-note mr-1"></i>' + item.note + '</span>' : ''}
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col">
+                        <h3 onclick="editItem(${item.id})" class="font-bold text-lg text-gray-900 leading-snug line-clamp-2 cursor-pointer hover:text-primary transition sm">${item.name}</h3>
+
+                        <p class="mt-1.5 text-xs text-gray-400 flex items-center gap-1"><i class="fa-regular fa-calendar-plus"></i> Thêm: ${item.dateAdded ? new Date(item.dateAdded + 'T00:00:00').toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''}</p>
+
+                        ${expiry ? '<div class="mt-2 inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border ' + expiry.color + '"><i class="fa-solid ' + expiry.icon + '"></i>' + expiry.text + '</div>' : ''}
+
+                        <div class="mt-auto pt-4">
+                            <div class="flex items-center justify-between bg-gray-50 rounded-2xl px-4 py-3">
+                                <div>
+                                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Số lượng</p>
+                                    <p class="text-lg font-extrabold text-gray-900 leading-none">${item.quantity} <span class="text-sm font-medium text-gray-500">${item.unit}</span></p>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <button onclick="updateQuantity(${item.id}, -1, ${item.quantity})" class="w-8 h-8 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-primary hover:text-white hover:border-primary transition" title="Giảm">
+                                        <i class="fa-solid fa-minus text-xs"></i>
+                                    </button>
+                                    <button onclick="updateQuantity(${item.id}, 1, ${item.quantity})" class="w-8 h-8 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-primary hover:text-white hover:border-primary transition" title="Tăng">
+                                        <i class="fa-solid fa-plus text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Delete item
+        async function deleteItem(id) {
+            if (!confirm('Bạn có chắc muốn xóa nguyên liệu này?')) return;
+            if (window.__apiLive) {
+                try {
+                    await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                } catch (err) { console.warn('API delete lỗi:', err); }
+            } else {
+                writeLocal(readLocal().filter(i => i.id !== id));
+            }
+            loadItems();
+        }
+
+        // Filtering
+        function filterCategory(category, btn) {
+            currentCategory = category;
+            
+            // Update UI buttons
+            document.querySelectorAll('.filter-btn').forEach(b => {
+                b.classList.remove('active', 'bg-primary', 'text-white');
+                b.classList.add('bg-white', 'text-gray-600');
+            });
+            btn.classList.add('active', 'bg-primary', 'text-white');
+            btn.classList.remove('bg-white', 'text-gray-600');
+            
+            loadItems();
+        }
+
+        // Searching
+        function searchItems() {
+            currentSearch = document.getElementById('searchInput').value;
+            loadItems();
+        }
+
+        // Update quantity
+        async function updateQuantity(id, change, current) {
+            const newQ = Math.max(0, parseFloat(current) + change);
+            if (window.__apiLive) {
+                try {
+                    await fetch(`${API_URL}/${id}/quantity?quantity=${newQ}`, { method: 'PUT' });
+                } catch (err) { console.warn('API update lỗi:', err); }
+            } else {
+                writeLocal(readLocal().map(i => i.id === id ? { ...i, quantity: newQ } : i));
+            }
+            loadItems();
+        }
+
+        // Submit form: thêm mới (POST) hoặc chỉnh sửa (PUT), rồi reload danh sách
+        async function submitForm(e) {
+            e.preventDefault();
+            const addedVal = document.getElementById('itemAddedDate').value;
+            const data = {
+                name: document.getElementById('itemName').value,
+                category: document.getElementById('itemCategory').value || 'Khác',
+                quantity: parseFloat(document.getElementById('itemQuantity').value),
+                unit: document.getElementById('itemUnit').value,
+                note: document.getElementById('itemNote').value,
+                dateAdded: addedVal ? addedVal : todayStr(),
+                imageUrl: itemImageUrl || 'https://images.unsplash.com/photo-1495195134817-a165d4292e76?auto=format&fit=crop&q=80&w=400'
+            };
+
+            let saved = false;
+            if (window.__apiLive) {
+                try {
+                    const url = editingId ? `${API_URL}/${editingId}` : API_URL;
+                    const method = editingId ? 'PUT' : 'POST';
+                    const res = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    if (res.ok) saved = true;
+                } catch (err) { console.warn('API lỗi:', err); }
+            }
+            if (!saved) {
+                // API không chạy -> lưu vào localStorage
+                const items = readLocal();
+                if (editingId) {
+                    // Chỉnh sửa item hiện có
+                    const idx = items.findIndex(i => i.id === editingId);
+                    if (idx >= 0) {
+                        items[idx] = { ...items[idx], ...data, id: editingId };
+                    }
+                } else {
+                    const newItem = { id: Date.now(), ...data };
+                    if (!items.some(i => i.id === newItem.id)) items.push(newItem);
+                }
+                writeLocal(items);
+            }
+
+            // Reset form và quay lại danh sách
+            prepareAddForm();
+            toggleView('view-fridge');
+        }
+
+        // Init
+        loadItems();
+    </script>
+</body>
+</html>
