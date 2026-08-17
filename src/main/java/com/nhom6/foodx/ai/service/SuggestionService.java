@@ -16,14 +16,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SuggestionService {
 
-    private final GeminiService geminiService;
+    private final AiProviderService aiProviderService;
     private final MockAiDataService mockAiDataService;
 
     public SuggestResponse suggest(SuggestRequest request) {
         SuggestResponse response = new SuggestResponse();
 
-        // Chưa cấu hình Gemini: trả dữ liệu mẫu để test.
-        if (!geminiService.isConfigured()) {
+        // Chưa cấu hình Groq/Gemini: trả dữ liệu mẫu để test.
+        if (aiProviderService.isMockMode()) {
             response.setSuggestions(mockAiDataService.suggestions(
                     request.getAvailableIngredients(),
                     request.getPreference(),
@@ -32,7 +32,7 @@ public class SuggestionService {
         }
 
         String prompt = PromptTemplate.suggestionPrompt(request);
-        JsonNode json = geminiService.generateJson(prompt, JsonNode.class);
+        JsonNode json = aiProviderService.generateJson(prompt, JsonNode.class);
 
         java.util.List<SuggestResponse.Suggestion> suggestions = new java.util.ArrayList<>();
         if (json.has("suggestions") && json.get("suggestions").isArray()) {

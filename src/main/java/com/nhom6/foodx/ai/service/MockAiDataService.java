@@ -24,38 +24,68 @@ public class MockAiDataService {
     public String chatReply(String message, List<String> availableIngredients) {
         String msg = message == null ? "" : message.toLowerCase(Locale.ROOT);
         String ings = availableIngredients == null || availableIngredients.isEmpty()
-                ? "bạn chưa nhập nguyên liệu nào"
-                : "bạn đang có các nguyên liệu: " + String.join(", ", availableIngredients) + ".";
+                ? "Chưa chọn nguyên liệu sẵn có."
+                : "Nguyên liệu bạn sẵn có: **" + String.join(", ", availableIngredients) + "**.";
 
         String reply;
-        if (msg.contains("cơm chiên") || msg.contains("cơm rang")) {
-            reply = "Hướng dẫn cơm chiên trứng:\n" +
-                    "1. Đánh tan trứng (3 quả) với chút hành lá và hạt nêm.\n" +
-                    "2. Phi thơm tỏi băm rồi cho cơm nguội vào xào săn.\n" +
-                    "3. Đổ trứng vào, đảo đều cho trứng bám quanh hạt cơm.\n" +
-                    "4. Nêm lại bằng xì dầu, tiêu, hành lá. Dùng nóng.\n\n" +
-                    "Ghi chú: " + ings;
+        if (msg.contains("cá kho") || msg.contains("kho tiêu")) {
+            reply = "**Cá Kho Tiêu — Món cá kho đậm đà, thơm lừng vị tiêu đen**\n\n" +
+                    "### 1. Nguyên liệu gợi ý\n\n" +
+                    "| Nguyên liệu | Lượng (cho 2–3 người) |\n" +
+                    "|---|---|\n" +
+                    "| Cá (basa, cá thu, cá lóc, cá hồi...) | 500g (cắt khúc vừa ăn) |\n" +
+                    "| Tiêu đen (xay nhuyễn) | 1-2 muỗng cà phê |\n" +
+                    "| Hành tím & Tỏi | 2-3 củ (băm nhỏ) |\n" +
+                    "| Nước mắm, đường, ớt | Vừa đủ nêm nếm |\n\n" +
+                    "### 2. Các bước thực hiện\n\n" +
+                    "1. **Sơ chế & Ướp:** Rửa sạch cá với nước muối bớt nhớt. Ướp cá với 2 muỗng nước mắm, 1 muỗng đường, 1/2 muỗng tiêu, hành tỏi băm trong **15–20 phút**.\n" +
+                    "2. **Thắng nước màu:** Đun 1 muỗng đường với ít dầu ăn trên lửa nhỏ đến khi chuyển màu cánh gián thơm.\n" +
+                    "3. **Kho cá:** Cho cá đã ướp vào lật đều 2 mặt cho săn. Đổ thêm ít nước ấm sấp mặt cá, đun sôi rồi hạ lửa nhỏ kho riu riu đến khi nước sánh lại.\n" +
+                    "4. **Hoàn thiện:** Rắc thêm nhiều tiêu đen xay và vài lát ớt tươi lên trên. Dùng nóng với cơm trắng.\n\n" +
+                    "> 💡 **Mẹo ngon:** Kho cá 2 lửa (kho xong tắt bếp để nguội rồi kho lại lần 2) cá sẽ săn chắc và thấm vị đậm đà hơn!";
+        } else if (msg.contains("cơm chiên") || msg.contains("cơm rang")) {
+            reply = "**Hướng Dẫn Nấu Cơm Chiên Trứng Vàng Óng**\n\n" +
+                    "### 1. Bảng nguyên liệu\n\n" +
+                    "| Nguyên liệu | Định lượng |\n" +
+                    "|---|---|\n" +
+                    "| Cơm nguội | 2-3 bát |\n" +
+                    "| Trứng gà | 2-3 quả |\n" +
+                    "| Hành lá, tỏi băm | Vừa đủ |\n" +
+                    "| Gia vị | Nước mắm, tiêu, hạt nêm |\n\n" +
+                    "### 2. Các bước thực hiện\n\n" +
+                    "1. **Đánh trứng:** Đánh tan 2 quả trứng với chút hạt nêm và hành lá thái nhỏ.\n" +
+                    "2. **Xào cơm:** Phi thơm tỏi băm, cho cơm nguội vào đảo đều trên lửa lớn cho hạt cơm săn ráo.\n" +
+                    "3. **Rưới trứng:** Đổ trứng từ từ vào cơm, đảo đều tay để trứng bám đều quanh từng hạt cơm vàng óng.\n" +
+                    "4. **Nêm nếm:** Nêm xì dầu, rắc tiêu thơm và dùng nóng.\n\n" +
+                    "> 📌 *" + ings + "*";
         } else if (msg.contains("phở") || msg.contains("bún")) {
-            reply = "Gợi ý món " + (msg.contains("phở") ? "phở" : "bún") + ":\n" +
-                    "Bạn có thể nấu nước dùng từ xương, thêm hành nướng, gừng, quế, hồi, " +
-                    "chanh, ớt và rau sống. Chần bánh + thịt, chan nước dùng nóng là xong.";
+            reply = "**Gợi Ý Nấu " + (msg.contains("phở") ? "Phở Bò Hà Nội" : "Bún Bò Đậm Đà") + "**\n\n" +
+                    "### 1. Chuẩn bị nước dùng\n" +
+                    "- Ninh xương ống bò/heo từ **2-3 tiếng** cùng hành tây nướng, gừng nướng, hoa hồi, quế, thảo quả.\n" +
+                    "- Nêm nước mắm ngon, đường phèn và muối cho vị ngọt thanh tự nhiên.\n\n" +
+                    "### 2. Thưởng thức\n" +
+                    "- Chần bánh phở/bún qua nước sôi, xếp vào tô.\n" +
+                    "- Xếp thịt bò tái/nạm, rắc hành lá, coriander.\n" +
+                    "- Chan nước dùng đang sôi sùng sục vào tô và dùng kèm chanh ớt, quẩy giòn.";
         } else if (msg.contains("xào")) {
-            reply = "Món xào gợi ý:\n" +
-                    "1. Sơ chế nguyên liệu, thái vừa ăn.\n" +
-                    "2. Phi tỏi thơm, cho nguyên liệu khó chín vào trước.\n" +
-                    "3. Nêm muối/gia vị, cho rau dễ chín vào cuối để giòn.\n\n" +
-                    "Ghi chú: " + ings;
+            reply = "**Mẹo Nấu Món Xào Giòn Ngon Đậm Vị**\n\n" +
+                    "### Các bước chuẩn bị:\n" +
+                    "1. **Sơ chế:** Cắt nguyên liệu miếng vừa ăn, ướp chút gia vị trước **10 phút**.\n" +
+                    "2. **Phi thơm:** Đun nóng chảo với lửa lớn, phi thơm tỏi/hành băm.\n" +
+                    "3. **Xào nhanh:** Cho thịt/nguyên liệu lâu chín xào trước, sau đó cho rau củ vào đảo nhanh tay để giữ độ giòn ngọt.\n\n" +
+                    "> 📌 *" + ings + "*";
         } else if (msg.contains("không") && msg.contains("thịt")) {
-            reply = "Đây là gợi ý món chay/mặn không thịt:\n" +
-                    "1. Đậu hũ sốt cà chua: chiên vàng đậu, sốt với cà chua + hành.\n" +
-                    "2. Rau củ luộc chấm kho quẹt.\n" +
-                    "3. Trứng hấp / canh chua.\n\n" +
-                    "Ghi chú: " + ings;
+            reply = "**Gợi Ý Danh Sách Món Chay Thanh Đạm**\n\n" +
+                    "| Món ăn | Đặc điểm | Thời gian |\n" +
+                    "|---|---|---|\n" +
+                    "| Đậu hũ sốt cà chua | Chiên vàng đậu, sốt cà chua thanh ngọt | 15 phút |\n" +
+                    "| Rau củ luộc kho quẹt | Giòn ngọt, kho quẹt quánh thơm | 20 phút |\n" +
+                    "| Nấm xào sả ớt | Thơm nức, cay nhẹ bắt cơm | 12 phút |\n\n" +
+                    "Hãy chọn món bạn yêu thích để bắt đầu nấu nhé!";
         } else {
-            reply = "Chào bạn! Mình là trợ lý nấu ăn của FoodX.\n" +
-                    "Hãy hỏi mình cách làm một món cụ thể (vd: \"cách nấu ăn ngon\", " +
-                    "\"cơm chiên\", \"phở\") hoặc chia sẻ nguyên liệu bạn có (" + ings + ") " +
-                    "để mình gợi ý món phù hợp cho bạn nhé!";
+            reply = "Chào bạn! Mình là **Trợ lý AI Nấu ăn FoodX** 🍳\n\n" +
+                    "Bạn có thể hỏi mình bất cứ món ăn nào (vd: *\"Cách làm cá kho tiêu\"*, *\"Cơm chiên trứng\"*, *\"Phở bò\"*) hoặc chia sẻ nguyên liệu có sẵn để mình gợi ý nhé!\n\n" +
+                    "> 💡 *" + ings + "*";
         }
         return reply;
     }

@@ -32,12 +32,17 @@ public class AIController {
 
     @GetMapping("/status")
     public ApiResponse<Map<String, Object>> status() {
+        String provider = chatService.getActiveProvider();
+        boolean mock = chatService.isMockMode();
+        String message = switch (provider) {
+            case "groq" -> "Đang dùng Groq AI thật (tự động chuyển sang Gemini nếu Groq lỗi).";
+            case "gemini" -> "Đang dùng Gemini AI thật (dự phòng khi Groq không khả dụng).";
+            default -> "Đang chạy chế độ dữ liệu mẫu (mock) — chưa cấu hình Groq/Gemini API key.";
+        };
         return ApiResponse.success(Map.of(
-                "mock", chatService.isMockMode(),
-                "model", "gemini", // placeholder, model tên từ config
-                "message", chatService.isMockMode()
-                        ? "Đang chạy chế độ dữ liệu mẫu (mock) — chưa có Gemini API key."
-                        : "Đang dùng Gemini AI thật."
+                "mock", mock,
+                "provider", provider,
+                "message", message
         ), "Trạng thái AI");
     }
 

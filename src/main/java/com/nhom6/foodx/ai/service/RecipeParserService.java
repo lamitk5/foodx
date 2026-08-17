@@ -1,7 +1,7 @@
 package com.nhom6.foodx.ai.service;
 
 /**
- * Parse công thức từ text thô sử dụng Gemini AI.
+ * Parse công thức từ text thô sử dụng AI (Groq, dự phòng Gemini).
  */
 import com.fasterxml.jackson.databind.JsonNode;
 import com.nhom6.foodx.ai.util.PromptTemplate;
@@ -15,14 +15,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RecipeParserService {
 
-    private final GeminiService geminiService;
+    private final AiProviderService aiProviderService;
 
     /**
      * Parse text công thức thành JsonNode có cấu trúc đã định nghĩa trong prompt.
      */
     public JsonNode parse(String rawText) {
         String prompt = PromptTemplate.recipeParsePrompt(rawText);
-        return geminiService.generateJson(prompt, JsonNode.class);
+        return aiProviderService.generateJson(prompt, JsonNode.class);
     }
 
     public List<String> parseIngredientNames(JsonNode recipeNode) {

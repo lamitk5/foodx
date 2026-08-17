@@ -42,7 +42,7 @@ public class GeminiService {
 
         GeminiRequest.GenerationConfig.GenerationConfigBuilder configBuilder = GeminiRequest.GenerationConfig.builder()
                 .temperature(0.7)
-                .maxOutputTokens(8192);
+                .maxOutputTokens(4096); // giới hạn độ dài sinh ra để giảm thời gian chờ
 
         if (responseMimeType != null && !responseMimeType.isBlank()) {
             configBuilder.responseMimeType(responseMimeType);
