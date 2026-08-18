@@ -1839,6 +1839,33 @@
         </div>
         <button class="chat-close" onclick="closeChat()" aria-label="Đóng">✕</button>
     </div>
+    <div class="chat-toolbar">
+        <div class="ct-info" onclick="toggleChatSessions()" title="Xem tất cả phiên trò chuyện">
+            <span class="ct-icon">💬</span>
+            <span class="ct-title" id="chatSessionTitle">Cuộc trò chuyện mới</span>
+        </div>
+        <div class="ct-actions">
+            <button class="ct-btn" id="chatRenameBtn" onclick="renameCurrentChatSession()" title="Đổi tên phiên" aria-label="Đổi tên phiên">✏️</button>
+            <button class="ct-btn" id="chatNewSession" onclick="createChatSession()" title="Tạo phiên mới" aria-label="Tạo phiên mới">➕ Mới</button>
+            <button class="ct-btn" id="chatToggleHistory" onclick="toggleChatSessions()" title="Lịch sử phiên" aria-label="Lịch sử phiên">
+                🕒 <span class="ct-count-badge" id="chatSessionCount">0</span>
+            </button>
+        </div>
+    </div>
+    <div class="chat-sessions-overlay" id="chatSessionsOverlay" style="display: none;">
+        <div class="chat-sessions-header">
+            <div class="csh-title">
+                <span>📚 Lịch sử phiên chat</span>
+            </div>
+            <div class="csh-actions">
+                <button class="csh-new-btn" onclick="createChatSession()">➕ Phiên mới</button>
+                <button class="csh-close-btn" onclick="toggleChatSessions(false)" aria-label="Đóng danh sách">✕</button>
+            </div>
+        </div>
+        <div class="chat-sessions-list" id="chatSessionsList">
+            <!-- Rendered by JS -->
+        </div>
+    </div>
     <div class="chat-body" id="chatBody"></div>
     <div class="chat-chips">
         <button onclick="askFromTag('Gợi ý món ngon cho bữa tối?')">🔥 Món ngon tối nay</button>
@@ -3505,186 +3532,497 @@
 
 
 <!-- =====================================================
-     ONBOARDING WIZARD MODAL (HỒ SƠ ẨM THỰC 3 BƯỚC)
+     ONBOARDING WIZARD (3 bước)
 ====================================================== -->
-<div class="modal-overlay" id="onboardingModal">
-    <div class="modal onboarding-modal">
-        <div class="onb-header">
-            <div class="onb-header-top">
-                <span class="onb-step-pill" id="onbStepPill">Bước 1/3</span>
-                <button type="button" class="modal-close" onclick="closeOnboarding()">×</button>
+
+<div
+        class="onboarding-overlay"
+        id="onboardingOverlay">
+
+    <!-- BƯỚC 1: KHẨU VỊ -->
+    <div
+            class="onboarding-screen active"
+            id="onboardingStep1">
+
+        <div class="onboarding-wrap">
+
+            <div class="onboarding-stepper">
+
+                <div class="onb-step active">
+                    <i>1</i>
+                    <span>Khẩu vị</span>
+                </div>
+
+                <div class="onb-step-line"></div>
+
+                <div class="onb-step">
+                    <i>2</i>
+                    <span>Mục tiêu</span>
+                </div>
+
+                <div class="onb-step-line"></div>
+
+                <div class="onb-step">
+                    <i>3</i>
+                    <span>Dinh dưỡng</span>
+                </div>
+
             </div>
-            <h2 class="onb-title" id="onbTitle">Hồ sơ ẩm thực của bạn</h2>
-            <p class="onb-subtitle" id="onbSubTitle">Trả lời vài câu hỏi nhanh để chúng tôi cá nhân hoá trải nghiệm nấu ăn của bạn.</p>
-            <div class="onb-progress-bar">
-                <div class="onb-progress-fill" id="onbProgressFill" style="width: 33.33%;"></div>
+
+
+            <div class="onboarding-card">
+
+                <div class="onb-card-head">
+
+                    <div>
+                        <h1 class="onb-title">
+                            Hồ sơ ẩm thực của bạn
+                        </h1>
+                        <p class="onb-sub">
+                            Trả lời vài câu hỏi nhanh để chúng tôi
+                            cá nhân hoá trải nghiệm nấu ăn của bạn.
+                        </p>
+                    </div>
+
+                    <span class="onb-badge">
+                        Bước 1/3
+                    </span>
+
+                </div>
+
+                <div class="onb-progress">
+                    <div class="bar">
+                        <i style="width:33.3%"></i>
+                    </div>
+                </div>
+
+
+                <div class="onb-grid">
+
+                    <div class="onb-q-block">
+
+                        <h4>
+                            1. Bạn thích những loại hình ẩm thực nào?
+                            <em>(chọn nhiều)</em>
+                        </h4>
+
+                        <div class="onb-chip-grid" id="onbCuisines"></div>
+
+                    </div>
+
+                    <div class="onb-q-block">
+
+                        <h4>
+                            2. Mức độ cay bạn có thể chấp nhận?
+                        </h4>
+
+                        <div class="onb-spice-slider">
+
+                            <input
+                                    type="range"
+                                    id="onbSpice"
+                                    min="0"
+                                    max="4"
+                                    value="1"
+                                    step="1">
+
+                            <div class="onb-spice-labels">
+
+                                <span data-s="0">Không cay</span>
+                                <span data-s="1" class="active">Ít cay</span>
+                                <span data-s="2">Vừa cay</span>
+                                <span data-s="3">Cay nhiều</span>
+                                <span data-s="4">Siêu cay 🌶️</span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="onb-q-block">
+
+                    <h4>
+                        3. Món ăn yêu thích của bạn
+                    </h4>
+
+                    <div class="onb-tag-input-wrap">
+
+                        <div id="onbFavTags" class="onb-tags"></div>
+
+                        <input
+                                type="text"
+                                id="onbFavInput"
+                                placeholder="Nhập tên món rồi Enter… (vd: Phở bò)">
+
+                    </div>
+
+                </div>
+
+
+                <div class="onb-footer">
+
+                    <button
+                            type="button"
+                            class="onb-btn onb-btn-ghost"
+                            id="onb1Back">
+
+                        ← Quay lại
+
+                    </button>
+
+                    <button
+                            type="button"
+                            class="onb-btn onb-btn-primary"
+                            id="onb1Next">
+
+                        Tiếp tục →
+
+                    </button>
+
+                </div>
+
             </div>
+
         </div>
 
-        <div class="onb-body">
-            <!-- STEP 1: HỒ SƠ ẨM THỰC -->
-            <div class="onb-step-pane active" id="onbStep1">
-                <div class="onb-group">
-                    <label class="onb-label">1. Bạn thích những loại hình ẩm thực nào? <span class="onb-hint">(chọn nhiều)</span></label>
-                    <div class="onb-chips-grid">
-                        <button type="button" class="onb-chip active" onclick="toggleOnbChip(this)">🇻🇳 Việt Nam</button>
-                        <button type="button" class="onb-chip" onclick="toggleOnbChip(this)">🥢 Á - Trung Hoa</button>
-                        <button type="button" class="onb-chip" onclick="toggleOnbChip(this)">🌶️ Thái Lan</button>
-                        <button type="button" class="onb-chip" onclick="toggleOnbChip(this)">🇰🇷 Hàn Quốc</button>
-                        <button type="button" class="onb-chip" onclick="toggleOnbChip(this)">🇯🇵 Nhật Bản</button>
-                        <button type="button" class="onb-chip" onclick="toggleOnbChip(this)">🍛 Ấn Độ</button>
-                        <button type="button" class="onb-chip" onclick="toggleOnbChip(this)">🥐 Ý</button>
-                        <button type="button" class="onb-chip" onclick="toggleOnbChip(this)">🥖 Pháp</button>
-                        <button type="button" class="onb-chip" onclick="toggleOnbChip(this)">🌮 Mexico</button>
-                        <button type="button" class="onb-chip" onclick="toggleOnbChip(this)">🥗 Địa Trung Hải</button>
-                    </div>
-                </div>
-
-                <div class="onb-group">
-                    <label class="onb-label">2. Mức độ cay bạn có thể chấp nhận?</label>
-                    <div class="onb-pills-row">
-                        <button type="button" class="onb-pill-btn active" onclick="selectSinglePill(this)">Không cay</button>
-                        <button type="button" class="onb-pill-btn" onclick="selectSinglePill(this)">Ít cay</button>
-                        <button type="button" class="onb-pill-btn" onclick="selectSinglePill(this)">Vừa cay</button>
-                        <button type="button" class="onb-pill-btn" onclick="selectSinglePill(this)">Cay nhiều</button>
-                        <button type="button" class="onb-pill-btn" onclick="selectSinglePill(this)">Siêu cay 🌶️</button>
-                    </div>
-                </div>
-
-                <div class="onb-group">
-                    <label class="onb-label">3. Món ăn yêu thích của bạn</label>
-                    <input type="text" class="onb-input" id="onbFavDish" placeholder="Nhập tên món rồi Enter... (vd: Phở bò, Bún chả)">
-                </div>
-            </div>
-
-            <!-- STEP 2: MỤC TIÊU & PHONG CÁCH -->
-            <div class="onb-step-pane" id="onbStep2">
-                <div class="onb-group">
-                    <label class="onb-label">1. Mục tiêu của bạn là gì? <span class="onb-hint">(chọn nhiều)</span></label>
-                    <div class="onb-cards-grid">
-                        <div class="onb-goal-card active" onclick="toggleGoalCard(this)">
-                            <div class="ogc-icon">🥗</div>
-                            <div class="ogc-info">
-                                <strong>Ăn kiêng giảm cân</strong>
-                                <span>Giảm 0.5kg mỗi tuần</span>
-                            </div>
-                        </div>
-                        <div class="onb-goal-card" onclick="toggleGoalCard(this)">
-                            <div class="ogc-icon">💪</div>
-                            <div class="ogc-info">
-                                <strong>Tăng cơ</strong>
-                                <span>Đạm cao, ít tinh bột</span>
-                            </div>
-                        </div>
-                        <div class="onb-goal-card" onclick="toggleGoalCard(this)">
-                            <div class="ogc-icon">⚖️</div>
-                            <div class="ogc-info">
-                                <strong>Duy trì cân nặng</strong>
-                                <span>Cân bằng dinh dưỡng</span>
-                            </div>
-                        </div>
-                        <div class="onb-goal-card active" onclick="toggleGoalCard(this)">
-                            <div class="ogc-icon">🥬</div>
-                            <div class="ogc-info">
-                                <strong>Ăn lành mạnh</strong>
-                                <span>Ít dầu, nhiều rau</span>
-                            </div>
-                        </div>
-                        <div class="onb-goal-card" onclick="toggleGoalCard(this)">
-                            <div class="ogc-icon">⏰</div>
-                            <div class="ogc-info">
-                                <strong>Tiết kiệm thời gian</strong>
-                                <span>Món dưới 30 phút</span>
-                            </div>
-                        </div>
-                        <div class="onb-goal-card" onclick="toggleGoalCard(this)">
-                            <div class="ogc-icon">💰</div>
-                            <div class="ogc-info">
-                                <strong>Tiết kiệm chi phí</strong>
-                                <span>Nguyên liệu giá tốt</span>
-                            </div>
-                        </div>
-                    </div>
-                    <input type="text" class="onb-input" id="onbGoalExtra" placeholder="Mục tiêu khác... Ví dụ: Ăn sạch 30 ngày" style="margin-top:12px;">
-                </div>
-
-                <div class="onb-group">
-                    <label class="onb-label">2. Số người ăn trong bữa chính?</label>
-                    <div class="onb-pills-row">
-                        <button type="button" class="onb-pill-btn active" onclick="selectSinglePill(this)">1–2 người</button>
-                        <button type="button" class="onb-pill-btn" onclick="selectSinglePill(this)">3–4 người</button>
-                        <button type="button" class="onb-pill-btn" onclick="selectSinglePill(this)">5+ người</button>
-                    </div>
-                </div>
-
-                <div class="onb-group">
-                    <label class="onb-label">3. Thời gian nấu bạn mong muốn?</label>
-                    <div class="onb-pills-row">
-                        <button type="button" class="onb-pill-btn" onclick="selectSinglePill(this)">&lt; 15 phút</button>
-                        <button type="button" class="onb-pill-btn active" onclick="selectSinglePill(this)">15–30 phút</button>
-                        <button type="button" class="onb-pill-btn" onclick="selectSinglePill(this)">30–60 phút</button>
-                        <button type="button" class="onb-pill-btn" onclick="selectSinglePill(this)">&gt; 60 phút</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- STEP 3: DINH DƯỠNG & SỨC KHỎE -->
-            <div class="onb-step-pane" id="onbStep3">
-                <div class="onb-group">
-                    <label class="onb-label">1. Bạn có dị ứng với thực phẩm nào không?</label>
-                    <div class="onb-chips-grid">
-                        <button type="button" class="onb-chip" onclick="toggleOnbChip(this)">🥜 Đậu phộng</button>
-                        <button type="button" class="onb-chip" onclick="toggleOnbChip(this)">🦐 Tôm / Cua</button>
-                        <button type="button" class="onb-chip" onclick="toggleOnbChip(this)">🐟 Cá</button>
-                        <button type="button" class="onb-chip" onclick="toggleOnbChip(this)">🥛 Sữa</button>
-                        <button type="button" class="onb-chip" onclick="toggleOnbChip(this)">🥚 Trứng</button>
-                        <button type="button" class="onb-chip" onclick="toggleOnbChip(this)">🌾 Gluten</button>
-                        <button type="button" class="onb-chip" onclick="toggleOnbChip(this)">🌱 Đậu nành</button>
-                        <button type="button" class="onb-chip" onclick="toggleOnbChip(this)">🌰 Hạt khác</button>
-                        <button type="button" class="onb-chip active" onclick="toggleOnbNoAllergy(this)">✅ Không có dị ứng</button>
-                    </div>
-                </div>
-
-                <div class="onb-group">
-                    <label class="onb-label">2. Chế độ ăn hiện tại</label>
-                    <div class="onb-pills-row">
-                        <button type="button" class="onb-pill-btn active" onclick="selectSinglePill(this)">Không</button>
-                        <button type="button" class="onb-pill-btn" onclick="selectSinglePill(this)">Ăn chay</button>
-                        <button type="button" class="onb-pill-btn" onclick="selectSinglePill(this)">Ăn chay trường</button>
-                        <button type="button" class="onb-pill-btn" onclick="selectSinglePill(this)">Low-carb</button>
-                        <button type="button" class="onb-pill-btn" onclick="selectSinglePill(this)">Keto</button>
-                    </div>
-                </div>
-
-                <div class="onb-group">
-                    <label class="onb-label">3. Mục tiêu calo mỗi ngày: <strong class="onb-calo-val" id="onbCaloVal">2.000 kcal</strong></label>
-                    <div class="onb-slider-wrap">
-                        <span>1200</span>
-                        <input type="range" class="onb-range" id="onbCaloRange" min="1200" max="3000" step="50" value="2000" oninput="updateCaloVal(this.value)">
-                        <span>3000</span>
-                    </div>
-                </div>
-
-                <div class="onb-group">
-                    <label class="onb-label">4. Thiết bị bếp bạn có? <span class="onb-hint">(chọn nhiều)</span></label>
-                    <div class="onb-chips-grid">
-                        <button type="button" class="onb-chip active" onclick="toggleOnbChip(this)">🔥 Bếp gas</button>
-                        <button type="button" class="onb-chip active" onclick="toggleOnbChip(this)">⚡ Bếp từ</button>
-                        <button type="button" class="onb-chip" onclick="toggleOnbChip(this)">🍳 Lò nướng</button>
-                        <button type="button" class="onb-chip active" onclick="toggleOnbChip(this)">🍿 Nồi chiên không dầu</button>
-                        <button type="button" class="onb-chip active" onclick="toggleOnbChip(this)">🍚 Nồi cơm điện</button>
-                        <button type="button" class="onb-chip" onclick="toggleOnbChip(this)">⚡ Nồi áp suất</button>
-                        <button type="button" class="onb-chip" onclick="toggleOnbChip(this)">🥤 Máy xay sinh tố</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="onb-footer">
-            <button type="button" class="text-button" id="onbBackBtn" onclick="onbGoBack()">← Bỏ qua</button>
-            <button type="button" class="primary-button" id="onbNextBtn" onclick="onbGoNext()">Tiếp tục →</button>
-        </div>
     </div>
+
+
+    <!-- BƯỚC 2: MỤC TIÊU -->
+    <div
+            class="onboarding-screen"
+            id="onboardingStep2">
+
+        <div class="onboarding-wrap">
+
+            <div class="onboarding-stepper">
+
+                <div class="onb-step done">
+                    <i>✓</i>
+                    <span>Khẩu vị</span>
+                </div>
+
+                <div class="onb-step-line"></div>
+
+                <div class="onb-step active">
+                    <i>2</i>
+                    <span>Mục tiêu</span>
+                </div>
+
+                <div class="onb-step-line"></div>
+
+                <div class="onb-step">
+                    <i>3</i>
+                    <span>Dinh dưỡng</span>
+                </div>
+
+            </div>
+
+
+            <div class="onboarding-card">
+
+                <div class="onb-card-head">
+
+                    <div>
+                        <h1 class="onb-title">
+                            Mục tiêu
+                        </h1>
+                        <p class="onb-sub">
+                            Mục tiêu giúp chúng tôi gợi ý
+                            món và khẩu phần phù hợp.
+                        </p>
+                    </div>
+
+                    <span class="onb-badge">
+                        Bước 2/3
+                    </span>
+
+                </div>
+
+                <div class="onb-progress">
+                    <div class="bar">
+                        <i style="width:66.6%"></i>
+                    </div>
+                </div>
+
+
+                <div class="onb-q-block">
+
+                    <h4>
+                        1. Mục tiêu của bạn là gì?
+                        <em>(chọn nhiều)</em>
+                    </h4>
+
+                    <div class="onb-goal-grid" id="onbGoals"></div>
+
+                    <div class="onb-goal-other">
+
+                        <span>Mục tiêu khác…</span>
+
+                        <input
+                                type="text"
+                                id="onbGoalOther"
+                                placeholder="Ví dụ: Ăn sạch 30 ngày">
+
+                    </div>
+
+                </div>
+
+                <div class="onb-grid">
+
+                    <div class="onb-q-block">
+
+                        <h4>
+                            2. Số người ăn trong bữa chính?
+                        </h4>
+
+                        <div class="onb-seg" id="onbEaters">
+
+                            <button type="button" data-v="1-2 người">
+                                1–2 người
+                            </button>
+
+                            <button type="button" data-v="3-4 người" class="active">
+                                3–4 người
+                            </button>
+
+                            <button type="button" data-v="5+ người">
+                                5+ người
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <div class="onb-q-block">
+
+                        <h4>
+                            3. Thời gian nấu bạn mong muốn?
+                        </h4>
+
+                        <div class="onb-seg wrap" id="onbCooktime">
+
+                            <button type="button" data-v="< 15 phút">
+                                &lt; 15 phút
+                            </button>
+
+                            <button type="button" data-v="15-30 phút" class="active">
+                                15–30 phút
+                            </button>
+
+                            <button type="button" data-v="30-60 phút">
+                                30–60 phút
+                            </button>
+
+                            <button type="button" data-v="> 60 phút">
+                                &gt; 60 phút
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="onb-footer">
+
+                    <button
+                            type="button"
+                            class="onb-btn onb-btn-ghost"
+                            id="onb2Back">
+
+                        ← Quay lại
+
+                    </button>
+
+                    <button
+                            type="button"
+                            class="onb-btn onb-btn-primary"
+                            id="onb2Next">
+
+                        Tiếp tục →
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- BƯỚC 3: DINH DƯỠNG -->
+    <div
+            class="onboarding-screen"
+            id="onboardingStep3">
+
+        <div class="onboarding-wrap">
+
+            <div class="onboarding-stepper">
+
+                <div class="onb-step done">
+                    <i>✓</i>
+                    <span>Khẩu vị</span>
+                </div>
+
+                <div class="onb-step-line"></div>
+
+                <div class="onb-step done">
+                    <i>✓</i>
+                    <span>Mục tiêu</span>
+                </div>
+
+                <div class="onb-step-line"></div>
+
+                <div class="onb-step active">
+                    <i>3</i>
+                    <span>Dinh dưỡng</span>
+                </div>
+
+            </div>
+
+
+            <div class="onboarding-card">
+
+                <div class="onb-card-head">
+
+                    <div>
+                        <h1 class="onb-title">
+                            Dinh dưỡng &amp; Sức khỏe
+                        </h1>
+                        <p class="onb-sub">
+                            Thông tin sức khỏe giúp lọc nguyên liệu
+                            và cân bằng dinh dưỡng.
+                        </p>
+                    </div>
+
+                    <span class="onb-badge">
+                        Bước 3/3
+                    </span>
+
+                </div>
+
+                <div class="onb-progress">
+                    <div class="bar">
+                        <i style="width:100%"></i>
+                    </div>
+                </div>
+
+
+                <div class="onb-grid">
+
+                    <div class="onb-q-block">
+
+                        <h4>
+                            1. Bạn có dị ứng với thực phẩm nào không?
+                        </h4>
+
+                        <div class="onb-chip-grid" id="onbAllergy"></div>
+
+                    </div>
+
+                    <div class="onb-q-block">
+
+                        <h4>
+                            2. Chế độ ăn hiện tại
+                        </h4>
+
+                        <div class="onb-seg wrap" id="onbDiet">
+
+                            <button type="button" data-v="Không" class="active">
+                                Không
+                            </button>
+
+                            <button type="button" data-v="Ăn chay">
+                                Ăn chay
+                            </button>
+
+                            <button type="button" data-v="Ăn chay trường">
+                                Ăn chay trường
+                            </button>
+
+                            <button type="button" data-v="Low-carb">
+                                Low-carb
+                            </button>
+
+                            <button type="button" data-v="Keto">
+                                Keto
+                            </button>
+
+                        </div>
+
+
+                        <h4 style="margin-top:18px">
+                            3. Mục tiêu calo mỗi ngày:
+                            <output id="onbCaloOut">2.000 kcal</output>
+                        </h4>
+
+                        <input
+                                type="range"
+                                class="onb-calo-range"
+                                id="onbCalo"
+                                min="1200"
+                                max="3000"
+                                step="100"
+                                value="2000">
+
+                        <div class="onb-range-marks">
+                            <span>1200</span>
+                            <span>2000</span>
+                            <span>3000</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="onb-q-block">
+
+                    <h4>
+                        4. Thiết bị bếp bạn có?
+                        <em>(chọn nhiều)</em>
+                    </h4>
+
+                    <div class="onb-chip-grid equip" id="onbEquip"></div>
+
+                </div>
+
+
+                <div class="onb-footer">
+
+                    <button
+                            type="button"
+                            class="onb-btn onb-btn-ghost"
+                            id="onb3Back">
+
+                        ← Quay lại
+
+                    </button>
+
+                    <button
+                            type="button"
+                            class="onb-btn onb-btn-primary"
+                            id="onbFinish">
+
+                        ✓ Hoàn thành
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
 
 
