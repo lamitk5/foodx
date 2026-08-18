@@ -49,6 +49,16 @@ public class RecipeController {
                 "Tạo công thức thành công");
     }
 
+    @GetMapping("/saved")
+    public ApiResponse<List<RecipeResponse>> getSaved() {
+        return ApiResponse.success(recipeService.getSaved(securityUtils.getCurrentUser()), "Danh sách món đã lưu");
+    }
+
+    @PostMapping("/{id}/save")
+    public ApiResponse<Boolean> toggleSave(@PathVariable Long id) {
+        return ApiResponse.success(recipeService.toggleSave(securityUtils.getCurrentUser(), id), "Đã cập nhật trạng thái lưu");
+    }
+
     @PostMapping("/import")
     public ApiResponse<RecipeResponse> importRecipe(@Valid @RequestBody RecipeImportRequest request) {
         return ApiResponse.success(

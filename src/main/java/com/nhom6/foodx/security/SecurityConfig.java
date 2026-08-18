@@ -38,7 +38,13 @@ public class SecurityConfig {
             // Trang chủ và trang test giao diện AI chat (tĩnh)
             "/",
             "/index.html",
-            "/ai-chat-test.html"
+            "/ai-chat-test.html",
+            "/app",
+            "/app.html",
+            "/css/**",
+            "/js/**",
+            // Ảnh avatar tải lên
+            "/uploads/**"
     };
 
     @Bean

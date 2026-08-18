@@ -50,8 +50,15 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
+        String loginName = request.getUsername();
+        if (loginName != null && loginName.contains("@")) {
+            // Cho phép đăng nhập bằng email hoặc username
+            loginName = userRepository.findByEmail(loginName)
+                    .map(User::getUsername)
+                    .orElse(loginName);
+        }
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+                new UsernamePasswordAuthenticationToken(loginName, request.getPassword()));
         String username = authentication.getName();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new BusinessException(401, "Tài khoản không tồn tại"));
@@ -68,6 +75,8 @@ public class AuthService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .role(user.getRole().name())
+                .fullName(user.getFullName())
+                .avatarUrl(user.getAvatarUrl())
                 .build();
     }
 }

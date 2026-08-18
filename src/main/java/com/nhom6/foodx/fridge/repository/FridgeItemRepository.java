@@ -3,15 +3,14 @@ package com.nhom6.foodx.fridge.repository;
 import com.nhom6.foodx.fridge.entity.FridgeItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 public interface FridgeItemRepository extends JpaRepository<FridgeItem, Long> {
 
-    List<FridgeItem> findByUserId(Long userId);
+    List<FridgeItem> findByUser_IdOrderByIdAsc(Long userId);
 
-    Optional<FridgeItem> findByUserIdAndIngredientId(Long userId, Long ingredientId);
+    Optional<FridgeItem> findByIdAndUser_Id(Long id, Long userId);
 
-    List<FridgeItem> findByUserIdAndExpiryDateBefore(Long userId, LocalDate date);
+    Optional<FridgeItem> findFirstByUser_IdAndFood_Id(Long userId, Long foodId);
 }

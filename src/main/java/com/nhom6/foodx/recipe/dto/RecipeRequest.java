@@ -39,6 +39,16 @@ public class RecipeRequest {
     @Size(max = 100)
     private String category;
 
+    private Integer kcal;
+    private Double protein;
+    private Double carb;
+    private Double fat;
+
+    @Size(max = 30)
+    private String difficulty;
+
+    private String mealSlots;
+
     @Size(max = 500)
     private String imageUrl;
 

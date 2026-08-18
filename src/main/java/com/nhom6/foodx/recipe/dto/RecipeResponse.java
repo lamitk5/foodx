@@ -26,6 +26,12 @@ public class RecipeResponse {
     private Integer servings;
     private String cuisine;
     private String category;
+    private Integer kcal;
+    private Double protein;
+    private Double carb;
+    private Double fat;
+    private String difficulty;
+    private String mealSlots;
     private String imageUrl;
     private String sourceUrl;
     private Long authorId;

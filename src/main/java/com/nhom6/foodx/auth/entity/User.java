@@ -48,6 +48,10 @@ public class User {
     @Column(length = 100)
     private String fullName;
 
+    /** Đường dẫn ảnh đại diện (lưu trong uploads/avatars). */
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Role role;

@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kitchen Vitality — Hồ sơ ẩm thực của bạn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- ================= THANH ĐIỀU HƯỚNG WEB ================= -->
+  <header class="topbar" id="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#" data-goto="home">🌿 <span>Kitchen Vitality</span></a>
+      <nav class="topbar-nav">
+        <button data-goto="home">Trang chủ</button>
+        <button data-goto="fridge">Tủ lạnh</button>
+        <button data-goto="plan">Kế hoạch</button>
+        <button data-goto="stats">Thống kê</button>
+      </nav>
+      <div class="topbar-right">
+        <button class="btn btn-primary btn-sm" id="nav-fab">＋ Nguyên liệu</button>
+        <div class="user-menu" id="user-menu">
+          <button class="avatar" id="user-avatar" title="Hồ sơ">M</button>
+          <div class="user-dropdown" id="user-dropdown">
+            <div class="ud-name" id="ud-name">Minh</div>
+            <div class="ud-email" id="ud-email">minh@vidu.com</div>
+            <hr>
+            <button class="ud-item" id="ud-profile">👤 Hồ sơ</button>
+            <button class="ud-item" id="ud-reset">🔄 Đặt lại dữ liệu</button>
+            <hr>
+            <button class="ud-item ud-logout" id="ud-logout">🚪 Đăng xuất</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="webapp">
+
+    <!-- ========== MÀN 0: ĐĂNG KÝ ========== -->
+    <section class="screen auth-screen active" id="screen-auth">
+      <div class="auth-left">
+        <div class="auth-logo">🌿 Kitchen Vitality</div>
+        <div class="auth-hero">
+          <div class="hero-art">
+            <span class="art-emoji">🥘</span>
+            <span class="art-emoji e2">🥦</span>
+            <span class="art-emoji e3">🐟</span>
+            <span class="art-emoji e4">🍅</span>
+            <span class="art-emoji e5">🍯</span>
+          </div>
+        </div>
+        <div class="auth-copy">
+          <h2>Khám phá thế giới ẩm thực</h2>
+          <p>Hàng nghìn công thức được cá nhân hoá theo khẩu vị và mục tiêu của bạn.</p>
+          <ul class="auth-points">
+            <li>🧊 Quản lý tủ lạnh &amp; hạn sử dụng</li>
+            <li>🤖 Gợi ý món theo nguyên liệu còn lại</li>
+            <li>📅 Lên kế hoạch bữa ăn cả tuần</li>
+          </ul>
+        </div>
+      </div>
+      <div class="auth-right">
+        <div class="auth-form-wrap">
+          <h3>Tạo tài khoản mới</h3>
+          <p class="auth-sub">Bắt đầu hành trình ẩm thực của bạn</p>
+          <form id="signup-form" novalidate>
+            <div class="form-grid">
+              <label class="field">
+                <span>Họ tên</span>
+                <input type="text" id="su-name" placeholder="Nguyễn Văn Minh" autocomplete="name">
+              </label>
+              <label class="field">
+                <span>Email</span>
+                <input type="email" id="su-email" placeholder="ban@vidu.com" autocomplete="email">
+              </label>
+              <label class="field">
+                <span>Mật khẩu</span>
+                <input type="password" id="su-pass" placeholder="Tối thiểu 6 ký tự">
+              </label>
+              <label class="field">
+                <span>Nhập lại mật khẩu</span>
+                <input type="password" id="su-pass2" placeholder="Nhập lại mật khẩu">
+              </label>
+            </div>
+            <p class="form-error" id="su-error" hidden></p>
+            <label class="check-row">
+              <input type="checkbox" id="su-terms">
+              <span>Tôi đồng ý với <a href="#" onclick="return false">Điều khoản sử dụng</a> và <a href="#" onclick="return false">Chính sách bảo mật</a></span>
+            </label>
+            <button type="submit" class="btn btn-primary btn-block">Đăng ký</button>
+          </form>
+          <div class="divider"><span>HOẶC</span></div>
+          <div class="social-row">
+            <button class="btn btn-outline" id="btn-google">🇬 Google</button>
+            <button class="btn btn-outline" id="btn-facebook">📘 Facebook</button>
+          </div>
+          <p class="auth-footer">Đã có tài khoản? <a href="#" id="goto-login">Đăng nhập</a></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== MÀN 1..3: HỒ SƠ ẨM THỰC (WIZARD) ========== -->
+    <section class="screen onb-screen" id="screen-onb1">
+      <div class="onb-wrap">
+        <div class="stepper">
+          <div class="step active"><i>1</i><span>Khẩu vị</span></div>
+          <div class="step-line"></div>
+          <div class="step"><i>2</i><span>Mục tiêu</span></div>
+          <div class="step-line"></div>
+          <div class="step"><i>3</i><span>Dinh dưỡng</span></div>
+        </div>
+
+        <div class="onb-card">
+          <div class="onb-card-head">
+            <div>
+              <h1 class="onb-title">Hồ sơ ẩm thực của bạn</h1>
+              <p class="onb-sub">Trả lời vài câu hỏi nhanh để chúng tôi cá nhân hoá trải nghiệm nấu ăn của bạn.</p>
+            </div>
+            <span class="badge-green">Bước 1/3</span>
+          </div>
+          <div class="onb-progress"><div class="bar"><i style="width:33.3%"></i></div></div>
+
+          <div class="onb-grid">
+            <div class="q-block">
+              <h4>1. Bạn thích những loại hình ẩm thực nào? <em>(chọn nhiều)</em></h4>
+              <div class="chip-grid" id="q-cuisines"></div>
+            </div>
+            <div class="q-block">
+              <h4>2. Mức độ cay bạn có thể chấp nhận?</h4>
+              <div class="spice-slider">
+                <input type="range" id="q-spice" min="0" max="4" value="1" step="1">
+                <div class="spice-labels">
+                  <span data-s="0">Không cay</span><span data-s="1">Ít cay</span><span data-s="2">Vừa cay</span><span data-s="3">Cay nhiều</span><span data-s="4">Siêu cay 🌶️</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="q-block">
+            <h4>3. Món ăn yêu thích của bạn</h4>
+            <div class="tag-input-wrap">
+              <div id="fav-tags" class="tags"></div>
+              <input type="text" id="fav-input" placeholder="Nhập tên món rồi Enter… (vd: Phở bò)">
+            </div>
+          </div>
+
+          <div class="onb-footer">
+            <button class="btn btn-ghost" data-nav="back-auth">← Quay lại</button>
+            <button class="btn btn-primary" data-nav="onb2">Tiếp tục →</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen onb-screen" id="screen-onb2">
+      <div class="onb-wrap">
+        <div class="stepper">
+          <div class="step done"><i>✓</i><span>Khẩu vị</span></div>
+          <div class="step-line"></div>
+          <div class="step active"><i>2</i><span>Mục tiêu</span></div>
+          <div class="step-line"></div>
+          <div class="step"><i>3</i><span>Dinh dưỡng</span></div>
+        </div>
+
+        <div class="onb-card">
+          <div class="onb-card-head">
+            <div>
+              <h1 class="onb-title">Mục tiêu</h1>
+              <p class="onb-sub">Mục tiêu giúp chúng tôi gợi ý món và khẩu phần phù hợp.</p>
+            </div>
+            <span class="badge-green">Bước 2/3</span>
+          </div>
+          <div class="onb-progress"><div class="bar"><i style="width:66.6%"></i></div></div>
+
+          <div class="q-block">
+            <h4>1. Mục tiêu của bạn là gì? <em>(chọn nhiều)</em></h4>
+            <div class="goal-grid" id="q-goals"></div>
+            <div class="goal-other">
+              <span>Mục tiêu khác…</span>
+              <input type="text" id="goal-other-input" placeholder="Ví dụ: Ăn sạch 30 ngày">
+            </div>
+          </div>
+          <div class="onb-grid">
+            <div class="q-block">
+              <h4>2. Số người ăn trong bữa chính?</h4>
+              <div class="seg" id="q-eaters">
+                <button type="button" data-v="1-2 người">1–2 người</button>
+                <button type="button" data-v="3-4 người" class="active">3–4 người</button>
+                <button type="button" data-v="5+ người">5+ người</button>
+              </div>
+            </div>
+            <div class="q-block">
+              <h4>3. Thời gian nấu bạn mong muốn?</h4>
+              <div class="seg wrap" id="q-cooktime">
+                <button type="button" data-v="< 15 phút">&lt; 15 phút</button>
+                <button type="button" data-v="15-30 phút" class="active">15–30 phút</button>
+                <button type="button" data-v="30-60 phút">30–60 phút</button>
+                <button type="button" data-v="> 60 phút">&gt; 60 phút</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="onb-footer">
+            <button class="btn btn-ghost" data-nav="onb1">← Quay lại</button>
+            <button class="btn btn-primary" data-nav="onb3">Tiếp tục →</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen onb-screen" id="screen-onb3">
+      <div class="onb-wrap">
+        <div class="stepper">
+          <div class="step done"><i>✓</i><span>Khẩu vị</span></div>
+          <div class="step-line"></div>
+          <div class="step done"><i>✓</i><span>Mục tiêu</span></div>
+          <div class="step-line"></div>
+          <div class="step active"><i>3</i><span>Dinh dưỡng</span></div>
+        </div>
+
+        <div class="onb-card">
+          <div class="onb-card-head">
+            <div>
+              <h1 class="onb-title">Dinh dưỡng &amp; Sức khỏe</h1>
+              <p class="onb-sub">Thông tin sức khỏe giúp lọc nguyên liệu và cân bằng dinh dưỡng.</p>
+            </div>
+            <span class="badge-green">Bước 3/3</span>
+          </div>
+          <div class="onb-progress"><div class="bar"><i style="width:100%"></i></div></div>
+
+          <div class="onb-grid">
+            <div class="q-block">
+              <h4>1. Bạn có dị ứng với thực phẩm nào không?</h4>
+              <div class="chip-grid" id="q-allergy"></div>
+            </div>
+            <div class="q-block">
+              <h4>2. Chế độ ăn hiện tại</h4>
+              <div class="seg wrap" id="q-diet">
+                <button type="button" data-v="Không" class="active">Không</button>
+                <button type="button" data-v="Ăn chay">Ăn chay</button>
+                <button type="button" data-v="Ăn chay trường">Ăn chay trường</button>
+                <button type="button" data-v="Low-carb">Low-carb</button>
+                <button type="button" data-v="Keto">Keto</button>
+              </div>
+              <h4 style="margin-top:18px">3. Mục tiêu calo mỗi ngày: <output id="calo-out">2.000 kcal</output></h4>
+              <input type="range" class="calo-range" id="q-calo" min="1200" max="3000" step="100" value="2000">
+              <div class="range-marks"><span>1200</span><span>2000</span><span>3000</span></div>
+            </div>
+          </div>
+          <div class="q-block">
+            <h4>4. Thiết bị bếp bạn có? <em>(chọn nhiều)</em></h4>
+            <div class="chip-grid equip" id="q-equip"></div>
+          </div>
+
+          <div class="onb-footer">
+            <button class="btn btn-ghost" data-nav="onb2">← Quay lại</button>
+            <button class="btn btn-primary" id="finish-onb">✓ Hoàn thành</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== TRANG CHỦ ========== -->
+    <section class="screen app-screen" id="screen-home">
+      <div class="container">
+        <header class="app-header">
+          <div>
+            <h1 class="hello" id="hello-line">Chào buổi sáng! 👋</h1>
+            <p class="date-line" id="date-line"></p>
+          </div>
+          <div class="avatar big" title="Hồ sơ">M</div>
+        </header>
+
+        <div class="search-card">
+          <span class="search-ic">🔍</span>
+          <input type="text" id="home-search" placeholder="Bạn muốn ăn gì hôm nay?">
+        </div>
+
+        <div class="home-cols">
+          <div class="home-main">
+            <div class="ai-card">
+              <div class="ai-badge">🤖 Gợi ý thông minh</div>
+              <p id="ai-suggest-text">Hôm nay bạn có <b>thịt gà</b> và <b>cải ngọt</b> sắp hết hạn — món <b>Gà kho mật ong</b> vừa hợp khẩu vị vừa dùng hết nguyên liệu!</p>
+              <button class="btn btn-light" data-open-recipe="ga-kho-mat-ong">Xem món gợi ý</button>
+            </div>
+
+            <div class="meal-block" data-meal="morning">
+              <div class="section-head">
+                <h3>🌅 Bữa sáng</h3><span class="kcal-tag" data-kcal="morning"></span>
+              </div>
+              <div class="card-grid" id="meal-morning"></div>
+            </div>
+            <div class="meal-block" data-meal="lunch">
+              <div class="section-head">
+                <h3>☀️ Bữa trưa</h3><span class="kcal-tag" data-kcal="lunch"></span>
+              </div>
+              <div class="card-grid" id="meal-lunch"></div>
+            </div>
+            <div class="meal-block" data-meal="dinner">
+              <div class="section-head">
+                <h3>🌙 Bữa tối</h3><span class="kcal-tag" data-kcal="dinner"></span>
+              </div>
+              <div class="card-grid" id="meal-dinner"></div>
+            </div>
+          </div>
+
+          <aside class="home-side">
+            <div class="card">
+              <div class="card-title">🧊 Tủ lạnh của bạn <a href="#" data-goto="fridge" style="font-size:12px">Xem tất cả →</a></div>
+              <div class="side-chips" id="fridge-brief"></div>
+            </div>
+            <div class="card">
+              <div class="card-title">📅 Kế hoạch hôm nay</div>
+              <div id="today-plan"></div>
+              <button class="btn btn-outline btn-block" data-goto="plan" style="margin-top:12px">Xem kế hoạch tuần</button>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== TỦ LẠNH ========== -->
+    <section class="screen app-screen" id="screen-fridge">
+      <div class="container">
+        <header class="app-header">
+          <div><h1 class="page-title">Tủ lạnh của bạn 🧊</h1></div>
+          <button class="btn btn-primary" id="open-add-item">＋ Thêm nguyên liệu</button>
+        </header>
+
+        <div class="stat-row wide" id="fridge-stats"></div>
+
+        <div class="warn-box" id="expiring-box">
+          <div class="warn-head">⏰ Sắp hết hạn — dùng sớm nhé!</div>
+          <div class="warn-grid" id="expiring-list"></div>
+        </div>
+
+        <div class="filter-chips" id="fridge-filter">
+          <button class="fchip active" data-cat="all">Tất cả</button>
+          <button class="fchip" data-cat="meat">Thịt &amp; Cá</button>
+          <button class="fchip" data-cat="veg">Rau củ</button>
+          <button class="fchip" data-cat="dairy">Trứng &amp; Sữa</button>
+          <button class="fchip" data-cat="spice">Gia vị</button>
+        </div>
+
+        <div id="fridge-list"></div>
+      </div>
+    </section>
+
+    <!-- ========== CHI TIẾT MÓN ĂN ========== -->
+    <section class="screen app-screen" id="screen-recipe">
+      <div class="container">
+        <button class="btn btn-ghost back-btn" data-goto="back">← Quay lại</button>
+        <div class="recipe-cols">
+          <div class="recipe-left">
+            <div class="recipe-hero" id="recipe-hero">
+              <div class="hero-emojis" id="recipe-emojis"></div>
+            </div>
+            <h2 id="recipe-title"></h2>
+            <p class="recipe-desc" id="recipe-desc"></p>
+            <div class="meta-chips" id="recipe-meta"></div>
+            <div class="recipe-actions">
+              <button class="btn btn-outline" id="recipe-save">🤍 Lưu món</button>
+              <button class="btn btn-outline" id="recipe-share">↗ Chia sẻ</button>
+            </div>
+            <div id="nutri-side"></div>
+            <div class="recipe-cta">
+              <button class="btn btn-outline" id="recipe-to-plan">📅 Thêm vào kế hoạch</button>
+              <button class="btn btn-primary" id="cook-now">🍳 Nấu ngay</button>
+            </div>
+          </div>
+          <div class="recipe-right">
+            <div class="tabs">
+              <button class="tab active" data-tab="ing">Nguyên liệu</button>
+              <button class="tab" data-tab="steps">Hướng dẫn</button>
+              <button class="tab" data-tab="nutri">Dinh dưỡng</button>
+            </div>
+
+            <div id="tab-ing" class="tab-pane active">
+              <div class="serve-adjust">
+                <span>Khẩu phần:</span>
+                <button id="serve-minus">−</button>
+                <b id="serve-count">2</b> người
+                <button id="serve-plus">+</button>
+              </div>
+              <ul class="ing-list" id="ing-list"></ul>
+            </div>
+            <div id="tab-steps" class="tab-pane">
+              <ol class="steps-list" id="steps-list"></ol>
+            </div>
+            <div id="tab-nutri" class="tab-pane">
+              <div id="nutri-bars"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== DANH SÁCH MUA SẮM ========== -->
+    <section class="screen app-screen" id="screen-shopping">
+      <div class="container">
+        <header class="app-header">
+          <button class="btn btn-ghost back-btn" data-goto="plan" style="margin:0">← Kế hoạch</button>
+          <div><h1 class="page-title">Danh sách mua sắm 🛒</h1></div>
+          <span class="badge-green" id="shop-count">0/0</span>
+        </header>
+
+        <div class="shop-cols">
+          <div class="shop-main">
+            <div id="shop-list"></div>
+            <div class="add-item-row">
+              <input type="text" id="shop-input" placeholder="Thêm món cần mua…">
+              <button class="btn btn-primary" id="shop-add">Thêm</button>
+            </div>
+          </div>
+          <aside class="shop-side">
+            <div class="progress-card">
+              <div class="card-title">Tiến độ mua sắm</div>
+              <div class="progress-line"><span id="shop-progress-text">0/0 món đã mua</span><span id="shop-percent">0%</span></div>
+              <div class="bar lg"><i id="shop-progress-bar"></i></div>
+              <div class="total-box big">Tổng còn lại: <b id="shop-total">0đ</b></div>
+              <button class="btn btn-outline btn-block" id="shop-clear" style="margin-top:12px">🧹 Xoá món đã mua</button>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== KẾ HOẠCH TUẦN ========== -->
+    <section class="screen app-screen" id="screen-plan">
+      <div class="container">
+        <header class="app-header">
+          <div><h1 class="page-title">Kế hoạch bữa ăn tuần 📅</h1></div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-outline" data-goto="shopping">🛒 Danh sách mua sắm</button>
+            <button class="btn btn-primary" id="plan-ai">✨ AI lên kế hoạch</button>
+          </div>
+        </header>
+
+        <div class="week-nav">
+          <button class="icon-btn" id="week-prev">‹</button>
+          <div class="week-label" id="week-label"></div>
+          <button class="icon-btn" id="week-next">›</button>
+        </div>
+
+        <div class="plan-summary" id="plan-summary"></div>
+        <div id="plan-days" class="plan-board"></div>
+      </div>
+    </section>
+
+    <!-- ========== THỐNG KÊ ========== -->
+    <section class="screen app-screen" id="screen-stats">
+      <div class="container">
+        <header class="app-header">
+          <div><h1 class="page-title">Thống kê &amp; Phân tích 📊</h1></div>
+          <div class="avatar big" title="Hồ sơ">M</div>
+        </header>
+
+        <div class="seg period" id="stats-period">
+          <button type="button" data-v="week" class="active">Tuần</button>
+          <button type="button" data-v="month">Tháng</button>
+          <button type="button" data-v="year">Năm</button>
+        </div>
+
+        <div class="kpi-grid" id="kpi-grid"></div>
+
+        <div class="stats-grid">
+          <div class="card chart-card span2">
+            <div class="card-title">Lượng calo tiêu thụ <span class="unit">kcal/ngày</span></div>
+            <svg id="line-chart" viewBox="0 0 680 180" preserveAspectRatio="none"></svg>
+            <div class="x-labels" id="line-x-labels"></div>
+          </div>
+          <div class="card chart-card">
+            <div class="card-title">Món đã nấu theo tuần</div>
+            <div class="bar-chart" id="bar-chart"></div>
+          </div>
+          <div class="card chart-card">
+            <div class="card-title">Cân bằng dinh dưỡng</div>
+            <div class="donut-wrap">
+              <svg id="donut" viewBox="0 0 120 120"></svg>
+              <div class="donut-legend" id="donut-legend"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Thành tích 🏆</div>
+            <div class="badges" id="badges"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Món nấu nhiều nhất</div>
+            <div id="top-dishes"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <div class="container">
+        <span>🌿 Kitchen Vitality — bản demo giao diện web động (frontend only)</span>
+        <span>Dữ liệu lưu tại trình duyệt · Không kết nối backend</span>
+      </div>
+    </footer>
+  </main>
+
+  <!-- ========== MODAL: THÊM NGUYÊN LIỆU ========== -->
+  <div class="modal-overlay" id="modal-add-item">
+    <div class="modal">
+      <h3>Thêm nguyên liệu 🧺</h3>
+      <label class="field"><span>Tên nguyên liệu</span><input id="ai-name" type="text" placeholder="Ví dụ: Cà rốt"></label>
+      <div class="row-2">
+        <label class="field"><span>Số lượng</span><input id="ai-qty" type="number" min="1" value="1"></label>
+        <label class="field"><span>Đơn vị</span>
+          <select id="ai-unit"><option>g</option><option>kg</option><option selected>ml</option><option>quả</option><option>củ</option><option>bó</option><option>hộp</option><option>trứng</option></select>
+        </label>
+      </div>
+      <div class="row-2">
+        <label class="field"><span>Danh mục</span>
+          <select id="ai-cat">
+            <option value="meat">Thịt &amp; Cá</option>
+            <option value="veg">Rau củ</option>
+            <option value="dairy">Trứng &amp; Sữa</option>
+            <option value="spice">Gia vị</option>
+          </select>
+        </label>
+        <label class="field"><span>Hạn sử dụng</span><input id="ai-expiry" type="date"></label>
+      </div>
+      <p class="form-error" id="ai-error" hidden></p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" data-close>Huỷ</button>
+        <button class="btn btn-primary" id="ai-submit">Thêm vào tủ lạnh</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== MODAL: THÊM MÓN VÀO KẾ HOẠCH ========== -->
+  <div class="modal-overlay" id="modal-add-meal">
+    <div class="modal">
+      <h3>Thêm bữa ăn 🍽</h3>
+      <label class="field"><span>Ngày</span><select id="am-day"></select></label>
+      <label class="field"><span>Bữa</span>
+        <select id="am-slot"><option value="morning">🌅 Bữa sáng</option><option value="lunch">☀️ Bữa trưa</option><option value="dinner">🌙 Bữa tối</option></select>
+      </label>
+      <label class="field"><span>Món ăn</span><select id="am-recipe"></select></label>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" data-close>Huỷ</button>
+        <button class="btn btn-primary" id="am-submit">Thêm vào kế hoạch</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== MODAL: HỒ SƠ & TÀI KHOẢN ========== -->
+  <div class="modal-overlay" id="modal-profile">
+    <div class="modal profile-modal">
+      <div class="profile-modal-head">
+        <div class="avatar big" id="pm-avatar">M</div>
+        <div>
+          <h3 id="pm-name">Minh</h3>
+          <p id="pm-email">minh@vidu.com</p>
+        </div>
+      </div>
+      <div class="profile-info-box">
+        <div class="p-info-item"><span>Chế độ ăn:</span> <b id="pm-diet">Không</b></div>
+        <div class="p-info-item"><span>Mục tiêu calo:</span> <b id="pm-calo">2.000 kcal</b></div>
+        <div class="p-info-item"><span>Nguyên liệu trong tủ:</span> <b id="pm-fridge-count">14 món</b></div>
+      </div>
+      <div class="modal-actions vertical">
+        <button class="btn btn-danger btn-block" id="pm-logout">🚪 Đăng xuất tài khoản</button>
+        <button class="btn btn-outline btn-block" id="pm-reset">🔄 Đặt lại dữ liệu ban đầu</button>
+        <button class="btn btn-ghost btn-block" data-close>Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== TOAST ========== -->
+  <div class="toast" id="toast"></div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

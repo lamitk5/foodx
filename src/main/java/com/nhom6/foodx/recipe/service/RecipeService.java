@@ -27,6 +27,7 @@ public class RecipeService {
     private final RecipeRepository recipeRepository;
     private final RecipeIngredientRepository recipeIngredientRepository;
     private final IngredientRepository ingredientRepository;
+    private final com.nhom6.foodx.recipe.repository.SavedRecipeRepository savedRecipeRepository;
 
     @Transactional(readOnly = true)
     public List<RecipeResponse> search(String keyword, String category, String cuisine) {
@@ -121,6 +122,12 @@ public class RecipeService {
         recipe.setServings(request.getServings());
         recipe.setCuisine(request.getCuisine());
         recipe.setCategory(request.getCategory());
+        recipe.setKcal(request.getKcal());
+        recipe.setProtein(request.getProtein());
+        recipe.setCarb(request.getCarb());
+        recipe.setFat(request.getFat());
+        recipe.setDifficulty(request.getDifficulty());
+        recipe.setMealSlots(request.getMealSlots());
         recipe.setImageUrl(request.getImageUrl());
         recipe.setSourceUrl(request.getSourceUrl());
     }
@@ -150,6 +157,29 @@ public class RecipeService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public java.util.List<RecipeResponse> getSaved(com.nhom6.foodx.auth.entity.User user) {
+        return savedRecipeRepository.findByUserId(user.getId()).stream()
+                .map(sr -> toResponse(sr.getRecipe()))
+                .toList();
+    }
+
+    @Transactional
+    public boolean toggleSave(com.nhom6.foodx.auth.entity.User user, Long recipeId) {
+        Recipe recipe = findEntity(recipeId);
+        if (savedRecipeRepository.existsByUserIdAndRecipeId(user.getId(), recipeId)) {
+            savedRecipeRepository.findByUserIdAndRecipeId(user.getId(), recipeId)
+                    .ifPresent(savedRecipeRepository::delete);
+            return false;
+        }
+        savedRecipeRepository.save(com.nhom6.foodx.recipe.entity.SavedRecipe.builder()
+                .user(user)
+                .recipe(recipe)
+                .savedAt(java.time.LocalDateTime.now())
+                .build());
+        return true;
+    }
+
     private Recipe findEntity(Long id) {
         return recipeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy công thức id=" + id));
@@ -176,6 +206,12 @@ public class RecipeService {
                 .servings(recipe.getServings())
                 .cuisine(recipe.getCuisine())
                 .category(recipe.getCategory())
+                .kcal(recipe.getKcal())
+                .protein(recipe.getProtein())
+                .carb(recipe.getCarb())
+                .fat(recipe.getFat())
+                .difficulty(recipe.getDifficulty())
+                .mealSlots(recipe.getMealSlots())
                 .imageUrl(recipe.getImageUrl())
                 .sourceUrl(recipe.getSourceUrl())
                 .authorId(recipe.getAuthor() != null ? recipe.getAuthor().getId() : null)

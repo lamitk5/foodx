@@ -66,6 +66,26 @@ public class Recipe {
     @Column(length = 100)
     private String category;
 
+    /** Năng lượng (kcal / khẩu phần). */
+    private Integer kcal;
+
+    /** Đạm (g). */
+    private Double protein;
+
+    /** Tinh bột (g). */
+    private Double carb;
+
+    /** Chất béo (g). */
+    private Double fat;
+
+    /** Độ khó: Dễ / Trung bình / Khó. */
+    @Column(length = 30)
+    private String difficulty;
+
+    /** Khung giờ ăn phù hợp, phân tách phẩy: morning,lunch,dinner. */
+    @Column(columnDefinition = "TEXT")
+    private String mealSlots;
+
     /** Đường dẫn ảnh món ăn. */
     @Column(length = 500)
     private String imageUrl;
