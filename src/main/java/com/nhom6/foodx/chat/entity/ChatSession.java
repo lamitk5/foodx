@@ -1,4 +1,4 @@
-package com.nhom6.foodx.shopping.entity;
+package com.nhom6.foodx.chat.entity;
 
 import com.nhom6.foodx.auth.entity.User;
 import jakarta.persistence.Column;
@@ -21,16 +21,16 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
- * Mục trong danh sách mua sắm (gộp từ giao diện dk-dn).
+ * Phiên trò chuyện AI theo từng tài khoản người dùng.
  */
 @Entity
-@Table(name = "shopping_items")
+@Table(name = "chat_sessions")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ShoppingItem {
+public class ChatSession {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,22 +41,12 @@ public class ShoppingItem {
     private User user;
 
     @Column(nullable = false, length = 150)
-    private String name;
+    private String title;
 
-    /** Số lượng dạng text: "500g", "2 hộp"... */
-    @Column(length = 60)
-    private String quantity;
-
-    /** Giá (VNĐ). */
-    private Integer price;
-
-    /** Phân loại: veg / meat / dairy / spice. */
-    @Column(length = 30)
-    private String category;
-
+    /** chat / step. */
     @Builder.Default
-    @Column(nullable = false)
-    private Boolean done = false;
+    @Column(length = 20)
+    private String mode = "chat";
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -69,8 +59,11 @@ public class ShoppingItem {
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = now;
         this.updatedAt = now;
-        if (this.done == null) {
-            this.done = false;
+        if (this.title == null || this.title.isBlank()) {
+            this.title = "Cuộc trò chuyện mới";
+        }
+        if (this.mode == null || this.mode.isBlank()) {
+            this.mode = "chat";
         }
     }
 

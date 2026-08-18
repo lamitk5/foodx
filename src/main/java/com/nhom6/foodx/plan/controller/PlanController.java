@@ -59,4 +59,19 @@ public class PlanController {
         int added = planService.autoFill(securityUtils.getCurrentUser(), start, end);
         return ApiResponse.success(Map.of("added", added), "AI đã lên kế hoạch " + added + " bữa");
     }
+
+    @PostMapping("/suggest-slot")
+    public ApiResponse<PlanEntryResponse> suggestSlot(@RequestBody com.nhom6.foodx.plan.dto.SuggestSlotRequest request) {
+        return ApiResponse.success(planService.suggestSlot(securityUtils.getCurrentUser(), request), "AI đã gợi ý món ăn thành công");
+    }
+
+    @PostMapping("/estimate-dish")
+    public ApiResponse<com.nhom6.foodx.plan.dto.EstimateDishResponse> estimateDish(@RequestBody com.nhom6.foodx.plan.dto.EstimateDishRequest request) {
+        return ApiResponse.success(planService.estimateDish(request), "AI ước tính dinh dưỡng thành công");
+    }
+
+    @PostMapping("/custom-slot")
+    public ApiResponse<PlanEntryResponse> setCustomSlot(@RequestBody com.nhom6.foodx.plan.dto.CustomSlotRequest request) {
+        return ApiResponse.success(planService.setCustomSlot(securityUtils.getCurrentUser(), request), "Đã thêm món vào kế hoạch");
+    }
 }

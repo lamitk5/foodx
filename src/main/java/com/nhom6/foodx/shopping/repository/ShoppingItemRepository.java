@@ -13,4 +13,6 @@ public interface ShoppingItemRepository extends JpaRepository<ShoppingItem, Long
     Optional<ShoppingItem> findByIdAndUser_Id(Long id, Long userId);
 
     long countByUser_IdAndDoneFalse(Long userId);
+
+    void deleteByUser_Id(Long userId);
 }

@@ -101,10 +101,16 @@ public class RecipeService {
         List<RecipeIngredientItem> items = new ArrayList<>();
         if (parsed.has("ingredients") && parsed.get("ingredients").isArray()) {
             for (JsonNode item : parsed.get("ingredients")) {
+                Double qty = 1.0;
+                if (item.path("quantity").isNumber()) {
+                    qty = item.path("quantity").asDouble();
+                } else if (item.has("quantity") && item.path("quantity").asText().matches("\\d+(\\.\\d+)?")) {
+                    qty = Double.parseDouble(item.path("quantity").asText());
+                }
                 items.add(RecipeIngredientItem.builder()
-                        .ingredientName(item.path("name").asText())
-                        .quantity(item.path("quantity").isNumber() ? item.path("quantity").asDouble() : null)
-                        .unit(item.path("unit").asText())
+                        .ingredientName(item.path("name").asText("Nguyên liệu"))
+                        .quantity(qty)
+                        .unit(item.path("unit").asText("phần"))
                         .note(item.path("note").asText())
                         .build());
             }
@@ -134,10 +140,11 @@ public class RecipeService {
 
     private void saveIngredients(Recipe recipe, List<RecipeIngredientItem> items) {
         for (RecipeIngredientItem item : items) {
-            Ingredient ingredient = ingredientRepository.findByNameIgnoreCase(item.getIngredientName().trim())
+            String ingName = item.getIngredientName() != null ? item.getIngredientName().trim() : "Nguyên liệu";
+            Ingredient ingredient = ingredientRepository.findByNameIgnoreCase(ingName)
                     .orElseGet(() -> {
                         Ingredient newIng = Ingredient.builder()
-                                .name(item.getIngredientName().trim())
+                                .name(ingName)
                                 .category(recipe.getCategory())
                                 .createdAt(LocalDateTime.now())
                                 .updatedAt(LocalDateTime.now())
@@ -148,8 +155,8 @@ public class RecipeService {
             RecipeIngredient ri = RecipeIngredient.builder()
                     .recipe(recipe)
                     .ingredient(ingredient)
-                    .quantity(item.getQuantity())
-                    .unit(item.getUnit())
+                    .quantity(item.getQuantity() != null ? item.getQuantity() : 1.0)
+                    .unit(item.getUnit() != null && !item.getUnit().isBlank() ? item.getUnit() : "phần")
                     .note(item.getNote())
                     .build();
             recipe.getIngredients().add(ri);

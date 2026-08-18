@@ -29,5 +29,15 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+### Logs & Dumps ###
+*.log
+hs_err_pid*.log
+
+### Uploads ###
+uploads/
+/uploads/
+
 ### VS Code ###
 .vscode/
+# Added by code-review-graph
+.code-review-graph/

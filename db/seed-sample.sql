@@ -79,18 +79,26 @@ CREATE TABLE foods (
 );
 
 INSERT INTO foods (source_key, name, type, kcal, protein, carb, fat, components, benefit, image_url, default_quantity, unit, default_expiry_days, custom_food, created_at) VALUES
-('egg',      'Trứng gà',     'Nguyên liệu', 155, 13,   1,   11,   'Protein cao, vitamin D',          'Giàu protein, tốt cho cơ bắp',  '/uploads/food/egg.png',      1,   'quả', 21, FALSE, NOW()),
-('chicken',  'Thịt gà',      'Nguyên liệu', 239, 27,   0,   14,   'Đạm, sắt, kẽm',                   'Ít béo, giàu đạm',              '/uploads/food/chicken.png',  1,   'kg',   5, FALSE, NOW()),
-('rice',     'Gạo trắng',    'Nguyên liệu', 130, 2.7,  28,  0.3,  'Tinh bột',                        'Cung cấp năng lượng',           '/uploads/food/rice.png',     1,   'kg', 365, FALSE, NOW()),
-('tomato',   'Cà chua',      'Rau Củ',      18,  0.9,  3.9, 0.2,  'Vitamin C, lycopene',             'Tốt cho da và tim mạch',        '/uploads/food/tomato.png',   1,   'kg',   7, FALSE, NOW()),
-('shallot',  'Hành tím',     'Gia vị',      40,  1.1,  9.3, 0.1,  'Flavonoid',                       'Chống oxy hóa',                 '/uploads/food/shallot.png',  1,   'kg',  30, FALSE, NOW()),
-('pork',     'Thịt heo',     'Nguyên liệu', 242, 27,   0,   14,   'Vitamin B, kẽm',                  'Đậm đà, giàu năng lượng',       '/uploads/food/pork.png',     1,   'kg',   5, FALSE, NOW()),
-('salmon',   'Cá hồi',       'Nguyên liệu', 208, 20,   0,   13,   'Omega-3',                         'Tốt cho tim và não',            '/uploads/food/salmon.png',   1,   'kg',   5, FALSE, NOW()),
-('broccoli', 'Bông cải xanh','Rau Củ',      34,  2.8,  6.6, 0.4,  'Xơ, vitamin K, vitamin C',        'Giàu chất xơ, ít calo',         '/uploads/food/broccoli.png', 1,   'kg',   7, FALSE, NOW()),
-('potato',   'Khoai tây',    'Rau Củ',      77,  2,    17,  0.1,  'Tinh bột, kali',                  'Bổ sung năng lượng',            '/uploads/food/potato.png',   1,   'kg',  14, FALSE, NOW()),
-('milk',     'Sữa tươi',     'Nguyên liệu', 61,  3.2,  4.8, 3.3,  'Canxi, protein',                  'Tốt cho xương',                 '/uploads/food/milk.png',     1,   'lít',  7, FALSE, NOW()),
-('banana',   'Chuối',        'Nguyên liệu', 89,  1.1,  22.8,0.3,  'Kali, vitamin B6',                'Năng lượng nhanh',              '/uploads/food/banana.png',   1,   'kg',   7, FALSE, NOW()),
-('tofu',     'Đậu hũ',       'Nguyên liệu', 76,  8,    2,   4.5,  'Protein thực vật',                'Thay thế thịt',                 '/uploads/food/tofu.png',     1,   'kg',   5, FALSE, NOW());
+('egg',      'Trứng gà',     'Nguyên liệu', 70,  6.3,  0.4, 4.8,  'Protein cao, vitamin D, choline',          'Giàu protein, tốt cho cơ bắp',  'https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&w=700&q=85', 6,   'quả', 14, FALSE, NOW()),
+('chicken',  'Ức gà',        'Nguyên liệu', 165, 31,   0,   3.6,  'Đạm cao, ít béo, sắt, kẽm',                'Tăng cơ, kiểm soát cân nặng',   'https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&w=700&q=85', 450, 'g',    4,  FALSE, NOW()),
+('beef',     'Thịt bò',      'Nguyên liệu', 250, 26,   0,   15,   'Đạm, sắt hema, vitamin B6, B12',           'Bổ máu, phát triển cơ bắp',     'https://images.unsplash.com/photo-1588168333986-5078d3ae3976?auto=format&fit=crop&w=700&q=85', 300, 'g',    5,  FALSE, NOW()),
+('pork',     'Thịt heo',     'Nguyên liệu', 242, 27,   0,   14,   'Vitamin B1, kẽm, phốt pho',                'Giàu năng lượng, thơm ngon',    'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&w=700&q=85', 400, 'g',    5,  FALSE, NOW()),
+('salmon',   'Cá hồi',       'Nguyên liệu', 208, 20,   0,   13,   'Axit béo Omega-3, DHA, vitamin D',         'Tốt cho tim mạch và trí não',   'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=700&q=85', 300, 'g',    4,  FALSE, NOW()),
+('shrimp',   'Tôm tươi',     'Nguyên liệu', 99,  24,   0.2, 0.3,  'Canxi, đạm, iot, selen',                   'Chắc xương, ít béo',            'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=700&q=85', 300, 'g',    3,  FALSE, NOW()),
+('tomato',   'Cà chua',      'Rau Củ',      22,  0.9,  3.9, 0.2,  'Nước, lycopene, vitamin C, kali',          'Đẹp da, chống oxy hoá',         'https://images.unsplash.com/photo-1546470427-e5ac89cd0b31?auto=format&fit=crop&w=700&q=85', 4,   'quả',  7,  FALSE, NOW()),
+('broccoli', 'Bông cải xanh','Rau Củ',      34,  2.8,  6.6, 0.4,  'Chất xơ, vitamin C, vitamin K',            'Thanh lọc cơ thể, ít calo',     'https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?auto=format&fit=crop&w=700&q=85', 250, 'g',    6,  FALSE, NOW()),
+('carrot',   'Cà rốt',       'Rau Củ',      41,  0.9,  9.6, 0.2,  'Beta-carotene, vitamin A, chất xơ',        'Tốt cho thị lực, miễn dịch',    'https://images.unsplash.com/photo-1447175008436-170170753e16?auto=format&fit=crop&w=700&q=85', 3,   'củ',   14, FALSE, NOW()),
+('potato',   'Khoai tây',    'Rau Củ',      77,  2,    17,  0.1,  'Tinh bột kháng, kali, vitamin B6',         'Bổ sung năng lượng lành mạnh',  'https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=700&q=85', 4,   'củ',   21, FALSE, NOW()),
+('shallot',  'Hành tím',     'Gia vị',      40,  1.1,  9.3, 0.1,  'Flavonoid, hợp chất lưu huỳnh',            'Kháng viêm, tăng hương vị',     'https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?auto=format&fit=crop&w=700&q=85', 5,   'củ',   30, FALSE, NOW()),
+('garlic',   'Tỏi',          'Gia vị',      149, 6.4,  33,  0.5,  'Allicin, chất chống oxy hóa',              'Tăng cường miễn dịch, tiêu hoá','https://images.unsplash.com/photo-1540148426945-6cf22a6b2383?auto=format&fit=crop&w=700&q=85', 3,   'củ',   45, FALSE, NOW()),
+('ginger',   'Gừng tươi',    'Gia vị',      80,  1.8,  18,  0.8,  'Gingerol, tinh dầu gừng',                  'Ấm bụng, giảm viêm, chống cảm', 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=700&q=85', 2,   'củ',   30, FALSE, NOW()),
+('milk',     'Sữa tươi',     'Nguyên liệu', 120, 8,    12,  5,    'Canxi, vitamin D, protein casein',         'Chắc khỏe xương và răng',       'https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=700&q=85', 1,   'lít',  7,  FALSE, NOW()),
+('yogurt',   'Sữa chua',     'Nguyên liệu', 95,  10,   3.6, 0.4,  'Men vi sinh Probiotic, protein',           'Hỗ trợ tiêu hóa đường ruột',    'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=700&q=85', 4,   'hộp',  10, FALSE, NOW()),
+('avocado',  'Quả bơ',       'Trái Cây',    160, 2,    8.5, 14.7, 'Chất béo không bão hòa đơn, kali',        'Tốt cho tim mạch, no lâu',      'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=700&q=85', 2,   'quả',  5,  FALSE, NOW()),
+('banana',   'Chuối',        'Trái Cây',    89,  1.1,  22.8,0.3,  'Kali, carbohydrate phức hợp',              'Bổ sung năng lượng tức thì',    'https://images.unsplash.com/photo-1603833665858-e61d17a86224?auto=format&fit=crop&w=700&q=85', 5,   'quả',  6,  FALSE, NOW()),
+('rice',     'Cơm trắng',    'Nguyên liệu', 130, 2.7,  28,  0.3,  'Carbohydrate, tinh bột',                   'Nguồn tinh bột chính bữa ăn',   'https://images.unsplash.com/photo-1516684732162-798a0062be99?auto=format&fit=crop&w=700&q=85', 500, 'g',    3,  FALSE, NOW()),
+('tofu',     'Đậu hũ',       'Nguyên liệu', 76,  8,    2,   4.5,  'Protein thực vật, isoflavone',             'Đạm thực vật thanh đạm',        'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=700&q=85', 2,   'hộp',  5,  FALSE, NOW()),
+('cheese',   'Phô mai',      'Nguyên liệu', 402, 25,   1.3, 33,   'Canxi, chất béo, protein',                 'Giàu năng lượng, béo thơm',     'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?auto=format&fit=crop&w=700&q=85', 200, 'g',    30, FALSE, NOW());
 
 -- ===================== INGREDIENTS =====================
 CREATE TABLE ingredients (
@@ -210,15 +218,45 @@ CREATE TABLE fridge_stock (
 );
 
 INSERT INTO fridge_stock (user_id, food_id, quantity, unit, expires_at, note, created_at, updated_at) VALUES
-(1, 1,  12, 'quả', DATE_ADD(CURDATE(), INTERVAL 8 DAY),  'Mua hôm chợ',                 NOW(), NOW()),
-(1, 6,  1,  'kg',  DATE_ADD(CURDATE(), INTERVAL 3 DAY),  NULL,                          NOW(), NOW()),
-(1, 3,  5,  'kg',  DATE_ADD(CURDATE(), INTERVAL 60 DAY), 'Gạo đỏ hữu cơ',               NOW(), NOW()),
-(2, 9,  2,  'kg',  DATE_ADD(CURDATE(), INTERVAL 10 DAY), NULL,                          NOW(), NOW()),
-(2, 8,  1,  'kg',  DATE_ADD(CURDATE(), INTERVAL 6 DAY),  'Rau organic',                 NOW(), NOW()),
-(3, 7,  0.5,'kg',  DATE_ADD(CURDATE(), INTERVAL 4 DAY),  'Cá hồi Nauy',                NOW(), NOW()),
-(3, 10, 2,  'lít', DATE_ADD(CURDATE(), INTERVAL 7 DAY),  NULL,                          NOW(), NOW()),
-(4, 2,  1,  'kg',  DATE_ADD(CURDATE(), INTERVAL 5 DAY),  'Gà ta',                       NOW(), NOW()),
-(4, 12, 1,  'kg',  DATE_ADD(CURDATE(), INTERVAL 3 DAY),  'Đậu hũ non',                  NOW(), NOW());
+-- User 1 (Minh Anh)
+(1, 1,  10,  'quả', DATE_ADD(CURDATE(), INTERVAL 12 DAY), 'Trứng gà Ba Huân mua tại WinMart',           NOW(), NOW()),
+(1, 2,  450, 'g',   DATE_ADD(CURDATE(), INTERVAL 2 DAY),  'Ức gà để ngăn mát, cần nấu sớm',             NOW(), NOW()),
+(1, 3,  500, 'g',   DATE_ADD(CURDATE(), INTERVAL 4 DAY),  'Bảo quản ngăn mát 2°C làm bò xào',           NOW(), NOW()),
+(1, 5,  300, 'g',   DATE_ADD(CURDATE(), INTERVAL 3 DAY),  'Phi lê cá hồi Nauy tươi',                    NOW(), NOW()),
+(1, 7,  4,   'quả', DATE_ADD(CURDATE(), INTERVAL 1 DAY),  'Cà chua chín mềm, làm canh hoặc sốt',        NOW(), NOW()),
+(1, 8,  250, 'g',   DATE_ADD(CURDATE(), INTERVAL 5 DAY),  'Bông cải đã rửa sạch để ráo',                NOW(), NOW()),
+(1, 9,  3,   'củ',  DATE_ADD(CURDATE(), INTERVAL 10 DAY), 'Bảo quản ngăn rau củ',                       NOW(), NOW()),
+(1, 10, 4,   'củ',  DATE_ADD(CURDATE(), INTERVAL 18 DAY), 'Bảo quản nơi khô ráo thoáng mát',            NOW(), NOW()),
+(1, 14, 1,   'lít', DATE_ADD(CURDATE(), INTERVAL 1 DAY),  'Sữa tươi thanh trùng mở nắp hôm qua',        NOW(), NOW()),
+(1, 15, 4,   'hộp', DATE_ADD(CURDATE(), INTERVAL 8 DAY),  'Sữa chua không đường ăn sáng',               NOW(), NOW()),
+(1, 16, 2,   'quả', DATE_ADD(CURDATE(), INTERVAL 3 DAY),  'Quả bơ sáp 034 Đắk Lắk',                     NOW(), NOW()),
+(1, 17, 5,   'quả', DATE_ADD(CURDATE(), INTERVAL 2 DAY),  'Chuối tiêu chín tự nhiên',                   NOW(), NOW()),
+(1, 18, 400, 'g',   DATE_ADD(CURDATE(), INTERVAL 2 DAY),  'Cơm nguội dùng chiên cơm',                   NOW(), NOW()),
+(1, 19, 2,   'hộp', DATE_ADD(CURDATE(), INTERVAL 4 DAY),  'Đậu hũ non nấu canh rong biển',              NOW(), NOW()),
+(1, 11, 5,   'củ',  DATE_ADD(CURDATE(), INTERVAL 25 DAY), 'Hành tím phi thơm',                          NOW(), NOW()),
+(1, 12, 3,   'củ',  DATE_ADD(CURDATE(), INTERVAL 40 DAY), 'Tỏi Hải Dương',                              NOW(), NOW()),
+(1, 4,  200, 'g',   DATE_SUB(CURDATE(), INTERVAL 1 DAY),  'Thịt heo xay bảo quản ngăn mát - đã quá hạn',NOW(), NOW()),
+
+-- User 2 (Thu Thảo)
+(2, 1,  6,   'quả', DATE_ADD(CURDATE(), INTERVAL 10 DAY), 'Trứng gà ta',                               NOW(), NOW()),
+(2, 5,  400, 'g',   DATE_ADD(CURDATE(), INTERVAL 2 DAY),  'Cá hồi áp chảo tối nay',                     NOW(), NOW()),
+(2, 7,  3,   'quả', DATE_ADD(CURDATE(), INTERVAL 4 DAY),  'Cà chua bi',                                 NOW(), NOW()),
+(2, 8,  300, 'g',   DATE_ADD(CURDATE(), INTERVAL 3 DAY),  'Bông cải xanh organic',                      NOW(), NOW()),
+(2, 14, 1,   'lít', DATE_ADD(CURDATE(), INTERVAL 1 DAY),  'Sữa tươi tiệt trùng',                        NOW(), NOW()),
+(2, 16, 2,   'quả', DATE_ADD(CURDATE(), INTERVAL 4 DAY),  'Bơ làm sinh tố',                             NOW(), NOW()),
+
+-- User 3 (Nguyễn Sơn Lâm)
+(3, 2,  600, 'g',   DATE_ADD(CURDATE(), INTERVAL 3 DAY),  'Ức gà tăng cơ',                              NOW(), NOW()),
+(3, 3,  500, 'g',   DATE_ADD(CURDATE(), INTERVAL 5 DAY),  'Thịt bò nạc',                                NOW(), NOW()),
+(3, 1,  12,  'quả', DATE_ADD(CURDATE(), INTERVAL 15 DAY), 'Trứng gà ăn theo chế độ gym',               NOW(), NOW()),
+(3, 6,  400, 'g',   DATE_ADD(CURDATE(), INTERVAL 2 DAY),  'Tôm sú tươi hấp bia',                        NOW(), NOW()),
+(3, 15, 6,   'hộp', DATE_ADD(CURDATE(), INTERVAL 7 DAY),  'Sữa chua Hy Lạp giàu đạm',                   NOW(), NOW()),
+
+-- User 4 (Hoàng Hảo)
+(4, 4,  500, 'g',   DATE_ADD(CURDATE(), INTERVAL 4 DAY),  'Thịt ba chỉ luộc',                           NOW(), NOW()),
+(4, 7,  4,   'quả', DATE_ADD(CURDATE(), INTERVAL 2 DAY),  'Cà chua sốt đậu',                            NOW(), NOW()),
+(4, 19, 3,   'hộp', DATE_ADD(CURDATE(), INTERVAL 3 DAY),  'Đậu hũ rán vàng',                            NOW(), NOW()),
+(4, 18, 500, 'g',   DATE_ADD(CURDATE(), INTERVAL 3 DAY),  'Gạo ngon Tám Thơm',                          NOW(), NOW());
 
 -- ===================== RECIPE POSTS (mạng xã hội) =====================
 CREATE TABLE recipe_posts (

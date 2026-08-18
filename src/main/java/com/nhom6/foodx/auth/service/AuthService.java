@@ -51,18 +51,28 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         String loginName = request.getUsername();
-        if (loginName != null && loginName.contains("@")) {
+        if (loginName == null || loginName.isBlank()) {
+            throw new BusinessException(400, "Vui lòng nhập tên đăng nhập hoặc email");
+        }
+        loginName = loginName.trim();
+
+        if (loginName.contains("@")) {
             // Cho phép đăng nhập bằng email hoặc username
             loginName = userRepository.findByEmail(loginName)
                     .map(User::getUsername)
                     .orElse(loginName);
         }
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginName, request.getPassword()));
-        String username = authentication.getName();
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new BusinessException(401, "Tài khoản không tồn tại"));
-        return buildAuthResponse(user);
+
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginName, request.getPassword()));
+            String username = authentication.getName();
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new BusinessException(401, "Tài khoản không tồn tại"));
+            return buildAuthResponse(user);
+        } catch (org.springframework.security.core.AuthenticationException ex) {
+            throw new BusinessException(401, "Tên đăng nhập/email hoặc mật khẩu không chính xác");
+        }
     }
 
     private AuthResponse buildAuthResponse(User user) {

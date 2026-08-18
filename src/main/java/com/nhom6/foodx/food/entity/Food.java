@@ -38,12 +38,17 @@ public class Food {
     @Column(nullable = false, length = 150)
     private String name;
 
+    @Builder.Default
     @Column(nullable = false, length = 50)
     private String type = "Nguyên liệu";
 
+    @Builder.Default
     private Double kcal = 0.0;
+    @Builder.Default
     private Double protein = 0.0;
+    @Builder.Default
     private Double carb = 0.0;
+    @Builder.Default
     private Double fat = 0.0;
 
     @Column(columnDefinition = "TEXT")
@@ -55,16 +60,19 @@ public class Food {
     @Column(name = "image_url", length = 1000)
     private String imageUrl;
 
+    @Builder.Default
     @Column(name = "default_quantity")
     private Double defaultQuantity = 1.0;
 
     @Column(length = 30)
     private String unit;
 
+    @Builder.Default
     @Column(name = "default_expiry_days")
     private Integer defaultExpiryDays = 7;
 
     /** true = người dùng tự nhập; false = nguyên liệu hệ thống. */
+    @Builder.Default
     @Column(name = "custom_food")
     private Boolean customFood = false;
 

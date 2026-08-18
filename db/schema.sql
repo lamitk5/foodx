@@ -5,6 +5,8 @@
 -- =============================================================
 
 -- Xóa bảng theo thứ tự phụ thuộc (FK) nếu chạy lại
+DROP TABLE IF EXISTS chat_messages;
+DROP TABLE IF EXISTS chat_sessions;
 DROP TABLE IF EXISTS user_allergies;
 DROP TABLE IF EXISTS meal_plan_items;
 DROP TABLE IF EXISTS meal_plans;
@@ -179,3 +181,31 @@ CREATE TABLE user_allergies (
     CONSTRAINT uq_allergy UNIQUE (user_id, ingredient_id)
 );
 CREATE INDEX idx_allergy_user ON user_allergies(user_id);
+
+-- =============================================================
+-- 12. chat_sessions : Phiên trò chuyện AI theo tài khoản (Chat)
+-- =============================================================
+CREATE TABLE chat_sessions (
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id     BIGINT NOT NULL,
+    title       VARCHAR(150) NOT NULL DEFAULT 'Cuộc trò chuyện mới',
+    mode        VARCHAR(20)  NOT NULL DEFAULT 'chat',   -- chat / step
+    created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_chatsession_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_chatsession_user ON chat_sessions(user_id, updated_at);
+
+-- =============================================================
+-- 13. chat_messages : Tin nhắn trong phiên trò chuyện (Chat)
+-- =============================================================
+CREATE TABLE chat_messages (
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    session_id  BIGINT NOT NULL,
+    role        VARCHAR(20) NOT NULL,                    -- user / assistant
+    content     TEXT NOT NULL,
+    steps       TEXT,                                    -- JSON danh sách bước (nếu chế độ step)
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_chatmsg_session FOREIGN KEY (session_id) REFERENCES chat_sessions(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_chatmsg_session ON chat_messages(session_id, created_at);

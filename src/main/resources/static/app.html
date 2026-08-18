@@ -2437,92 +2437,67 @@
 
 </div>
 <!-- =====================================================
-     CHATBOT
+     CHAT AI (đa phiên, lịch sử theo tài khoản)
 ====================================================== -->
 
-<div
-        class="chat-window"
-        id="chatWindow">
-
-    <div class="chat-header">
-
-        <div class="bot-avatar">
-            ✦
-        </div>
-
-        <div class="chat-title">
-
-            <h3>
-                Trợ lý Food X
-            </h3>
-
-            <p id="chatStatusText">
-                Phiên bản mô phỏng AI
-            </p>
-
-        </div>
-
-
-        <button
-                type="button"
-                id="closeChat">
-
-            ×
-
-        </button>
-
-    </div>
-
-
-    <div
-            class="chat-messages"
-            id="chatMessages">
-        <div
-                class="chat-context-banner"
-                id="chatContextBanner">
-
-        </div>
-        <div class="message ai">
-
-            Xin chào! Tôi là trợ lý Food X.
-            Bạn có thể hỏi hôm nay nên ăn gì,
-            lượng calo hoặc thực phẩm sắp hết hạn.
-
-        </div>
-
-    </div>
-
-
-    <div class="chat-input">
-
-        <input
-                type="text"
-                id="chatInput"
-                autocomplete="off"
-                placeholder="Hỏi Food X...">
-
-        <button
-                type="button"
-                id="sendChat">
-
-            ➤
-
-        </button>
-
-    </div>
-
-</div>
-
-
-<button
-        type="button"
-        class="chat-floating"
-        id="chatFloating"
-        title="Mở trợ lý Food X">
-
-    ✦
-
+<button class="chat-fab" id="chatFab" onclick="toggleChat()" aria-label="Mở chat AI">
+    🤖
+    <span class="fab-label">Trợ lý AI nấu ăn</span>
 </button>
+
+<div class="chat-panel" id="chatPanel">
+    <div class="chat-head">
+        <div class="chat-avatar">🤖<span class="on-dot" id="chatDot"></span></div>
+        <div class="chat-head-info">
+            <b>Trợ lý AI FoodX</b>
+            <small id="chatStatusText">Đang kết nối…</small>
+        </div>
+        <button class="chat-close" onclick="closeChat()" aria-label="Đóng">✕</button>
+    </div>
+    <div class="chat-toolbar">
+        <div class="ct-info" onclick="toggleChatSessions()" title="Xem tất cả phiên trò chuyện">
+            <span class="ct-icon">💬</span>
+            <span class="ct-title" id="chatSessionTitle">Cuộc trò chuyện mới</span>
+        </div>
+        <div class="ct-actions">
+            <button class="ct-btn" id="chatRenameBtn" onclick="renameCurrentChatSession()" title="Đổi tên phiên" aria-label="Đổi tên phiên">✏️</button>
+            <button class="ct-btn" id="chatNewSession" onclick="createChatSession()" title="Tạo phiên mới" aria-label="Tạo phiên mới">➕ Mới</button>
+            <button class="ct-btn" id="chatToggleHistory" onclick="toggleChatSessions()" title="Lịch sử phiên" aria-label="Lịch sử phiên">
+                🕒 <span class="ct-count-badge" id="chatSessionCount">0</span>
+            </button>
+        </div>
+    </div>
+    <div class="chat-sessions-overlay" id="chatSessionsOverlay" style="display: none;">
+        <div class="chat-sessions-header">
+            <div class="csh-title">
+                <span>📚 Lịch sử phiên chat</span>
+            </div>
+            <div class="csh-actions">
+                <button class="csh-new-btn" onclick="createChatSession()">➕ Phiên mới</button>
+                <button class="csh-close-btn" onclick="toggleChatSessions(false)" aria-label="Đóng danh sách">✕</button>
+            </div>
+        </div>
+        <div class="chat-sessions-list" id="chatSessionsList">
+            <!-- Rendered by JS -->
+        </div>
+    </div>
+    <div class="chat-body" id="chatBody"></div>
+    <div class="chat-chips">
+        <button onclick="askFromTag('Gợi ý món ngon cho bữa tối?')">🔥 Món ngon tối nay</button>
+        <button onclick="askFromTag('Cách nấu phở bò?')">🍜 Cách nấu phở bò</button>
+        <button onclick="askFromTag('Gợi ý món ăn bổ dưỡng cho bà bầu?')">🤰 Món cho bà bầu</button>
+        <button onclick="askFromTag('Cách làm cá kho tiêu thơm ngon?')">🐟 Cá kho tiêu</button>
+    </div>
+    <div class="chat-modes">
+        <button id="modeChatBtn" class="active" onclick="setMode('chat')">💬 Hỏi đáp</button>
+        <button id="modeStepBtn" onclick="setMode('step')">👨‍🍳 Nấu từng bước</button>
+    </div>
+    <div class="chat-input">
+        <input id="chatInputFx" placeholder="Nhập câu hỏi của bạn..." autocomplete="off"
+               onkeydown="if(event.key==='Enter'){event.preventDefault();sendMessage();}">
+        <button class="chat-send" id="chatSendBtn" onclick="sendMessage()" aria-label="Gửi">➤</button>
+    </div>
+</div>
 
 <!-- =====================================================
      LOGIN MODAL

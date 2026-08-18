@@ -464,6 +464,52 @@ Hỏi đáp với Trợ lý AI nấu ăn.
 }
 ```
 
+#### `GET /api/chat/sessions`
+Lấy danh sách các phiên trò chuyện AI của tài khoản đang đăng nhập.
+- **Xác thực:** 🔒 Bắt buộc (Bearer Token)
+- **Response:** `ApiResponse<List<SessionResponse>>`
+
+#### `POST /api/chat/sessions`
+Tạo một phiên trò chuyện mới cho tài khoản.
+- **Xác thực:** 🔒 Bắt buộc (Bearer Token)
+- **Request body:**
+```json
+{
+  "title": "Nấu ăn tối nay",
+  "mode": "chat"
+}
+```
+- **Response:** `ApiResponse<SessionResponse>`
+
+#### `GET /api/chat/sessions/{id}`
+Lấy chi tiết một phiên trò chuyện và toàn bộ lịch sử tin nhắn & bước nấu.
+- **Xác thực:** 🔒 Bắt buộc (Bearer Token)
+- **Response:** `ApiResponse<SessionDetailResponse>`
+
+#### `PATCH /api/chat/sessions/{id}`
+Đổi tên tiêu đề phiên trò chuyện.
+- **Xác thực:** 🔒 Bắt buộc (Bearer Token)
+- **Request body:** `{ "title": "Bí quyết phở bò" }`
+- **Response:** `ApiResponse<SessionResponse>`
+
+#### `DELETE /api/chat/sessions/{id}`
+Xóa phiên trò chuyện và toàn bộ tin nhắn thuộc phiên.
+- **Xác thực:** 🔒 Bắt buộc (Bearer Token)
+- **Response:** `ApiResponse<Void>`
+
+#### `POST /api/chat/sessions/{id}/messages`
+Gửi tin nhắn trong phiên trò chuyện cụ thể, lưu trữ tin nhắn người dùng và câu trả lời AI vào cơ sở dữ liệu.
+- **Xác thực:** 🔒 Bắt buộc (Bearer Token)
+- **Request body:** `SendMessageRequest`
+```json
+{
+  "message": "Cách nấu bún bò Huế thơm ngon?",
+  "mode": "step",
+  "availableIngredients": ["bún", "bò"]
+}
+```
+- **Response:** `ApiResponse<ChatResponse>`
+
 ---
 
 ## 7. Xử lý lỗi (Error Handling)

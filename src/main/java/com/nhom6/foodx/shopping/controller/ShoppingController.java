@@ -59,4 +59,10 @@ public class ShoppingController {
         shoppingService.clearDone(securityUtils.getCurrentUser());
         return ApiResponse.success(null, "Đã dọn các món đã mua");
     }
+
+    @DeleteMapping("/all")
+    public ApiResponse<Void> clearAll() {
+        shoppingService.clearAll(securityUtils.getCurrentUser());
+        return ApiResponse.success(null, "Đã xoá toàn bộ danh sách mua");
+    }
 }

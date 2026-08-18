@@ -83,6 +83,11 @@ public class ShoppingService {
                 .forEach(shoppingItemRepository::delete);
     }
 
+    @Transactional
+    public void clearAll(User user) {
+        shoppingItemRepository.deleteByUser_Id(user.getId());
+    }
+
     private ShoppingItem findItem(User user, Long id) {
         return shoppingItemRepository.findByIdAndUser_Id(id, user.getId())
                 .orElseThrow(() -> new BusinessException(404, "Không tìm thấy mục mua sắm"));

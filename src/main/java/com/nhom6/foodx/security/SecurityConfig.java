@@ -54,10 +54,18 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_WHITELIST).permitAll()
+                        // Trạng thái AI có thể kiểm tra công khai
+                        .requestMatchers(HttpMethod.GET, "/api/ai/status").permitAll()
+                        // Danh mục nguyên liệu & dữ liệu trang chủ công khai
                         .requestMatchers(HttpMethod.GET, "/api/ingredients/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/recipes/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/home/**").permitAll()
-                        .requestMatchers("/api/ai/**").permitAll()
+                        // Xem bình luận bài viết mạng xã hội công khai
+                        .requestMatchers(HttpMethod.GET, "/api/social/posts/*/comments").permitAll()
+                        // Các endpoint cá nhân hoá trong công thức yêu cầu đăng nhập
+                        .requestMatchers("/api/recipes/saved", "/api/recipes/*/save", "/api/recipes/import").authenticated()
+                        // Xem danh sách và chi tiết công thức công khai
+                        .requestMatchers(HttpMethod.GET, "/api/recipes", "/api/recipes/*").permitAll()
+                        // Toàn bộ các API còn lại (AI chat/suggest, fridge, plans, shopping, stats, profile, social...) bắt buộc đăng nhập
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

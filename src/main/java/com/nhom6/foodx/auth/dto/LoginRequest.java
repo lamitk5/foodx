@@ -1,15 +1,14 @@
 package com.nhom6.foodx.auth.dto;
 
-import jakarta.validation.constraints.Email;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Yêu cầu đăng nhập.
+ * Yêu cầu đăng nhập (hỗ trợ cả username và email).
  */
 @Data
 @Builder
@@ -17,9 +16,18 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LoginRequest {
 
-    @NotBlank(message = "Tên đăng nhập hoặc email không được để trống")
+    @JsonAlias({"email", "loginName", "user"})
     private String username;
+
+    private String email;
 
     @NotBlank(message = "Mật khẩu không được để trống")
     private String password;
+
+    public String getUsername() {
+        if (username != null && !username.isBlank()) {
+            return username;
+        }
+        return email;
+    }
 }

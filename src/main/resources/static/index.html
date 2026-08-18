@@ -1334,9 +1334,12 @@
 
                 <div class="sp-bar"><i id="shoppingBar" style="width:0%"></i></div>
 
-                <div class="sp-actions">
+                <div class="sp-actions" style="display:flex; gap:12px; align-items:center;">
                     <button type="button" class="text-button" id="shopClearDone">
                         <svg class="icon"><use href="#i-trash"/></svg> Xóa món đã mua
+                    </button>
+                    <button type="button" class="text-button" id="shopClearAll" style="color:#ef4444; font-weight:600;">
+                        <svg class="icon"><use href="#i-trash"/></svg> Xóa tất cả
                     </button>
                 </div>
 
@@ -1519,6 +1522,10 @@
 
                     <button type="button" class="secondary-button" id="rdCook">
                         🍳 Nấu ngay
+                    </button>
+
+                    <button type="button" class="secondary-button" id="rdAddShop" style="border-color:var(--green);color:var(--green);font-weight:600;">
+                        🛒 Thêm nguyên liệu thiếu vào Danh sách mua
                     </button>
 
                 </div>
@@ -2986,6 +2993,119 @@
     </div>
 
 </div>
+
+<!-- =====================================================
+     PLAN MEAL MODAL - THÊM / ĐỔI BỮA ĂN VỚI AI
+====================================================== -->
+<div class="modal-overlay" id="planMealModal" hidden>
+    <div class="modal plan-meal-modal" style="max-width: 600px; width: 92%;">
+        <div class="modal-header">
+            <div>
+                <span class="page-eyebrow">KẾ HOẠCH BỮA ĂN</span>
+                <h2 id="pmmTitle">Thêm bữa ăn</h2>
+                <p id="pmmSubtitle">Chọn cách thêm món hoặc để AI gợi ý thông minh</p>
+            </div>
+            <button type="button" class="modal-close" data-close="planMealModal">×</button>
+        </div>
+
+        <div class="modal-tabs" style="display:flex;gap:8px;border-bottom:1px solid var(--border);padding:0 20px;margin-bottom:16px;">
+            <button type="button" class="modal-tab active" id="pmmTabAi" style="padding:10px 14px;background:none;border:none;border-bottom:2px solid var(--green);color:var(--text);font-weight:600;cursor:pointer;">
+                🤖 AI Gợi ý món
+            </button>
+            <button type="button" class="modal-tab" id="pmmTabCustom" style="padding:10px 14px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-soft);font-weight:600;cursor:pointer;">
+                ✍️ Tự thêm & AI Chấm Calo
+            </button>
+            <button type="button" class="modal-tab" id="pmmTabRecipe" style="padding:10px 14px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-soft);font-weight:600;cursor:pointer;">
+                📖 Kho công thức
+            </button>
+        </div>
+
+        <div style="padding: 0 20px 20px 20px;">
+            <!-- PANE 1: AI SUGGESTION -->
+            <div id="pmmPaneAi" class="pmm-pane">
+                <p style="font-size:13px;color:var(--text-soft);margin-bottom:10px;">
+                    AI sẽ dựa vào nguyên liệu trong tủ lạnh, chế độ ăn và mục tiêu calo để đề xuất món tối ưu nhất.
+                </p>
+
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">Phong cách món ăn:</label>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;" id="pmmTags">
+                        <button type="button" class="filter-chip" data-tag="🥗 Thanh đạm, ít dầu mỡ">🥗 Thanh đạm</button>
+                        <button type="button" class="filter-chip" data-tag="🥩 Giàu đạm / Protein cao">🥩 Giàu đạm</button>
+                        <button type="button" class="filter-chip" data-tag="🍲 Món nước, dễ ăn">🍲 Món nước</button>
+                        <button type="button" class="filter-chip" data-tag="⚡ Nhanh gọn dưới 20 phút">⚡ Nhanh gọn</button>
+                        <button type="button" class="filter-chip" data-tag="📉 Eat Clean / Giảm mỡ">📉 Eat Clean</button>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">Yêu cầu riêng (tuỳ chọn):</label>
+                    <input type="text" id="pmmAiPrompt" placeholder="Ví dụ: Dùng thịt bò, nhiều rau xanh, không cay..." style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);" />
+                </div>
+
+                <div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+                    <label style="font-size:12px;font-weight:600;white-space:nowrap;">Mục tiêu Calo:</label>
+                    <input type="number" id="pmmAiTargetKcal" placeholder="450" style="width:100px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);" />
+                    <span style="font-size:13px;color:var(--text-soft);">kcal</span>
+                </div>
+
+                <button type="button" class="primary-button" id="pmmAiSubmit" style="width:100%;justify-content:center;padding:12px;font-size:14px;">
+                    ✨ AI Gợi ý & Thêm vào kế hoạch
+                </button>
+            </div>
+
+            <!-- PANE 2: CUSTOM DISH & AI ESTIMATE -->
+            <div id="pmmPaneCustom" class="pmm-pane" hidden>
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">Tên món ăn bạn muốn ăn:</label>
+                    <div style="display:flex;gap:8px;">
+                        <input type="text" id="pmmCustomTitle" placeholder="Ví dụ: Bún chả giò, Canh chua cá bớp..." style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);" />
+                        <button type="button" class="secondary-button" id="pmmEstimateBtn" style="white-space:nowrap;border-color:var(--green);color:var(--green);font-weight:600;">
+                            ⚡ AI Chấm Calo
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:11px;font-weight:600;color:var(--text-soft);display:block;margin-bottom:4px;">Kcal:</label>
+                        <input type="number" id="pmmCustomKcal" placeholder="450" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);" />
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:600;color:var(--text-soft);display:block;margin-bottom:4px;">Protein (g):</label>
+                        <input type="number" id="pmmCustomProtein" placeholder="25" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);" />
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:600;color:var(--text-soft);display:block;margin-bottom:4px;">Carb (g):</label>
+                        <input type="number" id="pmmCustomCarb" placeholder="50" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);" />
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:600;color:var(--text-soft);display:block;margin-bottom:4px;">Fat (g):</label>
+                        <input type="number" id="pmmCustomFat" placeholder="12" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);" />
+                    </div>
+                </div>
+
+                <div style="margin-bottom:16px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">Mô tả / Ghi chú món (tuỳ chọn):</label>
+                    <input type="text" id="pmmCustomDesc" placeholder="Mô tả hương vị hoặc lưu ý chế biến..." style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);" />
+                </div>
+
+                <button type="button" class="primary-button" id="pmmCustomSubmit" style="width:100%;justify-content:center;padding:12px;font-size:14px;">
+                    💾 Thêm món này vào kế hoạch
+                </button>
+            </div>
+
+            <!-- PANE 3: CHOOSE FROM RECIPES -->
+            <div id="pmmPaneRecipe" class="pmm-pane" hidden>
+                <div style="margin-bottom:12px;">
+                    <input type="text" id="pmmRecipeSearch" placeholder="Tìm kiếm món trong kho công thức..." style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);" />
+                </div>
+                <div id="pmmRecipeList" style="max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- =====================================================
      COOKING MODE
 ====================================================== -->
@@ -3272,20 +3392,20 @@
             <div class="auth-field">
 
                 <label for="loginEmail">
-                    Email
+                    Tên đăng nhập hoặc Email
                 </label>
 
                 <div class="auth-input-wrap">
 
                     <span>
-                        ✉
+                        👤
                     </span>
 
                     <input
-                            type="email"
+                            type="text"
                             id="loginEmail"
-                            autocomplete="email"
-                            placeholder="vidu@gmail.com"
+                            autocomplete="username email"
+                            placeholder="Nhập tên đăng nhập hoặc email"
                             required>
 
                 </div>
@@ -3416,8 +3536,36 @@
                             type="text"
                             id="registerFullName"
                             autocomplete="name"
-                            placeholder="Nhập họ và tên"
+                            placeholder="Nhập họ và tên (Ví dụ: Nguyễn Văn A)"
                             minlength="2"
+                            required>
+
+                </div>
+
+            </div>
+
+
+            <div class="auth-field">
+
+                <label for="registerUsername">
+                    Tên đăng nhập (Username)
+                </label>
+
+                <div class="auth-input-wrap">
+
+                    <span>
+                        🏷️
+                    </span>
+
+                    <input
+                            type="text"
+                            id="registerUsername"
+                            autocomplete="username"
+                            placeholder="Nhập tên đăng nhập (Ví dụ: nguyenvana)"
+                            minlength="3"
+                            maxlength="50"
+                            pattern="^[a-zA-Z0-9_.-]+$"
+                            title="Tên đăng nhập từ 3-50 ký tự gồm chữ, số hoặc gạch dưới"
                             required>
 
                 </div>
