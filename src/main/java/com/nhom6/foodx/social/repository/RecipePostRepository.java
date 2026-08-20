@@ -8,4 +8,6 @@ import java.util.List;
 public interface RecipePostRepository extends JpaRepository<RecipePost, Long> {
 
     List<RecipePost> findAllByOrderByCreatedAtDesc();
+
+    List<RecipePost> findByAuthor_IdOrderByCreatedAtDesc(Long authorId);
 }

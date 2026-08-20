@@ -246,12 +246,19 @@
             <button
                     type="button"
                     class="round-button"
+                    id="themeToggleBtn"
+                    title="Chuyển chế độ Sáng / Tối"
+                    aria-label="Chuyển chế độ Sáng / Tối">
+                <span id="themeIcon" style="font-size:15px;line-height:1;">🌙</span>
+            </button>
+
+            <button
+                    type="button"
+                    class="round-button"
                     id="notificationButton"
                     title="Thông báo"
                     aria-label="Thông báo">
-
                 <svg class="icon"><use href="#i-bell"/></svg>
-
             </button>
 
             <button
@@ -967,6 +974,15 @@
 
                     <button
                             type="button"
+                            class="secondary-button"
+                            id="fridgeRescueBtn"
+                            style="border-color:#ff9800;color:#ff9800;font-weight:700;"
+                            title="AI tự động phân tích các nguyên liệu trong tủ để gợi ý món nấu ngay">
+                        🚨 AI Cứu Tủ Lạnh
+                    </button>
+
+                    <button
+                            type="button"
                             class="secondary-button custom-food-button"
                             id="openCustomIngredient">
 
@@ -1564,6 +1580,10 @@
 
                 <div class="fridge-header-actions">
 
+                    <button type="button" class="secondary-button" id="exportPlanShoppingBtn" title="Gom tất cả nguyên liệu của tuần vào danh sách đi chợ và trừ nguyên liệu có sẵn trong tủ">
+                        🛒 Xuất Đi Chợ
+                    </button>
+
                     <button type="button" class="secondary-button" id="planPrev">
                         ‹ Tuần trước
                     </button>
@@ -1746,6 +1766,7 @@
 
                 <div class="social-pills" id="socialCategoryPills">
                     <button type="button" class="social-pill active" data-social-cat="all">✨ Tất cả bài viết</button>
+                    <button type="button" class="social-pill" data-social-cat="my">📝 Lịch sử bài đăng của tôi</button>
                     <button type="button" class="social-pill" data-social-cat="hot">🔥 Nổi bật nhất</button>
                     <button type="button" class="social-pill" data-social-cat="eatclean">🥗 Eat Clean & Healthy</button>
                     <button type="button" class="social-pill" data-social-cat="family">🍜 Món ăn gia đình</button>
@@ -3270,6 +3291,30 @@
 
                 </p>
 
+                <!-- TOOLBAR: VOICE & TIMER -->
+                <div class="cooking-tools-row" style="display:flex;align-items:center;gap:8px;margin:12px 0 16px 0;flex-wrap:wrap;">
+                    <button type="button" class="secondary-button" id="readStepVoiceBtn" style="display:flex;align-items:center;gap:5px;font-size:12px;padding:6px 12px;border-radius:8px;">
+                        <span id="voiceIcon">🔊</span> <span id="voiceText">Đọc to bước này</span>
+                    </button>
+                    <button type="button" class="secondary-button" id="toggleStepTimerBtn" style="display:flex;align-items:center;gap:5px;font-size:12px;padding:6px 12px;border-radius:8px;">
+                        ⏱️ Hẹn giờ nấu
+                    </button>
+                </div>
+
+                <!-- TIMER WIDGET -->
+                <div class="cooking-timer-card" id="stepTimerCard" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:16px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                        <span style="font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px;">⏱️ Đồng hồ hẹn giờ nấu</span>
+                        <div id="stepTimerDisplay" style="font-size:24px;font-weight:800;font-family:monospace;color:var(--green);">05:00</div>
+                    </div>
+                    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                        <button type="button" class="filter-chip" data-add-sec="60">+1 phút</button>
+                        <button type="button" class="filter-chip" data-add-sec="300">+5 phút</button>
+                        <button type="button" class="filter-chip" data-add-sec="600">+10 phút</button>
+                        <button type="button" class="primary-button" id="stepTimerToggle" style="padding:6px 14px;font-size:12px;margin-left:auto;">▶ Bắt đầu</button>
+                        <button type="button" class="text-button" id="stepTimerReset" style="font-size:12px;padding:6px 8px;">Đặt lại</button>
+                    </div>
+                </div>
 
                 <!-- AI ASK CURRENT STEP -->
 

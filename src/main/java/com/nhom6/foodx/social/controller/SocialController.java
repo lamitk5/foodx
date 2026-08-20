@@ -35,6 +35,11 @@ public class SocialController {
         return ApiResponse.success(socialService.feed(securityUtils.getCurrentUser()), "Danh sách bài chia sẻ");
     }
 
+    @GetMapping("/posts/my")
+    public ApiResponse<List<PostResponse>> myPosts() {
+        return ApiResponse.success(socialService.myPosts(securityUtils.getCurrentUser()), "Lịch sử bài đăng của tôi");
+    }
+
     @GetMapping("/posts/{id}")
     public ApiResponse<PostResponse> getPost(@PathVariable Long id) {
         return ApiResponse.success(socialService.getPost(securityUtils.getCurrentUser(), id), "Chi tiết bài chia sẻ");

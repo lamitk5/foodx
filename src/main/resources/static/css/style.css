@@ -7272,13 +7272,21 @@ body.dark .auth-brand-icon {
 .day-head h4{ font-size:13.5px; }
 .today-pill{ background:var(--green); color:#fff; font-size:9px; font-weight:800; padding:3px 8px; border-radius:99px; margin-left:6px; }
 .day-kcal{ color:var(--text-soft); font-size:11px; }
-.meal-row{ display:flex; align-items:center; gap:7px; background:var(--bg); border-radius:10px; padding:8px 10px; margin-bottom:7px; font-size:12px; }
+.meal-row{ display:flex; align-items:center; gap:6px; background:var(--bg); border-radius:10px; padding:7px 9px; margin-bottom:7px; font-size:12px; transition:all 0.2s ease; }
 .meal-row.empty{ border:1px dashed var(--border); background:none; }
-.meal-slot{ color:var(--text-soft); font-size:11px; min-width:56px; }
-.meal-name{ flex:1; font-weight:600; cursor:pointer; }
-.meal-kcal{ color:var(--text-soft); font-size:10.5px; }
-.meal-x{ border:none; background:none; color:#e5385b; cursor:pointer; font-size:13px; padding:2px 5px; }
-.add-meal-btn{ border:1px dashed var(--green); background:none; color:var(--green); border-radius:8px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer; margin-left:auto; }
+.meal-slot{ color:var(--text-soft); font-size:11px; min-width:52px; font-weight:600; }
+.meal-name{ flex:1; font-weight:600; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.meal-kcal{ color:var(--text-soft); font-size:10.5px; white-space:nowrap; }
+.meal-actions{ display:flex; align-items:center; gap:3px; margin-left:auto; }
+.meal-swap-btn{ border:1px solid var(--border); background:var(--card-bg, #fff); color:var(--green); cursor:pointer; font-size:11px; font-weight:600; padding:2px 6px; border-radius:6px; transition:0.2s; display:flex; align-items:center; gap:2px; }
+.meal-swap-btn:hover{ background:var(--green); color:#fff; border-color:var(--green); }
+.meal-x{ border:none; background:none; color:#e5385b; cursor:pointer; font-size:13px; padding:2px 5px; border-radius:6px; transition:0.2s; }
+.meal-x:hover{ background:rgba(229,56,91,0.1); }
+.slot-empty-actions{ display:flex; align-items:center; gap:5px; margin-left:auto; }
+.ai-suggest-slot-btn{ display:flex; align-items:center; gap:3px; border:1px solid var(--green); background:linear-gradient(135deg, rgba(46,158,91,0.12), rgba(33,150,243,0.08)); color:var(--green); border-radius:6px; padding:3px 8px; font-size:11px; font-weight:700; cursor:pointer; transition:all 0.2s ease; }
+.ai-suggest-slot-btn:hover{ background:var(--green); color:#fff; transform:translateY(-1px); box-shadow:0 2px 6px rgba(46,158,91,0.25); }
+.add-meal-btn{ border:1px dashed var(--border); background:none; color:var(--text-soft); border-radius:6px; padding:3px 8px; font-size:11px; font-weight:600; cursor:pointer; transition:all 0.2s ease; }
+.add-meal-btn:hover{ border-color:var(--green); color:var(--green); background:rgba(46,158,91,0.05); }
 .plan-add-card{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; padding:14px; margin-top:16px; }
 .plan-add-card select{ height:40px; padding:0 10px; border:1px solid var(--border); border-radius:10px; background:var(--bg); font-family:inherit; font-size:12.5px; color:var(--text); }
 

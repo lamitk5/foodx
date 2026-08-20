@@ -40,6 +40,14 @@ public class SocialService {
     }
 
     @Transactional(readOnly = true)
+    public List<PostResponse> myPosts(User me) {
+        return postRepository.findByAuthor_IdOrderByCreatedAtDesc(me.getId())
+                .stream()
+                .map(post -> toResponse(me, post))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public PostResponse getPost(User me, Long id) {
         return toResponse(me, findPost(id));
     }
