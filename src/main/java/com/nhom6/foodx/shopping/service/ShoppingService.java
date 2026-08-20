@@ -100,7 +100,8 @@ public class ShoppingService {
                 item.getQuantity(),
                 item.getPrice(),
                 item.getCategory(),
-                item.getDone()
+                item.getDone(),
+                item.getCreatedAt()
         );
     }
 }

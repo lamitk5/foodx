@@ -909,7 +909,7 @@
 
                     <div
                             class="expiring-list"
-                            id="homeExpiring">
+                            id="homeBottomExpiring">
 
                     </div>
 
@@ -1325,71 +1325,93 @@
                 id="view-shopping">
 
             <div class="page-title">
-
-                <span class="page-eyebrow">
-                    MUA SẮM
-                </span>
-
-                <h1>
-                    Danh sách mua
-                </h1>
-
-                <p>
-                    Theo dõi những nguyên liệu
-                    bạn cần mua thêm.
-                </p>
-
+                <span class="page-eyebrow">MUA SẮM & ĐI CHỢ</span>
+                <h1>Danh sách mua sắm</h1>
+                <p>Theo dõi và quản lý những nguyên liệu bạn cần mua thêm cho bữa ăn gia đình.</p>
             </div>
 
-
-            <div class="card shopping-progress">
-
-                <div class="shopping-summary" id="shoppingSummary">
-                    <span>Đã mua: <b>0/0</b></span>
+            <!-- SUMMARY & PROGRESS CARD -->
+            <div class="card shopping-progress-card">
+                <div class="sp-header">
+                    <div class="sp-stat-info">
+                        <div class="sp-stat-icon">🛒</div>
+                        <div>
+                            <h3 id="shoppingProgressTitle">Tiến độ mua sắm</h3>
+                            <div class="sp-stat-sub" id="shoppingSummary">Đã mua: <b>0/0 món (0%)</b></div>
+                        </div>
+                    </div>
+                    <div class="sp-actions">
+                        <button type="button" class="secondary-button sp-btn" id="shopClearDone" title="Dọn dẹp các món đã mua xong">
+                            🧹 Dọn món đã mua
+                        </button>
+                        <button type="button" class="text-button sp-btn-danger" id="shopClearAll" title="Xóa toàn bộ danh sách">
+                            🗑 Xóa tất cả
+                        </button>
+                    </div>
                 </div>
 
-                <div class="sp-bar"><i id="shoppingBar" style="width:0%"></i></div>
-
-                <div class="sp-actions" style="display:flex; gap:12px; align-items:center;">
-                    <button type="button" class="text-button" id="shopClearDone">
-                        <svg class="icon"><use href="#i-trash"/></svg> Xóa món đã mua
-                    </button>
-                    <button type="button" class="text-button" id="shopClearAll" style="color:#ef4444; font-weight:600;">
-                        <svg class="icon"><use href="#i-trash"/></svg> Xóa tất cả
-                    </button>
+                <div class="sp-progress-track">
+                    <div class="sp-progress-fill" id="shoppingBar" style="width: 0%;"></div>
                 </div>
-
             </div>
 
-            <div class="card shopping-card">
-
+            <!-- ADD & QUICK SUGGESTIONS -->
+            <div class="card shopping-input-card">
                 <div class="shopping-form">
-
-                    <input
-                            type="text"
-                            id="shoppingInput"
-                            autocomplete="off"
-                            placeholder="Nhập nguyên liệu cần mua...">
-
-
+                    <div class="shopping-input-wrapper">
+                        <span class="shopping-input-icon">➕</span>
+                        <input
+                                type="text"
+                                id="shoppingInput"
+                                autocomplete="off"
+                                placeholder="Nhập nguyên liệu cần mua (vd: 500g Thịt bò, 1 bó Rau muống, Trứng gà...)...">
+                    </div>
                     <button
                             type="button"
                             class="primary-button"
                             id="shoppingAdd">
-
-                        + Thêm
-
+                        + Thêm vào danh sách
                     </button>
-
+                    <button
+                            type="button"
+                            class="secondary-button"
+                            id="shopImportRecipeBtn"
+                            style="border-color:var(--green);color:var(--green);font-weight:700;display:inline-flex;align-items:center;gap:6px;">
+                        🍲 + Thêm từ Công thức
+                    </button>
                 </div>
 
+                <!-- QUICK CHIPS -->
+                <div class="shopping-quick-chips">
+                    <span class="sqc-label">Gợi ý nhanh:</span>
+                    <button type="button" class="sqc-chip" data-quick-add="1 Vỉ Trứng gà">+ 🥚 Trứng gà</button>
+                    <button type="button" class="sqc-chip" data-quick-add="1 Hộp Sữa tươi">+ 🥛 Sữa tươi</button>
+                    <button type="button" class="sqc-chip" data-quick-add="1 Bó Rau xanh">+ 🥬 Rau xanh</button>
+                    <button type="button" class="sqc-chip" data-quick-add="500g Thịt heo">+ 🥩 Thịt heo</button>
+                    <button type="button" class="sqc-chip" data-quick-add="500g Cà chua">+ 🍅 Cà chua</button>
+                    <button type="button" class="sqc-chip" data-quick-add="3 Củ Hành tây">+ 🧅 Hành tây</button>
+                    <button type="button" class="sqc-chip" data-quick-add="1 Túi Tỏi khô">+ 🧄 Tỏi khô</button>
+                </div>
+            </div>
 
+            <!-- FILTER & SEARCH BAR -->
+            <div class="shopping-filter-card">
+                <div class="shopping-filter-tabs">
+                    <button type="button" class="tab active" data-shop-filter="all">Tất cả <span id="shopCntAll">(0)</span></button>
+                    <button type="button" class="tab" data-shop-filter="pending">⏳ Cần mua <span id="shopCntPending">(0)</span></button>
+                    <button type="button" class="tab" data-shop-filter="done">✅ Đã mua <span id="shopCntDone">(0)</span></button>
+                </div>
+                <div class="shopping-search-box">
+                    <input type="text" id="shopSearchInput" placeholder="🔍 Tìm nguyên liệu..." />
+                </div>
+            </div>
+
+            <!-- SHOPPING LIST CONTAINER -->
+            <div class="shopping-list-container">
                 <div
                         class="shopping-list"
                         id="shoppingList">
-
                 </div>
-
             </div>
 
         </section>
@@ -1475,7 +1497,8 @@
             <button
                     type="button"
                     class="text-button"
-                    onclick="openView('recipes')">
+                    id="rdBackBtn"
+                    onclick="goBackFromRecipeDetail()">
 
                 ← Quay lại danh sách
 
@@ -3128,6 +3151,44 @@
 </div>
 
 <!-- =====================================================
+     SHOPPING RECIPE IMPORT MODAL (THÊM NGUYÊN LIỆU TỪ CÔNG THỨC)
+====================================================== -->
+<div class="modal-overlay" id="shoppingRecipeModal" hidden>
+    <div class="modal shopping-recipe-modal" style="max-width: 620px; width: 92%;">
+        <div class="modal-header">
+            <h3 style="display:flex;align-items:center;gap:8px;margin:0;">🍲 Thêm nguyên liệu từ Công thức</h3>
+            <button type="button" class="modal-close" data-close="shoppingRecipeModal">×</button>
+        </div>
+        <div class="modal-body" style="padding: 16px 20px;">
+            <p style="font-size:13px;color:var(--text-soft);margin-top:0;margin-bottom:12px;">
+                Chọn món ăn để tự động kiểm tra nguyên liệu còn thiếu trong tủ lạnh và thêm trực tiếp vào danh sách đi chợ.
+            </p>
+
+            <div style="margin-bottom: 12px;">
+                <input type="text" id="srmSearch" placeholder="🔍 Tìm công thức (vd: Phở bò, Salad, Bún chả...)..." style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13.5px;" />
+            </div>
+
+            <!-- RECIPE SELECTION LIST -->
+            <div id="srmRecipeList" style="max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; border: 1px solid var(--border); border-radius: 12px; padding: 8px;">
+            </div>
+
+            <!-- SELECTED RECIPE INGREDIENTS PREVIEW -->
+            <div id="srmIngredientsBox" style="display:none; border-top: 1px dashed var(--border); padding-top: 14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <strong id="srmRecipeTitle" style="color:var(--green-dark); font-size:14.5px;"></strong>
+                    <span style="font-size:12px; color:var(--text-soft);">Tích chọn nguyên liệu cần mua:</span>
+                </div>
+                <div id="srmIngredientsList" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;">
+                </div>
+                <button type="button" class="primary-button" id="srmSubmitBtn" style="width:100%; justify-content:center; padding:12px; font-size:14px;">
+                    🛒 Thêm các nguyên liệu đã chọn vào Danh sách mua
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =====================================================
      COOKING MODE
 ====================================================== -->
 
@@ -4223,4 +4284,3 @@
 
 </body>
 </html>
-```

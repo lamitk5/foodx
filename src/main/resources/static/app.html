@@ -1050,6 +1050,94 @@
 
 
         <!-- =====================================================
+             RECIPE DETAIL - CHI TIẾT MÓN
+        ====================================================== -->
+
+        <section
+                class="view"
+                id="view-recipe">
+
+            <button
+                    type="button"
+                    class="text-button"
+                    id="rdBackBtn"
+                    onclick="goBackFromRecipeDetail()">
+
+                ← Quay lại danh sách
+
+            </button>
+
+
+            <div class="card recipe-detail-card">
+
+                <div class="recipe-detail-hero">
+
+                    <img id="rdHeroImg" class="rd-hero-img" alt="" hidden>
+
+                    <span class="rd-emoji" id="rdEmoji">🍜</span>
+
+                    <h1 id="rdTitle"></h1>
+
+                    <div class="recipe-detail-meta" id="rdMeta"></div>
+
+                </div>
+
+
+                <p class="rd-desc" id="rdDesc"></p>
+
+
+                <div class="tabbar">
+
+                    <button type="button" class="tab active" data-rdtab="ing">
+                        🧺 Nguyên liệu
+                    </button>
+
+                    <button type="button" class="tab" data-rdtab="steps">
+                        👨‍🍳 Các bước
+                    </button>
+
+                    <button type="button" class="tab" data-rdtab="nutri">
+                        🥗 Dinh dưỡng
+                    </button>
+
+                </div>
+
+
+                <div class="rd-pane active" id="rdIng"></div>
+
+                <div class="rd-pane" id="rdSteps"></div>
+
+                <div class="rd-pane" id="rdNutri"></div>
+
+
+                <div class="rd-related" id="rdRelated"></div>
+
+                <div class="recipe-detail-actions">
+
+                    <button type="button" class="primary-button" id="rdSave">
+                        🤍 Lưu món
+                    </button>
+
+                    <button type="button" class="secondary-button" id="rdPlan">
+                        📅 Thêm vào kế hoạch
+                    </button>
+
+                    <button type="button" class="secondary-button" id="rdCook">
+                        🍳 Nấu ngay
+                    </button>
+
+                    <button type="button" class="secondary-button" id="rdAddShop" style="border-color:var(--green);color:var(--green);font-weight:600;">
+                        🛒 Thêm nguyên liệu thiếu vào Danh sách mua
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
              SHOPPING
         ====================================================== -->
 

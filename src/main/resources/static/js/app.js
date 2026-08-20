@@ -623,332 +623,350 @@ const NUTRITION_LIBRARY = {
 ========================================================= */
 
 const recipes = [
-
     {
-        id: 1,
-        name:
-            "Ức gà nướng thảo mộc",
-        kcal: 420,
-        time: 30,
-        difficulty:
-            "Dễ",
-
-        tags: [
-            "Eat clean",
+        "id": 1,
+        "name": "Phở bò tái Hà Nội",
+        "title": "Phở bò tái Hà Nội",
+        "kcal": 480,
+        "time": 45,
+        "difficulty": "Trung bình",
+        "tags": [
+            "Bữa sáng",
+            "Món nước",
             "Nhiều đạm"
         ],
-
-        ingredients: [
-            "Ức gà",
-            "Bông cải",
-            "Cà chua",
-            "Dầu ô liu"
-        ],
-
-        image:
-            "https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=1000&q=85",
-
-        steps: [
-            "Rửa sạch ức gà và rau củ.",
-            "Ướp gà với tiêu, một ít muối và thảo mộc.",
-            "Nướng hoặc áp chảo gà đến khi chín đều.",
-            "Luộc hoặc hấp bông cải và cà chua.",
-            "Bày gà cùng rau củ ra đĩa rồi thưởng thức."
-        ]
-    },
-
-    {
-        id: 2,
-        name:
-            "Mì Ý sốt cà chua rau củ",
-        kcal: 350,
-        time: 25,
-        difficulty:
-            "Dễ",
-
-        tags: [
-            "Cân bằng",
-            "Eat clean"
-        ],
-
-        ingredients: [
-            "Mì Ý",
-            "Cà chua",
+        "category": "Bữa sáng",
+        "ingredients": [
+            "Thịt bò tái",
+            "Bánh phở tươi",
+            "Xương bò",
+            "Hành hoa",
+            "Ngò gai",
+            "Gừng",
             "Hành tây",
-            "Bông cải"
+            "Hoa hồi",
+            "Quế"
         ],
-
-        image:
-            "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=1000&q=85",
-
-        steps: [
-            "Luộc mì Ý đến độ chín mong muốn.",
-            "Cắt cà chua và hành tây thành miếng vừa ăn.",
-            "Xào cà chua, hành tây và bông cải.",
-            "Cho mì Ý vào chảo rồi trộn đều với sốt.",
-            "Nêm gia vị vừa ăn và thưởng thức."
+        "image": "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=1000&q=85",
+        "steps": [
+            "Ninh xương bò với gừng hành nướng trong 90 phút.",
+            "Trụng bánh phở, xếp thịt bò tái mỏng lên trên.",
+            "Chan nước dùng sôi sùng sục, rắc hành hoa, ngò gai.",
+            "Ăn kèm chanh ớt và quẩy nóng."
         ]
     },
-
     {
-        id: 3,
-        name:
-            "Bò xào bông cải",
-        kcal: 380,
-        time: 20,
-        difficulty:
-            "Dễ",
-
-        tags: [
-            "Nhiều đạm",
-            "Ít carb"
+        "id": 2,
+        "name": "Bánh mì trứng ốp la bơ tỏi",
+        "title": "Bánh mì trứng ốp la bơ tỏi",
+        "kcal": 420,
+        "time": 10,
+        "difficulty": "Dễ",
+        "tags": [
+            "Bữa sáng",
+            "Nhanh gọn"
         ],
-
-        ingredients: [
-            "Thịt bò",
-            "Bông cải",
-            "Tỏi"
+        "category": "Bữa sáng",
+        "ingredients": [
+            "Bánh mì",
+            "Trứng gà",
+            "Bơ tỏi",
+            "Patê",
+            "Dưa leo",
+            "Ngò rí",
+            "Tương ớt"
         ],
-
-        image:
-            "https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=1000&q=85",
-
-        steps: [
-            "Thái thịt bò thành lát mỏng.",
-            "Rửa sạch và cắt bông cải thành miếng vừa ăn.",
-            "Phi thơm tỏi với một lượng nhỏ dầu.",
-            "Xào nhanh thịt bò trên lửa lớn.",
-            "Cho bông cải vào đảo đều, nêm gia vị rồi tắt bếp."
+        "image": "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=1000&q=85",
+        "steps": [
+            "Chiên trứng ốp la lòng đào với chút bơ thơm.",
+            "Nướng nóng giòn ổ bánh mì, phết patê và sốt bơ tỏi.",
+            "Kẹp trứng, dưa leo, ngò rí và chan nước tương tỏi ớt."
         ]
     },
-
     {
-        id: 4,
-        name:
-            "Salad bơ trứng",
-        kcal: 310,
-        time: 15,
-        difficulty:
-            "Dễ",
-
-        tags: [
+        "id": 3,
+        "name": "Cháo gà xé gừng hành hoa",
+        "title": "Cháo gà xé gừng hành hoa",
+        "kcal": 380,
+        "time": 30,
+        "difficulty": "Dễ",
+        "tags": [
+            "Bữa sáng",
+            "Thanh đạm",
+            "Dễ tiêu"
+        ],
+        "category": "Bữa sáng",
+        "ingredients": [
+            "Ức gà ta",
+            "Gạo tẻ",
+            "Gừng tươi",
+            "Hành hoa",
+            "Rau mùi",
+            "Tiêu đen"
+        ],
+        "image": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1000&q=85",
+        "steps": [
+            "Gạo tẻ nấu nhừ cùng nước luộc gà trong 30 phút.",
+            "Ức gà luộc chín xé sợi, ướp tiêu và nước mắm.",
+            "Múc cháo ra tô, cho gà lên, rắc hành ngò, gừng tươi thái chỉ và tiêu."
+        ]
+    },
+    {
+        "id": 4,
+        "name": "Yến mạch hoa quả hạt chia sữa chua",
+        "title": "Yến mạch hoa quả hạt chia sữa chua",
+        "kcal": 360,
+        "time": 5,
+        "difficulty": "Dễ",
+        "tags": [
             "Eat clean",
-            "Ít carb"
+            "Healthy",
+            "Bữa sáng"
         ],
-
-        ingredients: [
-            "Bơ",
-            "Trứng",
-            "Cà chua",
-            "Xà lách"
-        ],
-
-        image:
-            "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1000&q=85",
-
-        steps: [
-            "Luộc trứng đến độ chín mong muốn.",
-            "Rửa sạch xà lách và cà chua.",
-            "Cắt bơ, cà chua và trứng thành miếng vừa ăn.",
-            "Cho toàn bộ nguyên liệu vào tô.",
-            "Thêm sốt salad rồi trộn đều."
-        ]
-    },
-
-    {
-        id: 5,
-        name:
-            "Trứng sốt cà chua",
-        kcal: 280,
-        time: 15,
-        difficulty:
-            "Dễ",
-
-        tags: [
-            "Cân bằng"
-        ],
-
-        ingredients: [
-            "Trứng",
-            "Cà chua",
-            "Hành"
-        ],
-
-        image:
-            "https://images.unsplash.com/photo-1565299507177-b0ac66763828?auto=format&fit=crop&w=1000&q=85",
-
-        steps: [
-            "Đập trứng vào bát và đánh đều.",
-            "Rửa sạch rồi cắt nhỏ cà chua.",
-            "Xào cà chua đến khi mềm.",
-            "Cho trứng vào chảo và đảo nhẹ.",
-            "Nêm gia vị vừa ăn rồi tắt bếp."
-        ]
-    },
-
-    {
-        id: 6,
-        name:
-            "Salad rau củ xanh",
-        kcal: 240,
-        time: 12,
-        difficulty:
-            "Dễ",
-
-        tags: [
-            "Ăn chay",
-            "Eat clean",
-            "Ít carb"
-        ],
-
-        ingredients: [
-            "Bông cải",
-            "Cà chua",
-            "Bơ",
-            "Xà lách"
-        ],
-
-        image:
-            "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=1000&q=85",
-
-        steps: [
-            "Rửa sạch toàn bộ rau củ.",
-            "Luộc hoặc hấp sơ bông cải.",
-            "Cắt cà chua, bơ và xà lách.",
-            "Cho toàn bộ nguyên liệu vào tô.",
-            "Thêm sốt nhẹ, trộn đều và dùng ngay."
-        ]
-    },
-
-    {
-        id: 7,
-        name:
-            "Khoai tây gà nướng",
-        kcal: 490,
-        time: 40,
-        difficulty:
-            "Trung bình",
-
-        tags: [
-            "Nhiều đạm",
-            "Cân bằng"
-        ],
-
-        ingredients: [
-            "Ức gà",
-            "Khoai tây",
-            "Cà rốt"
-        ],
-
-        image:
-            "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=1000&q=85",
-
-        steps: [
-            "Rửa sạch khoai tây và cà rốt rồi cắt miếng.",
-            "Ướp ức gà với muối và tiêu.",
-            "Xếp gà, khoai tây và cà rốt lên khay.",
-            "Nướng đến khi thịt gà chín và rau củ mềm.",
-            "Lấy ra và dùng khi còn nóng."
-        ]
-    },
-
-    {
-        id: 8,
-        name:
-            "Sữa chua trái cây",
-        kcal: 210,
-        time: 8,
-        difficulty:
-            "Rất dễ",
-
-        tags: [
-            "Eat clean",
-            "Ăn chay"
-        ],
-
-        ingredients: [
-            "Sữa chua",
+        "category": "Bữa sáng",
+        "ingredients": [
+            "Yến mạch",
+            "Sữa chua không đường",
+            "Hạt chia",
             "Chuối",
-            "Trái cây"
+            "Bơ sáp",
+            "Dâu tây"
         ],
-
-        image:
-            "https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?auto=format&fit=crop&w=1000&q=85",
-
-        steps: [
-            "Cho sữa chua vào bát.",
-            "Rửa và cắt trái cây.",
-            "Cho trái cây lên trên sữa chua.",
-            "Có thể thêm một lượng nhỏ yến mạch.",
-            "Dùng ngay."
+        "image": "https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?auto=format&fit=crop&w=1000&q=85",
+        "steps": [
+            "Ngâm 40g yến mạch với 100ml sữa tươi ấm 5 phút.",
+            "Trộn cùng 1 hộp sữa chua không đường và 1 thìa hạt chia.",
+            "Thêm chuối cắt lát, bơ sáp và dâu tây lên trên, thưởng thức ngay."
         ]
     },
-
     {
-        id: 9,
-        name:
-            "Cơm gà rau củ",
-        kcal: 520,
-        time: 30,
-        difficulty:
-            "Dễ",
-
-        tags: [
-            "Cân bằng",
-            "Nhiều đạm"
+        "id": 5,
+        "name": "Hủ tiếu Nam Vang tôm thịt",
+        "title": "Hủ tiếu Nam Vang tôm thịt",
+        "kcal": 490,
+        "time": 35,
+        "difficulty": "Trung bình",
+        "tags": [
+            "Bữa sáng",
+            "Món nước"
         ],
-
-        ingredients: [
-            "Cơm",
-            "Ức gà",
-            "Cà rốt",
-            "Bông cải"
+        "category": "Bữa sáng",
+        "ingredients": [
+            "Hủ tiếu dai",
+            "Tôm tươi",
+            "Thịt heo nạc",
+            "Trứng cút",
+            "Xương ống",
+            "Củ cải trắng",
+            "Hẹ lá"
         ],
-
-        image:
-            "https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=1000&q=85",
-
-        steps: [
-            "Chuẩn bị cơm chín.",
-            "Thái và ướp ức gà.",
-            "Áp chảo ức gà đến khi chín.",
-            "Luộc hoặc hấp cà rốt và bông cải.",
-            "Xếp cơm, gà và rau vào bát."
+        "image": "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=1000&q=85",
+        "steps": [
+            "Nấu nước dùng từ xương ống và củ cải trắng.",
+            "Trụng hủ tiếu dai, xếp tôm luộc, thịt nạc xá xíu, trứng cút.",
+            "Chan nước lèo nóng, thêm tỏi phi thơm và hẹ lá."
         ]
     },
-
     {
-        id: 10,
-        name:
-            "Bò hầm khoai tây cà rốt",
-        kcal: 530,
-        time: 55,
-        difficulty:
-            "Trung bình",
-
-        tags: [
-            "Cân bằng",
+        "id": 6,
+        "name": "Bún mọc sườn non dọc mùng",
+        "title": "Bún mọc sườn non dọc mùng",
+        "kcal": 460,
+        "time": 40,
+        "difficulty": "Trung bình",
+        "tags": [
+            "Bữa sáng",
+            "Món nước"
+        ],
+        "category": "Bữa sáng",
+        "ingredients": [
+            "Bún tươi",
+            "Sườn non",
+            "Giò sống",
+            "Mộc nhĩ",
+            "Nấm hương",
+            "Dọc mùng",
+            "Hành hoa"
+        ],
+        "image": "https://images.unsplash.com/photo-1617093727343-374698b1b08d?auto=format&fit=crop&w=1000&q=85",
+        "steps": [
+            "Ninh sườn non lấy nước ngọt trong 40 phút.",
+            "Quết giò sống với mộc nhĩ nấm hương vo viên thả vào nồi sôi.",
+            "Trụng bún, thêm dọc mùng chần giòn, chan nước dùng thơm ngát."
+        ]
+    },
+    {
+        "id": 7,
+        "name": "Bánh cuốn nóng chả lụa",
+        "title": "Bánh cuốn nóng chả lụa",
+        "kcal": 410,
+        "time": 20,
+        "difficulty": "Dễ",
+        "tags": [
+            "Bữa sáng",
+            "Truyền thống"
+        ],
+        "category": "Bữa sáng",
+        "ingredients": [
+            "Bột gạo",
+            "Thịt heo băm",
+            "Mộc nhĩ",
+            "Chả lụa",
+            "Hành phi",
+            "Rau thơm",
+            "Nước mắm chua ngọt"
+        ],
+        "image": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1000&q=85",
+        "steps": [
+            "Hấp bánh tráng mỏng cuộn nhân thịt băm mộc nhĩ phi thơm.",
+            "Xếp bánh ra đĩa, thêm vài lát chả lụa, rắc đầy hành phi.",
+            "Chấm cùng nước mắm chua ngọt ấm dịu và rau thơm."
+        ]
+    },
+    {
+        "id": 8,
+        "name": "Cơm chiên trứng xúc xích kiểu Việt",
+        "title": "Cơm chiên trứng xúc xích kiểu Việt",
+        "kcal": 430,
+        "time": 15,
+        "difficulty": "Dễ",
+        "tags": [
+            "Nhanh gọn",
+            "Bữa sáng",
+            "Bữa trưa"
+        ],
+        "category": "Bữa sáng",
+        "ingredients": [
+            "Cơm nguội",
+            "Trứng gà",
+            "Xúc xích",
+            "Hành hoa",
+            "Xì dầu",
+            "Tỏi băm"
+        ],
+        "image": "https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=1000&q=85",
+        "steps": [
+            "Cơm nguội trộn đều với 2 lòng đỏ trứng gà.",
+            "Phi thơm tỏi, cho cơm vào đảo lửa lớn đến khi hạt cơm săn tơi.",
+            "Thêm xúc xích, hành hoa, nêm xì dầu và tiêu xay."
+        ]
+    },
+    {
+        "id": 9,
+        "name": "Cơm tấm sườn nướng mật ong",
+        "title": "Cơm tấm sườn nướng mật ong",
+        "kcal": 680,
+        "time": 35,
+        "difficulty": "Trung bình",
+        "tags": [
+            "Bữa trưa",
+            "Bữa tối",
             "Nhiều đạm"
         ],
-
-        ingredients: [
-            "Thịt bò",
+        "category": "Bữa trưa",
+        "ingredients": [
+            "Gạo tấm",
+            "Sườn cốt lết",
+            "Mật ong",
+            "Sả băm",
+            "Dầu hào",
+            "Trứng gà",
+            "Đồ chua",
+            "Mỡ hành"
+        ],
+        "image": "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1000&q=85",
+        "steps": [
+            "Ướp sườn cốt lết với mật ong, dầu hào, sả băm 30 phút rồi nướng than hoặc nồi chiên không dầu.",
+            "Xới cơm tấm nóng, đặt sườn nướng, trứng ốp la và đồ chua.",
+            "Chan mỡ hành béo ngậy và nước mắm kẹo chua ngọt."
+        ]
+    },
+    {
+        "id": 10,
+        "name": "Cơm bò lúc lắc khoai tây sốt tiêu",
+        "title": "Cơm bò lúc lắc khoai tây sốt tiêu",
+        "kcal": 650,
+        "time": 25,
+        "difficulty": "Trung bình",
+        "tags": [
+            "Bữa trưa",
+            "Bữa tối",
+            "Nhiều đạm"
+        ],
+        "category": "Bữa trưa",
+        "ingredients": [
+            "Thịt bò thăn",
             "Khoai tây",
-            "Cà rốt"
+            "Ớt chuông",
+            "Hành tây",
+            "Bơ tỏi",
+            "Tiêu đen",
+            "Xà lách",
+            "Cà chua"
         ],
-
-        image:
-            "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1000&q=85",
-
-        steps: [
-            "Thái thịt bò thành miếng vừa ăn.",
-            "Gọt vỏ khoai tây và cà rốt rồi cắt khúc.",
-            "Xào sơ thịt bò cho săn.",
-            "Cho nước, khoai tây và cà rốt vào nồi.",
-            "Hầm nhỏ lửa đến khi thịt mềm."
+        "image": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1000&q=85",
+        "steps": [
+            "Bò thăn thái quân cờ, ướp tỏi băm, dầu hào, xì dầu và tiêu đen.",
+            "Xào bò lửa lớn trong chảo gang 3 phút cho chín tới mềm mọng.",
+            "Ăn kèm cơm trắng nóng, khoai tây chiên vàng và xà lách cà chua."
+        ]
+    },
+    {
+        "id": 11,
+        "name": "Bún chả Hà Nội nướng than",
+        "title": "Bún chả Hà Nội nướng than",
+        "kcal": 590,
+        "time": 35,
+        "difficulty": "Trung bình",
+        "tags": [
+            "Bữa trưa",
+            "Truyền thống"
+        ],
+        "category": "Bữa trưa",
+        "ingredients": [
+            "Bún tươi",
+            "Thịt ba chỉ",
+            "Thịt nạc vai băm",
+            "Đu đủ xanh",
+            "Cà rốt",
+            "Hành khô",
+            "Rau sống"
+        ],
+        "image": "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=1000&q=85",
+        "steps": [
+            "Ướp thịt ba chỉ và thịt băm với hành khô, nước hàng, nước mắm rồi nướng xém vàng.",
+            "Pha nước chấm ấm vị chua ngọt dịu, thả đu đủ cà rốt giòn.",
+            "Ăn cùng bún tươi lá và đĩa rau sống tươi mát."
+        ]
+    },
+    {
+        "id": 12,
+        "name": "Cơm ức gà áp chảo sốt bơ tỏi & bông cải",
+        "title": "Cơm ức gà áp chảo sốt bơ tỏi & bông cải",
+        "kcal": 550,
+        "time": 20,
+        "difficulty": "Dễ",
+        "tags": [
+            "Eat clean",
+            "Nhiều đạm",
+            "Healthy"
+        ],
+        "category": "Bữa trưa",
+        "ingredients": [
+            "Ức gà",
+            "Bông cải xanh",
+            "Bơ tỏi",
+            "Dầu ô liu",
+            "Cơm gạo lứt",
+            "Muối tiêu"
+        ],
+        "image": "https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=1000&q=85",
+        "steps": [
+            "Ức gà khía nhẹ, ướp muối tiêu và dầu ô-liu 10 phút.",
+            "Áp chảo mỗi mặt 4-5 phút cho vàng ruộm rồi rưới sốt bơ tỏi.",
+            "Ăn kèm cơm gạo lứt (hoặc cơm trắng) và bông cải xanh luộc giòn ngọt."
         ]
     }
-
 ];
 
 
@@ -1137,13 +1155,14 @@ function loadState() {
 }
 
 
-let state =
+var state =
     loadState();
+window.state = state;
 /* =========================================================
    AUTH STATE
 ========================================================= */
 
-let authState = {
+var authState = {
 
     authenticated:
         false,
@@ -1163,7 +1182,224 @@ let authState = {
     avatarUrl:
         ""
 };
+window.authState = authState;
 
+/* =========================================================
+   CROSS-MODULE SHARED STATES & DATASETS (GLOBAL)
+========================================================= */
+var SOCIAL_API = '/api/social';
+
+var savedPostsState = {};
+try { savedPostsState = JSON.parse(localStorage.getItem('foodx_saved_posts') || '{}'); } catch (_) { savedPostsState = {}; }
+
+var likedPostsState = {};
+try { likedPostsState = JSON.parse(localStorage.getItem('foodx_liked_posts') || '{}'); } catch (_) { likedPostsState = {}; }
+
+var localCommentsState = {};
+try { localCommentsState = JSON.parse(localStorage.getItem('foodx_post_comments') || '{}'); } catch (_) { localCommentsState = {}; }
+
+var allSocialPostsCache = [];
+var recipesCache = [];
+var curRecipe = null;
+var previousViewBeforeRecipe = 'recipes';
+
+var currentSocialCategory = 'all';
+var currentSocialSearch = '';
+
+var sampleBlogPosts = [
+    {
+        id: 101,
+        title: "Bí quyết nấu Phở Bò truyền thống chuẩn vị Hà Nội tại nhà",
+        description: "Hướng dẫn chi tiết từ khâu hầm xương ngọt tự nhiên đến chuẩn bị gia vị hoa hồi, thảo quả thanh ngọt dịu mát...",
+        author: "Mẹ Bi",
+        authorRole: "Food Blogger",
+        timeAgo: "3 giờ trước",
+        cookTime: "45 phút",
+        kcal: "450",
+        likes: 189,
+        comments: 24,
+        category: "family",
+        image: "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=800&q=80",
+        difficulty: "Vừa"
+    },
+    {
+        id: 102,
+        title: "Salad Ức Gà Sốt Bơ Chanh — Món ăn Eat Clean tăng cơ giảm mỡ",
+        description: "Bữa trưa lành mạnh, giàu đạm và chất xơ, chuẩn bị chỉ trong 15 phút với những nguyên liệu đơn giản sẵn có...",
+        author: "Coach Hoàng Anh",
+        authorRole: "Fitness & Nutrition",
+        timeAgo: "5 giờ trước",
+        cookTime: "15 phút",
+        kcal: "280",
+        likes: 312,
+        comments: 45,
+        category: "eatclean",
+        image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80",
+        difficulty: "Dễ"
+    },
+    {
+        id: 103,
+        title: "Cơm Tấm Sườn Nướng Chả Trứng — Hương vị Sài Gòn đậm đà",
+        description: "Bí quyết ướp sườn mềm mọng nước, chả trứng hấp béo ngậy cùng nước mắm chua ngọt chuẩn quán...",
+        author: "Chef Tuấn Kiệt",
+        authorRole: "Đầu bếp gia đình",
+        timeAgo: "1 ngày trước",
+        cookTime: "35 phút",
+        kcal: "580",
+        likes: 420,
+        comments: 67,
+        category: "hot",
+        image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80",
+        difficulty: "Vừa"
+    },
+    {
+        id: 104,
+        title: "Canh Cua Đồng Nấu Mồng Tơi & Rạm giải nhiệt ngày hè",
+        description: "Món canh quốc dân ngọt mát béo ngậy gạch cua, kết hợp cà pháo muối giòn rụm cực đưa cơm...",
+        author: "Chị Thảo",
+        authorRole: "Yêu Bếp",
+        timeAgo: "2 ngày trước",
+        cookTime: "25 phút",
+        kcal: "210",
+        likes: 156,
+        comments: 19,
+        category: "family",
+        image: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=800&q=80",
+        difficulty: "Dễ"
+    },
+    {
+        id: 105,
+        title: "Trứng Cuộn Bơ Nấm 10 Phút Cho Bữa Sáng Năng Lượng",
+        description: "Tiết kiệm thời gian mỗi buổi sáng với món trứng cuộn bơ mềm mịn, thơm ngon cực kỳ giàu vitamin...",
+        author: "Bếp Nhà An",
+        authorRole: "Foodie",
+        timeAgo: "3 ngày trước",
+        cookTime: "10 phút",
+        kcal: "310",
+        likes: 278,
+        comments: 31,
+        category: "quick",
+        image: "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=800&q=80",
+        difficulty: "Rất dễ"
+    },
+    {
+        id: 106,
+        title: "Bánh Matchalicious Mousse Matcha Trà Xanh Béo Ngậy",
+        description: "Công thức làm bánh mousse không cần lò nướng, chất bánh mịn mượt thanh đắng vị trà xanh Nhật Bản...",
+        author: "Linh Pastry",
+        authorRole: "Baker",
+        timeAgo: "4 ngày trước",
+        cookTime: "40 phút",
+        kcal: "340",
+        likes: 389,
+        comments: 52,
+        category: "dessert",
+        image: "https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=800&q=80",
+        difficulty: "Trung bình"
+    }
+];
+
+var communityFeedPosts = [
+    {
+        id: 'c101',
+        title: 'Bí quyết nấu Phở Bò truyền thống chuẩn vị Hà Nội thanh ngọt dịu',
+        description: 'Hướng dẫn chi tiết từ khâu hầm xương bò nguyên chất 6 tiếng, rang thơm hoa hồi thảo quả đến kỹ thuật trần bánh phở chuẩn vị...',
+        authorName: 'Mẹ Bi',
+        authorAvatar: '',
+        authorRole: 'Food Blogger',
+        category: 'family',
+        cookTime: '45 phút',
+        kcal: 450,
+        likeCount: 248,
+        commentCount: 34,
+        createdAt: new Date(Date.now() - 3600000 * 3).toISOString(),
+        imageUrl: 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=1000&q=80',
+        ingredients: ['1kg Xương ống bò tươi', '500g Bắp bò hoa và nạm bò', '500g Bánh phở tươi', '3 củ Hành tây, 2 củ Gừng nướng', 'Hoa hồi, Quế thanh, Thảo quả, Đinh hương', 'Hành hoa, Rau mùi, Húng quế, Chanh ớt'],
+        instructions: '1. Sơ chế chần sạch xương bò vát rửa kỹ.\n2. Nướng gừng, hành khô, quế hồi thảo quả cho dậy mùi thơm.\n3. Hầm xương lửa nhỏ trong 4-6 tiếng, nêm gia vị vừa ăn.\n4. Bày bánh phở ra bát, xếp thịt bò thái mỏng, chan nước dùng nóng hổi và thêm hành ngò.'
+    },
+    {
+        id: 'c102',
+        title: 'Salad Ức Gà Sốt Bơ Chanh — Bữa trưa Eat Clean giảm mỡ siêu nhanh',
+        description: 'Món salad thanh mát, giàu đạm và chất xơ. Nước sốt bơ tỏi chanh béo ngậy giúp ức gà không bị khô cứng!',
+        authorName: 'Coach Hoàng Anh',
+        authorAvatar: '',
+        authorRole: 'Fitness & Nutrition',
+        category: 'eatclean',
+        cookTime: '15 phút',
+        kcal: 280,
+        likeCount: 389,
+        commentCount: 52,
+        createdAt: new Date(Date.now() - 3600000 * 8).toISOString(),
+        imageUrl: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=1000&q=80',
+        ingredients: ['Ức gà phi lê 300g', 'Xà lách Romaine, cà chua bi, dưa leo', 'Bơ sáp chín 1 quả', 'Dầu ô liu, chanh vàng, mật ong, mù tạt vàng'],
+        instructions: '1. Áp chảo ức gà chín vàng hai mặt rồi thái lát vừa ăn.\n2. Rửa sạch rau củ, thái nhỏ vừa miệng.\n3. Xay nhuyễn bơ với dầu ô liu, cốt chanh và mật ong làm sốt.\n4. Trộn đều gà, rau củ cùng sốt bơ chanh và thưởng thức.'
+    },
+    {
+        id: 'c103',
+        title: 'Cơm Tấm Sườn Nướng Chả Trứng Chuẩn Vị Sài Gòn Mềm Mọng',
+        description: 'Bí quyết ướp sườn mềm thơm đậm đà không bị khô, ăn cùng chả trứng hấp vàng óng và mỡ hành béo ngậy...',
+        authorName: 'Chef Tuấn Kiệt',
+        authorAvatar: '',
+        authorRole: 'Đầu bếp',
+        category: 'hot',
+        cookTime: '35 phút',
+        kcal: 580,
+        likeCount: 512,
+        commentCount: 88,
+        createdAt: new Date(Date.now() - 3600000 * 16).toISOString(),
+        imageUrl: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1000&q=80',
+        ingredients: ['Sườn cốt lết 400g', 'Thịt xay, trứng gà, nấm mèo', 'Cơm tấm', 'Sữa tươi không đường, mật ong, dầu màu điều'],
+        instructions: '1. Ướp sườn với mắm, tỏi, mật ong, sữa tươi ít nhất 2 tiếng.\n2. Trộn thịt xay, nấm mèo băm, trứng gà đem hấp làm chả trứng.\n3. Nướng sườn trên bếp than hoặc nồi chiên không dầu ở 180°C.\n4. Dùng kèm cơm tấm nóng, dưa leo và mỡ hành.'
+    },
+    {
+        id: 'c104',
+        title: 'Canh Cua Đồng Nấu Mồng Tơi & Rạm giải nhiệt ngày hè cực ngon',
+        description: 'Món canh đậm chất quê hương ngọt thanh béo ngậy gạch cua, kết hợp cà pháo muối giòn rụm đưa cơm...',
+        authorName: 'Chị Thảo',
+        authorRole: 'Yêu Bếp',
+        category: 'family',
+        cookTime: '25 phút',
+        kcal: 210,
+        likeCount: 195,
+        commentCount: 23,
+        createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
+        imageUrl: 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1000&q=80',
+        ingredients: ['Cua đồng xay 300g', 'Rau mồng tơi, mướp hương', 'Hành khô, gia vị, mắm tôm'],
+        instructions: '1. Lọc nước cua lấy phần cốt, chưng gạch cua với hành khô thơm.\n2. Đun nước cua lửa nhỏ cho thịt cua đóng mảng nổi lên.\n3. Thả mướp hương và rau mồng tơi cắt khúc vào nấu chín tới.'
+    },
+    {
+        id: 'c105',
+        title: 'Trứng Cuộn Bơ Nấm 10 Phút Cho Bữa Sáng Đủ Chất Năng Lượng',
+        description: 'Giải pháp bữa sáng cực nhanh gọn, thơm mềm béo ngậy từ trứng và quả bơ cho ngày làm việc căng tràn năng lượng...',
+        authorName: 'Bếp Nhà An',
+        authorRole: 'Foodie',
+        category: 'quick',
+        cookTime: '10 phút',
+        kcal: 310,
+        likeCount: 340,
+        commentCount: 41,
+        createdAt: new Date(Date.now() - 3600000 * 36).toISOString(),
+        imageUrl: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=1000&q=80',
+        ingredients: ['Trứng gà 3 quả', 'Bơ 1/2 quả', 'Nấm mỡ 50g', 'Bơ lạt, sữa tươi'],
+        instructions: '1. Đánh tan trứng gà với 1 thìa sữa tươi và chút muối.\n2. Xào chín nấm mỡ với bơ lạt.\n3. Đổ trứng vào chảo chống dính, xếp bơ thái lát và nấm lên trên rồi cuộn nhẹ tay.'
+    },
+    {
+        id: 'c106',
+        title: 'Bánh Matcha Mousse Trà Xanh Béo Ngậy Không Cần Lò Nướng',
+        description: 'Món tráng miệng thanh mát chuẩn phong cách Nhật Bản. Lớp mousse mềm mịn đắng nhẹ quyện cùng vị ngọt dịu...',
+        authorName: 'Linh Pastry',
+        authorRole: 'Baker',
+        category: 'dessert',
+        cookTime: '40 phút',
+        kcal: 340,
+        likeCount: 467,
+        commentCount: 65,
+        createdAt: new Date(Date.now() - 3600000 * 48).toISOString(),
+        imageUrl: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=1000&q=80',
+        ingredients: ['Bột matcha 15g', 'Whipping cream 200ml', 'Gelatin 10g', 'Bánh quy, bơ lạt'],
+        instructions: '1. Làm đế bánh bằng bánh quy nghiền trộn bơ lạt ép chặt đáy khuôn.\n2. Ngâm gelatin nở mềm, hòa tan cùng bột matcha và đường.\n3. Đánh bông nhẹ whipping cream rồi trộn đều với hỗn hợp matcha.\n4. Đổ vào khuôn và để tủ lạnh 4 tiếng.'
+    }
+];
 
 function saveState() {
 
@@ -1958,6 +2194,8 @@ function applyAuthResponse(data) {
         renderProfile();
         loadProfileFromApi(false);
         loadFridgeFromApi(false);
+        if (typeof loadHomeDashboard === 'function') loadHomeDashboard();
+        if (typeof loadSocialFeed === 'function') loadSocialFeed();
 
         if (typeof initChatForCurrentUser === 'function') {
             initChatForCurrentUser();
@@ -1969,6 +2207,8 @@ function applyAuthResponse(data) {
         state.selectedFridgeIds = [];
         saveState();
         renderAll();
+        if (typeof loadHomeDashboard === 'function') loadHomeDashboard();
+        if (typeof loadSocialFeed === 'function') loadSocialFeed();
 
         if (typeof resetChatOnLogout === 'function') {
             resetChatOnLogout();
@@ -2600,6 +2840,34 @@ document
    NAVIGATION
 ========================================================= */
 
+var qaOpen = false;
+
+function closeQa() {
+    qaOpen = false;
+    const fab = document.getElementById('qaFab');
+    const menu = document.getElementById('qaMenu');
+    if (fab) fab.classList.remove('open');
+    if (menu) menu.hidden = true;
+}
+window.closeQa = closeQa;
+
+function closeDrawer() {
+    if (document.body) document.body.classList.remove('drawer-open');
+}
+window.closeDrawer = closeDrawer;
+
+function handleHeroCtaClick() {
+    const sug = document.getElementById("suggestionSection") || document.getElementById("homeSuggestCard");
+    if (sug) {
+        sug.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+        openView("recipes");
+    }
+}
+window.handleHeroCtaClick = handleHeroCtaClick;
+
+
+
 function openView(name) {
     if (!name) name = "home";
     const AUTH_REQUIRED_VIEWS = ["fridge", "favorites", "shopping", "plan", "stats"];
@@ -2608,6 +2876,9 @@ function openView(name) {
         return;
     }
 
+    if (typeof state !== "undefined" && state) {
+        state.activeView = name;
+    }
     try {
         localStorage.setItem("foodx_active_view", name);
         if (window.history && window.history.replaceState) {
@@ -2615,63 +2886,63 @@ function openView(name) {
         }
     } catch (_) {}
 
-    document
-        .querySelectorAll(
-            ".view"
-        )
-        .forEach(
-            view =>
-                view.classList.remove(
-                    "active"
-                )
-        );
-
-    document
-        .getElementById(
-            `view-${name}`
-        )
-        ?.classList
-        .add("active");
-
-    document
-        .querySelectorAll(
-            ".menu-item"
-        )
-        .forEach(
-            button => {
-                button.classList.toggle(
-                    "active",
-                    button.dataset.view ===
-                    name
-                );
-            }
-        );
-
-    if (
-        name === "fridge"
-    ) {
-        renderFridge();
+    document.querySelectorAll(".view").forEach(view => view.classList.remove("active"));
+    const targetView = document.getElementById(`view-${name}`);
+    if (targetView) {
+        targetView.classList.add("active");
     }
 
-    if (
-        name === "favorites"
-    ) {
-        renderFavorites();
-    }
-
-    if (
-        name === "shopping"
-    ) {
-        renderShopping();
-    }
-
-    window.scrollTo({
-        top:
-            0,
-        behavior:
-            "smooth"
+    // Sync sidebar active state
+    document.querySelectorAll(".menu-item").forEach(button => {
+        button.classList.toggle("active", button.dataset.view === name);
     });
+
+    // Sync bottom navigation active state (mobile)
+    document.querySelectorAll(".bn-item").forEach(button => {
+        button.classList.toggle("active", button.getAttribute("data-bottom-nav") === name);
+    });
+
+    // Close mobile drawers and overlays if open
+    if (typeof closeDrawer === "function") closeDrawer();
+    if (typeof closeQa === "function") closeQa();
+
+    // Data Hydration per view
+    try {
+        if (name === "home") {
+            if (typeof renderAll === "function") renderAll();
+            if (typeof loadHomeDashboard === "function") loadHomeDashboard();
+            if (typeof renderHomeBlogSection === "function") renderHomeBlogSection();
+        } else if (name === "fridge") {
+            if (typeof renderFridge === "function") renderFridge();
+        } else if (name === "recipes") {
+            if (typeof loadRecipes === "function") loadRecipes();
+        } else if (name === "recipe") {
+            if (typeof renderRecipeDetail === "function") renderRecipeDetail();
+        } else if (name === "plan") {
+            if (typeof loadPlan === "function") loadPlan();
+        } else if (name === "stats") {
+            if (typeof loadStats === "function") loadStats();
+        } else if (name === "favorites") {
+            if (typeof renderFavorites === "function") renderFavorites();
+        } else if (name === "shopping") {
+            if (typeof renderShopping === "function") renderShopping();
+        } else if (name === "social") {
+            if (typeof loadSocialFeed === "function") loadSocialFeed();
+        }
+    } catch (err) {
+        console.warn("View hydration error for " + name + ":", err);
+    }
+
+    if (typeof window !== "undefined" && typeof window.scrollTo === "function") {
+        try {
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        } catch (_) {}
+    }
 }
+window.openView = openView;
 
 
 document
@@ -6294,41 +6565,25 @@ document
    RECIPE LOGIC
 ========================================================= */
 
-function hasIngredientInFridge(
-    ingredient
-) {
+function hasIngredientInFridge(ingredient) {
+    if (!state || !Array.isArray(state.fridge) || !state.fridge.length) return false;
+    const rawTarget = typeof ingredient === 'string' ? ingredient : ((ingredient && (ingredient.ingredientName || ingredient.name)) || '');
+    const target = normalize(rawTarget);
+    if (!target || target.length < 2) return false;
 
-    const target =
-        normalize(
-            ingredient
-        );
+    const cleanedTarget = target.replace(/^(\d+([\.,]\d+)?\s*(kg|g|cu|qua|bo|hop|vi|lit|ml|muong|goi|tui|phan|trai|con|nhanh|lat|tep)\s*)/i, '').trim();
 
+    return state.fridge.some(item => {
+        if (!item) return false;
+        const rawName = (item.name || (item.food && item.food.name) || '');
+        const val = normalize(rawName);
+        if (!val || val.length < 2) return false;
 
-    return state.fridge.some(
-        item => {
-
-            const values = [
-
-                item.name,
-
-                ...(item.ingredients || [])
-            ]
-                .map(
-                    normalize
-                );
-
-
-            return values.some(
-                value =>
-                    value.includes(
-                        target
-                    ) ||
-                    target.includes(
-                        value
-                    )
-            );
-        }
-    );
+        if (cleanedTarget === val || target === val) return true;
+        if (val.length >= 3 && cleanedTarget.includes(val)) return true;
+        if (cleanedTarget.length >= 3 && val.includes(cleanedTarget)) return true;
+        return false;
+    });
 }
 
 
@@ -7017,124 +7272,208 @@ document
    FAVORITES
 ========================================================= */
 
-function toggleFavorite(id) {
+async function toggleFavorite(id) {
     if (!isUserLoggedIn()) {
         requireAuth('favorite');
         return;
     }
+    const idKey = String(id);
+    const wasSavedInPosts = !!savedPostsState[idKey];
+    const wasSavedInState = state.favorites.some(x => String(x) === idKey);
+    const isCurrentlySaved = wasSavedInPosts || wasSavedInState;
 
-    id =
-        Number(id);
-
-
-    const recipe =
-        recipes.find(
-            item =>
-                item.id ===
-                id
-        );
-
-
-    if (!recipe) {
-        return;
-    }
-
-
-    if (
-        state.favorites.includes(
-            id
-        )
-    ) {
-
-        state.favorites =
-            state.favorites
-                .filter(
-                    recipeId =>
-                        recipeId !== id
-                );
-
-
-        showToast(
-            `Đã bỏ "${recipe.name}" khỏi yêu thích.`,
-            "info"
-        );
-
-
+    if (isCurrentlySaved) {
+        delete savedPostsState[idKey];
+        state.favorites = state.favorites.filter(x => String(x) !== idKey);
+        showToast('Đã bỏ lưu món khỏi danh sách yêu thích.', 'info');
     } else {
+        // Find recipe object
+        let found = null;
+        if (typeof allSocialPostsCache !== 'undefined' && Array.isArray(allSocialPostsCache)) {
+            found = allSocialPostsCache.find(p => String(p.id) === idKey);
+        }
+        if (!found && typeof communityFeedPosts !== 'undefined' && Array.isArray(communityFeedPosts)) {
+            found = communityFeedPosts.find(p => String(p.id) === idKey);
+        }
+        if (!found && typeof recipesCache !== 'undefined' && Array.isArray(recipesCache)) {
+            found = recipesCache.find(p => String(p.id) === idKey);
+        }
+        if (!found && typeof recipes !== 'undefined' && Array.isArray(recipes)) {
+            found = recipes.find(p => String(p.id) === idKey);
+        }
 
-        state.favorites.push(
-            id
-        );
-
-
-        showToast(
-            `Đã lưu "${recipe.name}".`,
-            "success"
-        );
+        savedPostsState[idKey] = {
+            id: id,
+            title: found ? (found.title || found.name) : 'Công thức yêu thích',
+            imageUrl: found ? (found.imageUrl || found.image) : '',
+            cookTime: found ? (found.cookTime || found.time) : '30',
+            kcal: found ? found.kcal : 350,
+            description: found ? found.description : '',
+            ingredients: found ? (found.ingredients || []) : [],
+            instructions: found ? (found.instructions || found.steps || '') : '',
+            steps: found ? (found.steps || []) : [],
+            savedAt: new Date().toISOString()
+        };
+        if (!state.favorites.some(x => String(x) === idKey)) {
+            state.favorites.push(id);
+        }
+        showToast('Đã lưu món vào danh sách yêu thích! ❤️', 'success');
     }
 
-
+    localStorage.setItem('foodx_saved_posts', JSON.stringify(savedPostsState));
     saveState();
 
+    // Call API if numeric ID
+    if (typeof id === 'number' || (!isNaN(+id) && !String(id).startsWith('c'))) {
+        try {
+            await apiRequest('/api/recipes/' + id + '/save', { method: 'POST' });
+        } catch (_) {}
+    }
+
     renderRecipes();
-    renderFavorites();
-    renderFridge();
+    await renderFavorites();
+    if (typeof renderSocialFeedFiltered === 'function') renderSocialFeedFiltered();
 }
 
 
-function renderFavorites() {
+async function renderFavorites() {
+    const grid = document.getElementById("favoriteGrid");
+    const empty = document.getElementById("favoriteEmpty");
+    if (!grid) return;
 
-    const data =
-        recipes
-            .filter(
-                recipe =>
-                    state.favorites.includes(
-                        recipe.id
-                    )
-            )
-            .map(
-                recipe => ({
+    let savedList = [];
 
-                    ...recipe,
-
-                    score:
-                        recipeScore(
-                            recipe
-                        )
-                })
-            );
-
-
-    const grid =
-        document.getElementById(
-            "favoriteGrid"
-        );
-
-
-    const empty =
-        document.getElementById(
-            "favoriteEmpty"
-        );
-
-
-    if (grid) {
-
-        grid.innerHTML =
-            data
-                .map(
-                    recipeCard
-                )
-                .join("");
+    // 1. Fetch saved recipes from API if logged in
+    if (isUserLoggedIn()) {
+        try {
+            const apiSaved = await apiRequest('/api/recipes/saved');
+            if (Array.isArray(apiSaved)) {
+                apiSaved.forEach(r => {
+                    savedList.push({
+                        id: r.id,
+                        title: r.title || r.name,
+                        name: r.title || r.name,
+                        imageUrl: r.imageUrl || r.image || '',
+                        image: r.imageUrl || r.image || '',
+                        cookTime: r.cookTime || r.time || 30,
+                        time: r.cookTime || r.time || 30,
+                        kcal: r.kcal || 350,
+                        difficulty: r.difficulty || 'Dễ',
+                        category: r.category || 'Món chính',
+                        score: typeof recipeScore === 'function' ? recipeScore(r) : 95
+                    });
+                });
+            }
+        } catch (_) {}
     }
 
+    // 2. Read from savedPostsState (which stores community posts, e.g. c101, c102, etc.)
+    const savedPosts = JSON.parse(localStorage.getItem('foodx_saved_posts') || '{}');
+    Object.values(savedPosts).forEach(s => {
+        if (s && s.id) {
+            const alreadyInList = savedList.some(item => String(item.id) === String(s.id) || (item.title && s.title && item.title === s.title));
+            if (!alreadyInList) {
+                savedList.push({
+                    id: s.id,
+                    title: s.title || s.name || 'Công thức cộng đồng',
+                    name: s.title || s.name || 'Công thức cộng đồng',
+                    imageUrl: s.imageUrl || s.image || '',
+                    image: s.imageUrl || s.image || '',
+                    cookTime: s.cookTime || 30,
+                    time: parseInt(s.cookTime) || 30,
+                    kcal: parseInt(s.kcal) || 350,
+                    difficulty: s.difficulty || 'Healthy',
+                    category: s.category || 'Cộng đồng',
+                    score: 100
+                });
+            }
+        }
+    });
 
-    if (empty) {
-
-        empty.style.display =
-            data.length
-                ? "none"
-                : "block";
+    // 3. Check state.favorites for any standard recipes
+    if (Array.isArray(state.favorites)) {
+        state.favorites.forEach(favId => {
+            const alreadyInList = savedList.some(item => String(item.id) === String(favId));
+            if (!alreadyInList) {
+                let match = null;
+                if (typeof recipesCache !== 'undefined' && Array.isArray(recipesCache)) {
+                    match = recipesCache.find(r => String(r.id) === String(favId));
+                }
+                if (!match && typeof recipes !== 'undefined' && Array.isArray(recipes)) {
+                    match = recipes.find(r => String(r.id) === String(favId));
+                }
+                if (match) {
+                    savedList.push({
+                        id: match.id,
+                        title: match.title || match.name,
+                        name: match.title || match.name,
+                        imageUrl: match.imageUrl || match.image || '',
+                        image: match.imageUrl || match.image || '',
+                        cookTime: match.cookTime || match.time || 30,
+                        time: match.cookTime || match.time || 30,
+                        kcal: match.kcal || 350,
+                        difficulty: match.difficulty || 'Dễ',
+                        category: match.category || 'Món chính',
+                        score: typeof recipeScore === 'function' ? recipeScore(match) : 90
+                    });
+                }
+            }
+        });
     }
+
+    if (!savedList.length) {
+        grid.innerHTML = '';
+        if (empty) empty.style.display = 'block';
+        return;
+    }
+
+    if (empty) empty.style.display = 'none';
+
+    grid.innerHTML = savedList.map(function(r) {
+        const kcalStr = r.kcal ? `<span>🔥 ${r.kcal} kcal</span>` : '';
+        const timeStr = r.cookTime ? `<span>⏱ ${r.cookTime}′</span>` : '';
+        const imgEl = r.imageUrl || r.image
+            ? `<img class="recipe-image" src="${escapeHtml(r.imageUrl || r.image)}" alt="${escapeHtml(r.title || r.name)}" loading="lazy" onerror="this.outerHTML='<div class=\\'recipe-image recipe-image-emoji\\'>${recipeEmoji(r)}</div>'">`
+            : `<div class="recipe-image recipe-image-emoji">${recipeEmoji(r)}</div>`;
+
+        return `
+            <article class="recipe-card" data-open-fav="${r.id}" style="cursor:pointer;">
+                <div class="recipe-image-wrap">
+                    ${imgEl}
+                    <span class="recipe-match">${r.score || 95}% phù hợp</span>
+                    <button type="button" class="favorite-button active" data-fav-toggle="${r.id}" title="Bỏ lưu khỏi yêu thích">
+                        ♥
+                    </button>
+                </div>
+                <div class="recipe-body">
+                    <h3 class="recipe-title">${escapeHtml(r.title || r.name)}</h3>
+                    <div class="recipe-meta">
+                        ${timeStr}
+                        ${kcalStr}
+                        <span>📊 ${escapeHtml(r.difficulty || 'Dễ nấu')}</span>
+                    </div>
+                </div>
+            </article>
+        `;
+    }).join('');
+
+    // Wire clicks to open recipe detail
+    grid.querySelectorAll('[data-open-fav]').forEach(card => {
+        card.addEventListener('click', function(e) {
+            if (e.target.closest('.favorite-button')) return;
+            const id = card.getAttribute('data-open-fav');
+            if (id) openRecipeDetail(id);
+        });
+    });
+
+    // Wire favorite removal
+    grid.querySelectorAll('[data-fav-toggle]').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const id = btn.getAttribute('data-fav-toggle');
+            if (id) toggleFavorite(id);
+        });
+    });
 }
 
 
@@ -7166,7 +7505,7 @@ function getRecipeById(id) {
 }
 
 
-function openRecipeDetail(id) {
+function openRecipeModalQuick(id) {
 
     const recipe =
         getRecipeById(
@@ -7216,6 +7555,10 @@ function openRecipeDetail(id) {
                     ingredient
                 )
         );
+
+    showRecipeDetail(recipe);
+}
+
 
 
 function scaleIngredientText(text, scaleFactor) {
@@ -7886,23 +8229,59 @@ document
         }
     );
 
+function getFridgeIngredientNames() {
+    let names = [];
+    if (typeof state !== 'undefined' && Array.isArray(state.fridge)) {
+        state.fridge.forEach(f => {
+            const n = String((f && f.name) || (f && f.food && f.food.name) || '').trim().toLowerCase();
+            if (n.length >= 2) names.push(n);
+        });
+    }
+    return Array.from(new Set(names));
+}
+
+function checkIngredientInFridge(ingName, fridgeNamesList) {
+    if (!fridgeNamesList || !fridgeNamesList.length) return false;
+    const lower = String(ingName || '').toLowerCase().trim();
+    if (!lower || lower.length < 2) return false;
+    
+    // Strip leading quantities/units (e.g., "1kg Xương ống bò tươi" -> "xương ống bò tươi", "3 củ Hành tây" -> "hành tây")
+    const cleaned = lower.replace(/^(\d+([\.,]\d+)?\s*(kg|g|củ|quả|bó|hộp|vỉ|lít|ml|muỗng|gói|túi|phần|trái|con|nhánh|lát|tép)\s*)/i, '').trim();
+    
+    return fridgeNamesList.some(fn => {
+        if (!fn || fn.length < 2) return false;
+        if (cleaned === fn || lower === fn) return true;
+        if (fn.length >= 3 && cleaned.includes(fn)) return true;
+        if (cleaned.length >= 3 && fn.includes(cleaned)) return true;
+        return false;
+    });
+}
+
 async function addMissingIngredients(recipeId) {
     if (!isUserLoggedIn()) {
         requireAuth('shopping');
         return;
     }
     try {
-        let recipe = (curRecipe && (curRecipe.id === Number(recipeId) || !recipeId)) ? curRecipe : null;
-        if (!recipe && recipeId) {
-            try {
-                recipe = await apiRequest('/api/recipes/' + recipeId);
-            } catch (_) {}
-        }
-        if (!recipe && typeof recipesCache !== 'undefined' && Array.isArray(recipesCache)) {
-            recipe = recipesCache.find(r => r.id === Number(recipeId));
-        }
-        if (!recipe && typeof recipes !== 'undefined' && Array.isArray(recipes)) {
-            recipe = recipes.find(r => r.id === Number(recipeId));
+        let recipe = curRecipe;
+        if (!recipe || (recipeId && String(recipe.id) !== String(recipeId))) {
+            if (typeof allSocialPostsCache !== 'undefined' && Array.isArray(allSocialPostsCache)) {
+                recipe = allSocialPostsCache.find(p => String(p.id) === String(recipeId));
+            }
+            if (!recipe && typeof communityFeedPosts !== 'undefined' && Array.isArray(communityFeedPosts)) {
+                recipe = communityFeedPosts.find(p => String(p.id) === String(recipeId));
+            }
+            if (!recipe && typeof recipesCache !== 'undefined' && Array.isArray(recipesCache)) {
+                recipe = recipesCache.find(r => String(r.id) === String(recipeId));
+            }
+            if (!recipe && typeof recipes !== 'undefined' && Array.isArray(recipes)) {
+                recipe = recipes.find(r => String(r.id) === String(recipeId));
+            }
+            if (!recipe && recipeId) {
+                try {
+                    recipe = await apiRequest('/api/recipes/' + recipeId);
+                } catch (_) {}
+            }
         }
         if (!recipe) {
             showToast('Không tìm thấy thông tin công thức để thêm nguyên liệu.', 'warning');
@@ -7912,9 +8291,14 @@ async function addMissingIngredients(recipeId) {
         let fridgeNames = [];
         try {
             const fridgeItems = await apiRequest('/api/fridge') || [];
-            fridgeNames = fridgeItems.map(f => String(f.food ? f.food.name : (f.name || '')).toLowerCase());
-        } catch (_) {
-            fridgeNames = (window.state && state.fridge ? state.fridge : []).map(f => String(f.name || '').toLowerCase());
+            if (Array.isArray(fridgeItems)) {
+                fridgeNames = fridgeItems
+                    .map(f => String((f && f.name) || (f && f.food && f.food.name) || '').trim().toLowerCase())
+                    .filter(n => n.length >= 2);
+            }
+        } catch (_) {}
+        if (!fridgeNames.length) {
+            fridgeNames = getFridgeIngredientNames();
         }
 
         const ings = recipe.ingredients || [];
@@ -7924,37 +8308,54 @@ async function addMissingIngredients(recipeId) {
             await apiRequest('/api/shopping', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: recipe.title || recipe.name || 'Món ăn', quantity: '1 phần', price: 0, category: 'Món ăn' })
+                body: JSON.stringify({
+                    name: recipe.title || recipe.name || 'Món ăn',
+                    quantity: '1 phần',
+                    price: 25000,
+                    category: 'Công thức: ' + (recipe.title || recipe.name || 'Món ngon')
+                })
             });
             added = 1;
         } else {
             for (const ing of ings) {
-                const name = typeof ing === 'string' ? ing : (ing.ingredientName || ing.name || '');
-                if (!name) continue;
-                const lower = name.toLowerCase();
-                const inFridge = fridgeNames.some(fn => fn.includes(lower) || lower.includes(fn));
+                const rawName = typeof ing === 'string' ? ing : (ing.ingredientName || ing.name || '');
+                if (!rawName || !rawName.trim()) continue;
+                const inFridge = checkIngredientInFridge(rawName, fridgeNames);
                 if (!inFridge) {
-                    const qty = (typeof ing === 'object' && ing.quantity != null ? ing.quantity : '') + (typeof ing === 'object' && ing.unit ? ' ' + ing.unit : '');
+                    let qty = (typeof ing === 'object' && ing.quantity != null ? String(ing.quantity) : '') + (typeof ing === 'object' && ing.unit ? ' ' + ing.unit : '');
+                    let displayName = rawName.trim();
+                    const qtyMatch = rawName.match(/^(\d+([\.,]\d+)?\s*(kg|g|củ|quả|bó|hộp|vỉ|lít|ml|muỗng|gói|túi|phần|trái|con|nhánh|lát|tép)\s*)/i);
+                    if (qtyMatch && !qty.trim()) {
+                        qty = qtyMatch[0].trim();
+                        displayName = rawName.substring(qtyMatch[0].length).trim();
+                    }
                     try {
                         await apiRequest('/api/shopping', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ name: name, quantity: qty.trim() || '1 phần', price: 0, category: 'Nguyên liệu' })
+                            body: JSON.stringify({
+                                name: displayName || rawName,
+                                quantity: qty.trim() || '1 phần',
+                                price: 25000,
+                                category: 'Công thức: ' + (recipe.title || recipe.name || 'Món ngon')
+                            })
                         });
                         added++;
-                    } catch (_) {}
+                    } catch (e) {
+                        console.error('addMissingIngredients item POST error:', e);
+                    }
                 }
             }
         }
 
         if (typeof renderShopping === 'function') await renderShopping();
-        showToast(
-            added
-                ? `Đã thêm ${added} nguyên liệu còn thiếu vào Danh sách mua 🛒`
-                : "Tủ lạnh của bạn đã có đủ nguyên liệu cho món này! 🎉",
-            added ? "success" : "info"
-        );
+        if (added > 0) {
+            showToast(`🛒 Đã thêm ${added} nguyên liệu còn thiếu của món "${recipe.title || recipe.name}" vào Danh sách mua!`, 'success');
+        } else {
+            showToast(`Tủ lạnh của bạn đã có đủ nguyên liệu cho món "${recipe.title || recipe.name}"! 🎉`, 'info');
+        }
     } catch (err) {
+        console.error('addMissingIngredients main error:', err);
         showToast('Không thể thêm nguyên liệu vào danh sách mua: ' + err.message, 'error');
     }
 }
@@ -8579,14 +8980,10 @@ function fakeAI(question) {
                         item.name
                 );
 
-
         return data.length
-
             ? `Bạn nên ưu tiên dùng: ${data.join(", ")}.`
-
             : "Không có thực phẩm nào cần dùng gấp.";
     }
-
 
     return (
         "Tôi hiện là lớp mô phỏng AI của Food X. Bạn có thể hỏi về món ăn, BMI, calo, tủ lạnh hoặc thực phẩm sắp hết hạn."
@@ -8755,6 +9152,83 @@ document
 /* =========================================================
    GLOBAL ACTIONS
 ========================================================= */
+
+document.addEventListener(
+    "change",
+    event => {
+
+        const fridgeCheckbox =
+            event.target.closest(
+                '[data-action="select-fridge"]'
+            );
+
+
+        if (fridgeCheckbox) {
+
+            toggleSelectedFridge(
+
+                Number(
+                    fridgeCheckbox.dataset.id
+                ),
+
+                fridgeCheckbox.checked
+            );
+
+            return;
+        }
+
+
+        const shoppingCheckbox =
+            event.target.closest(
+                '[data-action="shopping-check"]'
+            );
+
+
+        if (shoppingCheckbox) {
+
+            const id =
+                Number(
+                    shoppingCheckbox.dataset.id
+                );
+
+
+            const item =
+                state.shopping.find(
+                    item =>
+                        Number(
+                            item.id
+                        ) ===
+                        id
+                );
+
+
+            if (!item) {
+                return;
+            }
+
+
+            item.done =
+                shoppingCheckbox.checked;
+
+
+            saveState();
+
+            renderShopping();
+
+
+            showToast(
+
+                item.done
+
+                    ? `Đã mua ${item.name}.`
+
+                    : `Đã bỏ đánh dấu ${item.name}.`,
+
+                "info"
+            );
+        }
+    }
+);
 
 document.addEventListener(
     "click",
@@ -8984,7 +9458,7 @@ document.addEventListener(
         ) {
 
             addMissingIngredients(
-                Number(
+                String(
                     target.dataset.recipe
                 )
             );
@@ -9042,34 +9516,13 @@ document.addEventListener(
 
         if (fridgeCheckbox) {
 
-            toggleSelectedFridge(
-
-                Number(
-                    fridgeCheckbox.dataset.id
-                ),
-
-                fridgeCheckbox.checked
-            );
-
-
+            toggleSelectedFridge(Number(fridgeCheckbox.dataset.id), fridgeCheckbox.checked);
             return;
         }
 
-
-        const shoppingCheckbox =
-            event.target.closest(
-                '[data-action="shopping-check"]'
-            );
-
-
+        const shoppingCheckbox = event.target.closest('[data-action="shopping-check"]');
         if (shoppingCheckbox) {
-
-            const id =
-                Number(
-                    shoppingCheckbox.dataset.id
-                );
-
-
+            const id = Number(shoppingCheckbox.dataset.id);
             const item =
                 state.shopping.find(
                     item =>
@@ -9177,7 +9630,6 @@ function renderAll() {
 
     renderExpiring();
 }
-
 /* =========================================================
    START FOOD X
 ========================================================= */
@@ -9261,125 +9713,19 @@ window.addEventListener("hashchange", function () {
     }
 });
 
-startFoodX();
+previousViewBeforeRecipe = previousViewBeforeRecipe || 'recipes';
 
+function goBackFromRecipeDetail() {
+    openView(previousViewBeforeRecipe || 'recipes');
+}
+window.goBackFromRecipeDetail = goBackFromRecipeDetail;
+
+allSocialPostsCache = allSocialPostsCache || [];
 
 /* =========================================================
    SOCIAL - CHIA SE CONG THUC
 ========================================================= */
 
-const SOCIAL_API = '/api/social';
-
-let likedPostsState = JSON.parse(localStorage.getItem('foodx_liked_posts') || '{}');
-let savedPostsState = JSON.parse(localStorage.getItem('foodx_saved_posts') || '{}');
-let localCommentsState = JSON.parse(localStorage.getItem('foodx_post_comments') || '{}');
-let currentSocialCategory = 'all';
-let currentSocialSearch = '';
-
-const communityFeedPosts = [
-    {
-        id: 'c101',
-        title: 'Bí quyết nấu Phở Bò truyền thống chuẩn vị Hà Nội thanh ngọt dịu',
-        description: 'Hướng dẫn chi tiết từ khâu hầm xương bò nguyên chất 6 tiếng, rang thơm hoa hồi thảo quả đến kỹ thuật trần bánh phở chuẩn vị...',
-        authorName: 'Mẹ Bi',
-        authorAvatar: '',
-        authorRole: 'Food Blogger',
-        category: 'family',
-        cookTime: '45 phút',
-        kcal: 450,
-        likeCount: 248,
-        commentCount: 34,
-        createdAt: new Date(Date.now() - 3600000 * 3).toISOString(),
-        imageUrl: 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=1000&q=80',
-        ingredients: ['Thịt bò thăn 500g', 'Xương ống 1kg', 'Bánh phở tươi 500g', 'Gừng, hành khô, hoa hồi, thảo quả, quế'],
-        instructions: '1. Sơ chế chần sạch xương bò vát rửa kỹ.\n2. Nướng gừng, hành khô, quế hồi thảo quả cho dậy mùi thơm.\n3. Hầm xương lửa nhỏ trong 4-6 tiếng, nêm gia vị vừa ăn.\n4. Bày bánh phở ra bát, xếp thịt bò thái mỏng, chan nước dùng nóng hổi và thêm hành ngò.'
-    },
-    {
-        id: 'c102',
-        title: 'Salad Ức Gà Sốt Bơ Chanh — Bữa trưa Eat Clean giảm mỡ siêu nhanh',
-        description: 'Món salad thanh mát, giàu đạm và chất xơ. Nước sốt bơ tỏi chanh béo ngậy giúp ức gà không bị khô cứng!',
-        authorName: 'Coach Hoàng Anh',
-        authorAvatar: '',
-        authorRole: 'Fitness & Nutrition',
-        category: 'eatclean',
-        cookTime: '15 phút',
-        kcal: 280,
-        likeCount: 389,
-        commentCount: 52,
-        createdAt: new Date(Date.now() - 3600000 * 5).toISOString(),
-        imageUrl: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=1000&q=80',
-        ingredients: ['Ức gà 300g', 'Xà lách thủy canh, cà chua chery', 'Bơ chín 1 quả', 'Chanh tươi, dầu olive, tỏi băm'],
-        instructions: '1. Áp chảo ức gà thái lát cùng chút muối pepper và tỏi băm.\n2. Rửa sạch xà lách và cà chua chery cắt đôi.\n3. Xay nhuyễn bơ chín với chanh tươi, dầu olive làm nước sốt.\n4. Trộn đều các nguyên liệu và thưởng thức ngay.'
-    },
-    {
-        id: 'c103',
-        title: 'Cơm Tấm Sườn Nướng Chả Trứng — Hương vị Sài Gòn nướng đậm đà',
-        description: 'Bí quyết ướp sườn mềm mọng nước với sữa tươi và mật ong, kết hợp chả trứng hấp béo ngậy chuẩn vị quán ngon...',
-        authorName: 'Chef Tuấn Kiệt',
-        authorAvatar: '',
-        authorRole: 'Đầu bếp gia đình',
-        category: 'family',
-        cookTime: '35 phút',
-        kcal: 580,
-        likeCount: 512,
-        commentCount: 78,
-        createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-        imageUrl: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1000&q=80',
-        ingredients: ['Sườn cốt lết 400g', 'Thịt xay, trứng gà, nấm mèo', 'Cơm tấm', 'Sữa tươi không đường, mật ong, dầu màu điều'],
-        instructions: '1. Ướp sườn với mắm, tỏi, mật ong, sữa tươi ít nhất 2 tiếng.\n2. Trộn thịt xay, nấm mèo băm, trứng gà đem hấp làm chả trứng.\n3. Nướng sườn trên bếp than hoặc nồi chiên không dầu ở 180°C.\n4. Dùng kèm cơm tấm nóng, dưa leo và mỡ hành.'
-    },
-    {
-        id: 'c104',
-        title: 'Canh Cua Đồng Nấu Mồng Tơi & Rạm giải nhiệt ngày hè cực ngon',
-        description: 'Món canh đậm chất quê hương ngọt thanh béo ngậy gạch cua, kết hợp cà pháo muối giòn rụm đưa cơm...',
-        authorName: 'Chị Thảo',
-        authorAvatar: '',
-        authorRole: 'Yêu Bếp',
-        category: 'family',
-        cookTime: '25 phút',
-        kcal: 210,
-        likeCount: 195,
-        commentCount: 23,
-        createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
-        imageUrl: 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1000&q=80',
-        ingredients: ['Cua đồng xay 300g', 'Rau mồng tơi, mướp hương', 'Hành khô, gia vị, mắm tôm'],
-        instructions: '1. Lọc nước cua lấy phần cốt, chưng gạch cua với hành khô thơm.\n2. Đun nước cua lửa nhỏ cho thịt cua đóng mảng nổi lên.\n3. Thả mướp hương và rau mồng tơi cắt khúc vào nấu chín tới.'
-    },
-    {
-        id: 'c105',
-        title: 'Trứng Cuộn Bơ Nấm 10 Phút Cho Bữa Sáng Đủ Chất Năng Lượng',
-        description: 'Giải pháp bữa sáng cực nhanh gọn, thơm mềm béo ngậy từ trứng và quả bơ cho ngày làm việc căng tràn năng lượng...',
-        authorName: 'Bếp Nhà An',
-        authorAvatar: '',
-        authorRole: 'Foodie',
-        category: 'quick',
-        cookTime: '10 phút',
-        kcal: 310,
-        likeCount: 340,
-        commentCount: 41,
-        createdAt: new Date(Date.now() - 3600000 * 36).toISOString(),
-        imageUrl: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=1000&q=80',
-        ingredients: ['Trứng gà 3 quả', 'Bơ 1/2 quả', 'Nấm mỡ 50g', 'Bơ lạt, sữa tươi'],
-        instructions: '1. Đánh tan trứng gà với 1 thìa sữa tươi và chút muối.\n2. Xào chín nấm mỡ với bơ lạt.\n3. Đổ trứng vào chảo chống dính, xếp bơ thái lát và nấm lên trên rồi cuộn nhẹ tay.'
-    },
-    {
-        id: 'c106',
-        title: 'Bánh Matcha Mousse Trà Xanh Béo Ngậy Không Cần Lò Nướng',
-        description: 'Món tráng miệng thanh mát chuẩn phong cách Nhật Bản. Lớp mousse mềm mịn đắng nhẹ quyện cùng vị ngọt dịu...',
-        authorName: 'Linh Pastry',
-        authorAvatar: '',
-        authorRole: 'Baker',
-        category: 'dessert',
-        cookTime: '40 phút',
-        kcal: 340,
-        likeCount: 467,
-        commentCount: 65,
-        createdAt: new Date(Date.now() - 3600000 * 48).toISOString(),
-        imageUrl: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=1000&q=80',
-        ingredients: ['Bột matcha 15g', 'Whipping cream 200ml', 'Gelatin 10g', 'Bánh quy, bơ lạt'],
-        instructions: '1. Làm đế bánh bằng bánh quy nghiền trộn bơ lạt ép chặt đáy khuôn.\n2. Ngâm gelatin nở mềm, hòa tan cùng bột matcha và đường.\n3. Đánh bông nhẹ whipping cream rồi trộn đều với hỗn hợp matcha.\n4. Đổ vào khuôn và để tủ lạnh 4 tiếng.'
-    }
-];
 
 function socialTime(dateStr) {
     if (!dateStr) return '';
@@ -9401,12 +9747,11 @@ function postCard(post) {
     const isSaved = !!savedPostsState[post.id];
     const currentLikes = post.likeCount !== undefined ? post.likeCount : (post.likes || 0);
 
-    const ings = (post.ingredients || [])
-        .map(i => '<span class="chip">' + escapeHtml(i) + '</span>')
-        .join('');
-
     const img = post.imageUrl
-        ? '<div class="post-img-container"><img class="post-image" src="' + escapeHtml(post.imageUrl) + '" alt="' + escapeHtml(post.title) + '" loading="lazy" onerror="this.parentElement.style.display=\'none\'"></div>'
+        ? '<div class="post-img-container" data-open-detail="' + post.id + '" title="Bấm vào ảnh để xem chi tiết công thức">' +
+            '<img class="post-image" src="' + escapeHtml(post.imageUrl) + '" alt="' + escapeHtml(post.title) + '" loading="lazy" onerror="this.parentElement.style.display=\'none\'">' +
+            '<div class="post-img-overlay"><span>🔍 Xem chi tiết công thức</span></div>' +
+          '</div>'
         : '';
 
     const canDelete = window.authState && authState.userId && (authState.userId === post.authorId || authState.userId === +post.authorId);
@@ -9421,17 +9766,18 @@ function postCard(post) {
                     '<span>' + (post.authorRole ? escapeHtml(post.authorRole) + ' • ' : '') + socialTime(post.createdAt) + '</span>' +
                 '</div>' +
                 '<span class="post-badge-tag">' + (post.cookTime ? '⏱ ' + post.cookTime : 'Công thức') + '</span>' +
-                (canDelete ? '<button class="text-button post-delete" data-delete="' + post.id + '">🗑 Xóa</button>' : '') +
+                (canDelete ? '<button type="button" class="text-button post-delete" data-delete="' + post.id + '">🗑 Xóa</button>' : '') +
             '</div>' +
-            '<h3 class="post-title">' + escapeHtml(post.title) + '</h3>' +
+            '<h3 class="post-title" data-open-detail="' + post.id + '" title="Bấm để xem chi tiết công thức">' + escapeHtml(post.title) + '</h3>' +
             '<div class="post-meta-pills">' +
                 (post.kcal ? '<span>🔥 ' + post.kcal + ' kcal</span>' : '') +
                 '<span>📊 ' + (post.category === 'eatclean' ? 'Healthy' : 'Dễ nấu') + '</span>' +
             '</div>' +
             img +
-            (post.description ? '<p class="post-desc">' + escapeHtml(post.description) + '</p>' : '') +
-            (ings ? '<div class="post-ingredients"><b>Nguyên liệu:</b> ' + ings + '</div>' : '') +
-            (post.instructions ? '<details class="post-steps"><summary>👨‍🍳 Xem công thức & hướng dẫn chi tiết</summary><pre>' + escapeHtml(post.instructions) + '</pre></details>' : '') +
+            (post.description ? '<p class="post-desc" data-open-detail="' + post.id + '" title="Bấm để xem chi tiết công thức">' + escapeHtml(post.description) + '</p>' : '') +
+            '<div class="post-view-cta" data-open-detail="' + post.id + '">' +
+                '<span>📖 Xem công thức & hướng dẫn chi tiết →</span>' +
+            '</div>' +
             '<div class="post-actions-bar">' +
                 '<button type="button" class="post-action-btn' + (isLiked ? ' active' : '') + '" data-like="' + post.id + '">' +
                     (isLiked ? '❤️' : '🤍') + ' <span data-like-count="' + post.id + '">' + currentLikes + '</span>' +
@@ -9452,13 +9798,20 @@ function postCard(post) {
                 '</div>' +
                 '<div class="comment-input-row">' +
                     '<input class="comment-input" data-comment-input="' + post.id + '" placeholder="Viết bình luận hoặc đặt câu hỏi cho đầu bếp..." autocomplete="off">' +
-                    '<button class="primary-button" style="padding:6px 14px;font-size:12px;" data-comment-send="' + post.id + '">Gửi</button>' +
+                    '<button type="button" class="primary-button" style="padding:6px 14px;font-size:12px;" data-comment-send="' + post.id + '">Gửi</button>' +
                 '</div>' +
             '</div>' +
         '</article>';
 }
 
-let allSocialPostsCache = [];
+previousViewBeforeRecipe = previousViewBeforeRecipe || 'recipes';
+
+function goBackFromRecipeDetail() {
+    openView(previousViewBeforeRecipe || 'recipes');
+}
+window.goBackFromRecipeDetail = goBackFromRecipeDetail;
+
+allSocialPostsCache = allSocialPostsCache || [];
 
 async function loadSocialFeed() {
     const feed = document.getElementById('socialFeed');
@@ -9466,14 +9819,35 @@ async function loadSocialFeed() {
     feed.innerHTML = '<div class="social-empty" style="grid-column:1/-1;">⏳ Đang tải các bài chia sẻ công thức...</div>';
 
     let apiPosts = [];
-    try {
-        apiPosts = await apiRequest(SOCIAL_API + '/posts') || [];
-    } catch (error) {
-        apiPosts = [];
+    if (isUserLoggedIn()) {
+        try {
+            apiPosts = await apiRequest(SOCIAL_API + '/posts') || [];
+        } catch (error) {
+            apiPosts = [];
+        }
     }
 
-    // API posts first, then community feed sample posts
-    allSocialPostsCache = apiPosts.length ? apiPosts : communityFeedPosts;
+    // Combine user's API posts with default community feed posts (avoid duplicate IDs or titles)
+    const seen = new Set();
+    const combined = [];
+    
+    (apiPosts || []).forEach(function (p) {
+        if (p && p.id && !seen.has(String(p.id)) && !seen.has(String(p.title || ''))) {
+            seen.add(String(p.id));
+            if (p.title) seen.add(String(p.title));
+            combined.push(p);
+        }
+    });
+
+    (communityFeedPosts || []).forEach(function (p) {
+        if (p && p.id && !seen.has(String(p.id)) && !seen.has(String(p.title || ''))) {
+            seen.add(String(p.id));
+            if (p.title) seen.add(String(p.title));
+            combined.push(p);
+        }
+    });
+
+    allSocialPostsCache = combined;
     renderSocialFeedFiltered();
 }
 
@@ -9549,27 +9923,48 @@ function renderSocialFeedFiltered() {
 async function loadPostComments(postId) {
     const listEl = document.querySelector('[data-comment-list="' + postId + '"]');
     if (!listEl) return;
-    try {
-        const comments = await apiRequest(SOCIAL_API + '/posts/' + postId + '/comments');
-        if (comments && comments.length) {
-            listEl.innerHTML = comments.map(function(c) {
-                const canDel = window.authState && authState.userId && (authState.userId === c.authorId || authState.userId === +c.authorId);
-                return '<div class="comment-item" style="display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border-light);">' +
-                    '<div><strong style="color:var(--text);font-size:13px;">' + escapeHtml(c.authorName || 'Người dùng') + ':</strong> ' +
-                    '<span style="font-size:13px;color:var(--text-soft);">' + escapeHtml(c.content) + '</span> ' +
-                    '<span style="font-size:11px;color:var(--text-muted);margin-left:6px;">' + socialTime(c.createdAt) + '</span></div>' +
-                    (canDel ? '<button class="text-button" style="color:var(--danger);font-size:11px;padding:0 4px;margin-left:8px;" data-del-comment="' + c.id + '" data-post-id="' + postId + '" title="Xóa bình luận">✕</button>' : '') +
-                    '</div>';
-            }).join('');
+    
+    let comments = [];
+    const isSample = String(postId).startsWith('c');
+    
+    if (isSample) {
+        try {
+            comments = JSON.parse(localStorage.getItem('foodx_comments_' + postId) || '[]');
+        } catch (_) { comments = []; }
+    } else {
+        try {
+            comments = await apiRequest(SOCIAL_API + '/posts/' + postId + '/comments') || [];
+        } catch (e) {
+            comments = [];
+        }
+    }
 
-            // Update comment count pill
-            const cntEl = document.querySelector('[data-comment-count="' + postId + '"]');
-            if (cntEl) cntEl.textContent = comments.length;
+    if (comments && comments.length) {
+        listEl.innerHTML = comments.map(function(c) {
+            const canDel = window.authState && authState.userId && (authState.userId === c.authorId || authState.userId === +c.authorId || isSample);
+            return '<div class="comment-item" style="display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border-light);">' +
+                '<div><strong style="color:var(--text);font-size:13px;">' + escapeHtml(c.authorName || 'Người dùng') + ':</strong> ' +
+                '<span style="font-size:13px;color:var(--text-soft);">' + escapeHtml(c.content) + '</span> ' +
+                '<span style="font-size:11px;color:var(--text-muted);margin-left:6px;">' + socialTime(c.createdAt) + '</span></div>' +
+                (canDel ? '<button class="text-button" style="color:var(--danger);font-size:11px;padding:0 4px;margin-left:8px;" data-del-comment="' + (c.id || 0) + '" data-post-id="' + postId + '" title="Xóa bình luận">✕</button>' : '') +
+                '</div>';
+        }).join('');
 
-            // Wire delete comment events
-            listEl.querySelectorAll('[data-del-comment]').forEach(function(delBtn) {
-                delBtn.addEventListener('click', async function() {
-                    const cId = delBtn.getAttribute('data-del-comment');
+        // Update comment count pill
+        const cntEl = document.querySelector('[data-comment-count="' + postId + '"]');
+        if (cntEl) cntEl.textContent = comments.length;
+
+        // Wire delete comment events
+        listEl.querySelectorAll('[data-del-comment]').forEach(function(delBtn) {
+            delBtn.addEventListener('click', async function() {
+                const cId = delBtn.getAttribute('data-del-comment');
+                if (isSample) {
+                    let localComms = JSON.parse(localStorage.getItem('foodx_comments_' + postId) || '[]');
+                    localComms = localComms.filter(function(x) { return String(x.id) !== String(cId); });
+                    localStorage.setItem('foodx_comments_' + postId, JSON.stringify(localComms));
+                    showToast('Đã xóa bình luận', 'info');
+                    loadPostComments(postId);
+                } else {
                     try {
                         await apiRequest(SOCIAL_API + '/comments/' + cId, { method: 'DELETE' });
                         showToast('Đã xóa bình luận', 'info');
@@ -9577,60 +9972,120 @@ async function loadPostComments(postId) {
                     } catch(e) {
                         showToast('Không thể xóa bình luận', 'error');
                     }
-                });
+                }
             });
-        } else {
-            listEl.innerHTML = '<div style="font-size:12px;color:var(--text-soft);padding:6px 0;">Chưa có bình luận nào. Hãy là người đầu tiên bình luận! ✨</div>';
-        }
-    } catch(e) {
-        listEl.innerHTML = '<div style="font-size:12px;color:var(--text-soft);padding:6px 0;">Đăng nhập để xem và gửi bình luận.</div>';
+        });
+    } else {
+        listEl.innerHTML = '<div style="font-size:12px;color:var(--text-soft);padding:6px 0;">Chưa có bình luận nào. Hãy là người đầu tiên bình luận! ✨</div>';
     }
 }
 
 function wirePostEvents() {
     // Like button
     document.querySelectorAll('[data-like]').forEach(function (btn) {
-        btn.addEventListener('click', async function () {
+        btn.addEventListener('click', async function (e) {
+            e.stopPropagation();
             if (!isUserLoggedIn()) {
                 requireAuth('like');
                 return;
             }
             const id = btn.getAttribute('data-like');
-            try {
-                const res = await apiRequest(SOCIAL_API + '/posts/' + id + '/like', { method: 'POST' });
-                if (res) {
-                    btn.classList.toggle('active', res.liked);
-                    btn.innerHTML = (res.liked ? '❤️' : '🤍') + ' <span data-like-count="' + id + '">' + res.likeCount + '</span>';
-                    likedPostsState[id] = res.liked;
-                    localStorage.setItem('foodx_liked_posts', JSON.stringify(likedPostsState));
-                    showToast(res.liked ? 'Đã thích bài viết ❤️' : 'Đã bỏ thích bài viết.', 'info');
+            const isNumeric = typeof id === 'number' || (!isNaN(+id) && !String(id).startsWith('c'));
+
+            if (isNumeric) {
+                try {
+                    const res = await apiRequest(SOCIAL_API + '/posts/' + id + '/like', { method: 'POST' });
+                    if (res) {
+                        btn.classList.toggle('active', res.liked);
+                        btn.innerHTML = (res.liked ? '❤️' : '🤍') + ' <span data-like-count="' + id + '">' + res.likeCount + '</span>';
+                        likedPostsState[id] = res.liked;
+                        localStorage.setItem('foodx_liked_posts', JSON.stringify(likedPostsState));
+                        showToast(res.liked ? 'Đã thích bài viết ❤️' : 'Đã bỏ thích bài viết.', 'info');
+                    }
+                } catch(e) {
+                    showToast('Cần đăng nhập để thích bài viết', 'warning');
                 }
-            } catch(e) {
-                showToast('Cần đăng nhập để thích bài viết', 'warning');
+            } else {
+                // Handle sample community post local like toggle
+                const wasLiked = !!likedPostsState[id];
+                const newLiked = !wasLiked;
+                likedPostsState[id] = newLiked;
+                localStorage.setItem('foodx_liked_posts', JSON.stringify(likedPostsState));
+                
+                const countEl = btn.querySelector('[data-like-count]');
+                let curCount = parseInt(countEl ? countEl.textContent : '0') || 0;
+                curCount = newLiked ? curCount + 1 : Math.max(0, curCount - 1);
+                
+                btn.classList.toggle('active', newLiked);
+                btn.innerHTML = (newLiked ? '❤️' : '🤍') + ' <span data-like-count="' + id + '">' + curCount + '</span>';
+                showToast(newLiked ? 'Đã thích bài viết ❤️' : 'Đã bỏ thích bài viết.', 'info');
+            }
+        });
+    });
+
+    // Open Recipe Detail on click (Image, Title, Desc, CTA)
+    document.querySelectorAll('[data-open-detail]').forEach(function (el) {
+        el.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const id = el.getAttribute('data-open-detail');
+            if (id) {
+                if (state && state.activeView && state.activeView !== 'recipe') {
+                    previousViewBeforeRecipe = state.activeView;
+                }
+                openRecipeDetail(id);
             }
         });
     });
 
     // Save button
     document.querySelectorAll('[data-save]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
             if (!isUserLoggedIn()) {
                 requireAuth('favorite');
                 return;
             }
             const id = btn.getAttribute('data-save');
-            const title = btn.getAttribute('data-title') || 'Bài viết';
-            savedPostsState[id] = !savedPostsState[id];
+            const title = btn.getAttribute('data-title') || 'Công thức';
+            const postObj = (allSocialPostsCache || []).find(p => String(p.id) === String(id))
+                || (communityFeedPosts || []).find(p => String(p.id) === String(id));
+            
+            const isCurrentlySaved = !!savedPostsState[id];
+            if (isCurrentlySaved) {
+                delete savedPostsState[id];
+                state.favorites = state.favorites.filter(x => String(x) !== String(id));
+                btn.classList.remove('saved-active');
+                btn.innerHTML = '🤍 Lưu món';
+                showToast('Đã bỏ lưu "' + title + '".', 'info');
+            } else {
+                savedPostsState[id] = {
+                    id: id,
+                    title: title,
+                    imageUrl: postObj ? (postObj.imageUrl || postObj.image) : '',
+                    cookTime: postObj ? (postObj.cookTime || postObj.time) : '30 phút',
+                    kcal: postObj ? postObj.kcal : 350,
+                    description: postObj ? postObj.description : '',
+                    ingredients: postObj ? postObj.ingredients : [],
+                    instructions: postObj ? postObj.instructions : '',
+                    savedAt: new Date().toISOString()
+                };
+                if (!state.favorites.some(x => String(x) === String(id))) {
+                    state.favorites.push(id);
+                }
+                btn.classList.add('saved-active');
+                btn.innerHTML = '🔖 Đã lưu';
+                showToast('Đã lưu công thức "' + title + '" vào danh sách yêu thích! ❤️', 'success');
+            }
             localStorage.setItem('foodx_saved_posts', JSON.stringify(savedPostsState));
-            btn.classList.toggle('saved-active', savedPostsState[id]);
-            btn.innerHTML = savedPostsState[id] ? '🔖 Đã lưu' : '🤍 Lưu món';
-            showToast(savedPostsState[id] ? 'Đã lưu "' + title + '" vào công thức yêu thích 🔖' : 'Đã bỏ lưu món.', 'success');
+            saveState();
+            if (typeof renderFavorites === 'function') renderFavorites();
         });
     });
 
     // Comment toggle & load
     document.querySelectorAll('[data-comments]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
             const id = btn.getAttribute('data-comments');
             const box = document.querySelector('[data-comments-box="' + id + '"]');
             if (box) {
@@ -9644,7 +10099,8 @@ function wirePostEvents() {
 
     // Comment send
     document.querySelectorAll('[data-comment-send]').forEach(function (btn) {
-        btn.addEventListener('click', async function () {
+        btn.addEventListener('click', async function (e) {
+            e.stopPropagation();
             if (!isUserLoggedIn()) {
                 requireAuth('comment');
                 return;
@@ -9654,19 +10110,35 @@ function wirePostEvents() {
             if (input && input.value.trim()) {
                 const text = input.value.trim();
                 btn.disabled = true;
-                try {
-                    await apiRequest(SOCIAL_API + '/posts/' + id + '/comments', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ content: text })
+                const isSample = String(id).startsWith('c');
+                if (isSample) {
+                    let localComms = JSON.parse(localStorage.getItem('foodx_comments_' + id) || '[]');
+                    localComms.push({
+                        id: Date.now(),
+                        authorName: (window.authState && (authState.fullName || authState.username)) || 'Bạn',
+                        content: text,
+                        createdAt: new Date().toISOString()
                     });
+                    localStorage.setItem('foodx_comments_' + id, JSON.stringify(localComms));
                     input.value = '';
                     showToast('Đã gửi bình luận! 💬', 'success');
                     loadPostComments(id);
-                } catch (e) {
-                    showToast('Không gửi được bình luận', 'error');
-                } finally {
                     btn.disabled = false;
+                } else {
+                    try {
+                        await apiRequest(SOCIAL_API + '/posts/' + id + '/comments', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ content: text })
+                        });
+                        input.value = '';
+                        showToast('Đã gửi bình luận! 💬', 'success');
+                        loadPostComments(id);
+                    } catch (e) {
+                        showToast('Không gửi được bình luận: ' + (e.message || ''), 'error');
+                    } finally {
+                        btn.disabled = false;
+                    }
                 }
             }
         });
@@ -9674,7 +10146,8 @@ function wirePostEvents() {
 
     // Share button
     document.querySelectorAll('[data-share]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(window.location.href);
             }
@@ -9684,7 +10157,10 @@ function wirePostEvents() {
 
     // Delete post
     document.querySelectorAll('[data-delete]').forEach(function (btn) {
-        btn.addEventListener('click', function () { deletePost(btn.getAttribute('data-delete')); });
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            deletePost(btn.getAttribute('data-delete'));
+        });
     });
 }
 
@@ -9834,8 +10310,8 @@ async function createPost() {
 /* =========================================================
    RECIPES BROWSE + DETAIL (gop tu dk-dn)
 ========================================================= */
-let recipesCache = [];
-let curRecipe = null;
+recipesCache = recipesCache || [];
+curRecipe = curRecipe || null;
 
 function recipeEmoji(r) {
     const t = (r.title || '').toLowerCase();
@@ -9908,44 +10384,91 @@ function renderRecipeBrowse() {
 }
 
 async function openRecipeDetail(id) {
-    try {
-        curRecipe = await apiRequest('/api/recipes/' + id);
-    } catch (e) {
-        showToast('Không tải được công thức.', 'error');
+    if (!id) return;
+    curRecipe = null;
+
+    // Check in savedPostsState / allSocialPostsCache / communityFeedPosts / sampleBlogPosts
+    const savedPosts = JSON.parse(localStorage.getItem('foodx_saved_posts') || '{}');
+    let socialMatch = savedPosts[String(id)] || null;
+    if (!socialMatch && typeof allSocialPostsCache !== 'undefined' && Array.isArray(allSocialPostsCache)) {
+        socialMatch = allSocialPostsCache.find(p => String(p.id) === String(id) || (p.title && String(p.title) === String(id)));
+    }
+    if (!socialMatch && typeof communityFeedPosts !== 'undefined' && Array.isArray(communityFeedPosts)) {
+        socialMatch = communityFeedPosts.find(p => String(p.id) === String(id) || (p.title && String(p.title) === String(id)));
+    }
+    if (!socialMatch && typeof sampleBlogPosts !== 'undefined' && Array.isArray(sampleBlogPosts)) {
+        socialMatch = sampleBlogPosts.find(p => String(p.id) === String(id) || (p.title && String(p.title) === String(id)));
+    }
+
+    if (socialMatch && (!socialMatch.ingredients || !socialMatch.ingredients.length)) {
+        const fullPost = (typeof allSocialPostsCache !== 'undefined' && (allSocialPostsCache || []).find(p => String(p.id) === String(id)))
+            || (typeof communityFeedPosts !== 'undefined' && (communityFeedPosts || []).find(p => String(p.id) === String(id)));
+        if (fullPost) {
+            socialMatch.ingredients = fullPost.ingredients || [];
+            if (!socialMatch.instructions) socialMatch.instructions = fullPost.instructions || '';
+            if (!socialMatch.steps) socialMatch.steps = fullPost.steps || [];
+        }
+    }
+
+    if (socialMatch) {
+        curRecipe = {
+            id: socialMatch.id,
+            title: socialMatch.title,
+            name: socialMatch.title,
+            description: socialMatch.description || '',
+            cookTime: socialMatch.cookTime || '30',
+            time: parseInt(socialMatch.cookTime) || 30,
+            kcal: parseInt(socialMatch.kcal) || 350,
+            servings: socialMatch.servings || 2,
+            difficulty: socialMatch.difficulty || (socialMatch.category === 'eatclean' ? 'Healthy' : 'Dễ nấu'),
+            category: socialMatch.category || 'Món chính',
+            imageUrl: socialMatch.imageUrl || socialMatch.image || '',
+            ingredients: Array.isArray(socialMatch.ingredients)
+                ? socialMatch.ingredients.map(i => typeof i === 'string' ? { ingredientName: i, quantity: '', unit: '' } : i)
+                : [],
+            instructions: socialMatch.instructions || (Array.isArray(socialMatch.steps) ? socialMatch.steps.join('\n') : (socialMatch.description || '')),
+            steps: Array.isArray(socialMatch.steps)
+                ? socialMatch.steps
+                : (socialMatch.instructions ? String(socialMatch.instructions).split('\n').filter(Boolean) : [socialMatch.description || 'Sơ chế và nấu theo khẩu vị'])
+        };
+    } else {
+        try {
+            curRecipe = await apiRequest('/api/recipes/' + id);
+        } catch (e) {
+            curRecipe = (recipesCache || []).find(r => r.id === Number(id) || String(r.id) === String(id))
+                || (typeof recipes !== 'undefined' ? recipes.find(r => r.id === Number(id) || String(r.id) === String(id)) : null);
+        }
+    }
+
+    if (!curRecipe) {
+        showToast('Không tìm thấy thông tin công thức.', 'warning');
         return;
     }
+
+    if (!curRecipe.name && curRecipe.title) curRecipe.name = curRecipe.title;
+    if (!curRecipe.title && curRecipe.name) curRecipe.title = curRecipe.name;
+    if (!curRecipe.time && curRecipe.cookTime) curRecipe.time = curRecipe.cookTime;
+    if (!curRecipe.cookTime && curRecipe.time) curRecipe.cookTime = curRecipe.time;
+
+    activeRecipeContext = {
+        id: curRecipe.id,
+        name: curRecipe.title || curRecipe.name,
+        ingredients: Array.isArray(curRecipe.ingredients)
+            ? curRecipe.ingredients.map(i => typeof i === 'string' ? i : (i.ingredientName || i.name))
+            : [],
+        steps: Array.isArray(curRecipe.steps)
+            ? [...curRecipe.steps]
+            : String(curRecipe.instructions || '').split('\n').filter(Boolean),
+        kcal: curRecipe.kcal || 350,
+        time: curRecipe.cookTime || curRecipe.time || 30,
+        difficulty: curRecipe.difficulty || 'Dễ'
+    };
+
     renderRecipeDetail();
     openView('recipe');
 }
+window.openRecipeDetail = openRecipeDetail;
 
-function renderRecipeDetail() {
-    const r = curRecipe;
-    document.getElementById('rdEmoji').textContent = recipeEmoji(r);
-    document.getElementById('rdTitle').textContent = r.title;
-    document.getElementById('rdMeta').innerHTML =
-        '<span>⏱ ' + (r.cookTime || '—') + ' phút</span>' +
-        '<span>📊 ' + escapeHtml(r.difficulty || '—') + '</span>' +
-        '<span>🍽 ' + (r.servings || 1) + ' người</span>' +
-        (r.kcal ? '<span>🔥 ' + r.kcal + ' kcal</span>' : '');
-    document.getElementById('rdDesc').textContent = r.description || '';
-    const ings = r.ingredients || [];
-    document.getElementById('rdIng').innerHTML = ings.length
-        ? '<ul class="rd-ing-list">' + ings.map(function (i) {
-            return '<li><span>' + escapeHtml(i.ingredientName || '') + '</span>' +
-                '<span class="qty">' + (i.quantity != null ? i.quantity : '') + ' ' + escapeHtml(i.unit || '') + '</span></li>';
-        }).join('') + '</ul>'
-        : '<div class="social-empty">Chưa cập nhật nguyên liệu.</div>';
-    const steps = String(r.instructions || '').split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
-    document.getElementById('rdSteps').innerHTML = steps.length
-        ? '<ol class="rd-steps-list">' + steps.map(function (s) { return '<li>' + escapeHtml(s) + '</li>'; }).join('') + '</ol>'
-        : '<div class="social-empty">Chưa cập nhật các bước.</div>';
-    document.getElementById('rdNutri').innerHTML =
-        '<div class="nutri-row"><span>🔥 Calo</span><b>' + (r.kcal || 0) + ' kcal</b></div>' +
-        '<div class="nutri-row"><span>Đạm (Protein)</span><b>' + (r.protein || 0) + ' g</b></div>' +
-        '<div class="nutri-row"><span>Tinh bột (Carbs)</span><b>' + (r.carb || 0) + ' g</b></div>' +
-        '<div class="nutri-row"><span>Chất béo (Fat)</span><b>' + (r.fat || 0) + ' g</b></div>';
-    document.getElementById('rdSave').innerHTML = '🤍 Lưu món';
-}
 
 async function toggleSaveRecipe() {
     if (!curRecipe) return;
@@ -9953,13 +10476,52 @@ async function toggleSaveRecipe() {
         requireAuth('save');
         return;
     }
-    try {
-        const saved = await apiRequest('/api/recipes/' + curRecipe.id + '/save', { method: 'POST' });
-        document.getElementById('rdSave').innerHTML = saved ? '❤️ Đã lưu' : '🤍 Lưu món';
-        showToast(saved ? 'Đã lưu vào món yêu thích ❤️' : 'Đã bỏ lưu món.', 'success');
-    } catch (e) {
-        showToast('Cần đăng nhập để lưu món.', 'error');
+    const idKey = String(curRecipe.id);
+    const wasSaved = !!savedPostsState[idKey];
+    const newSaved = !wasSaved;
+
+    // Save locally into user's collection
+    if (newSaved) {
+        savedPostsState[idKey] = {
+            id: curRecipe.id,
+            title: curRecipe.title || curRecipe.name,
+            imageUrl: curRecipe.imageUrl || curRecipe.image,
+            cookTime: curRecipe.cookTime || curRecipe.time,
+            kcal: curRecipe.kcal,
+            description: curRecipe.description,
+            ingredients: curRecipe.ingredients,
+            instructions: curRecipe.instructions,
+            savedAt: new Date().toISOString()
+        };
+        if (!state.favorites.some(x => String(x) === idKey)) {
+            state.favorites.push(curRecipe.id);
+        }
+    } else {
+        delete savedPostsState[idKey];
+        state.favorites = state.favorites.filter(x => String(x) !== idKey);
     }
+    localStorage.setItem('foodx_saved_posts', JSON.stringify(savedPostsState));
+    saveState();
+
+    // Try API save if numeric ID
+    if (typeof curRecipe.id === 'number' || (!isNaN(+curRecipe.id) && !String(curRecipe.id).startsWith('c'))) {
+        try {
+            await apiRequest('/api/recipes/' + curRecipe.id + '/save', { method: 'POST' });
+        } catch (_) {}
+    }
+
+    const saveBtn = document.getElementById('rdSave');
+    if (saveBtn) saveBtn.innerHTML = newSaved ? '❤️ Đã lưu vào công thức của tôi' : '🤍 Lưu món';
+    
+    // Sync matching post cards if present
+    const cardSaveBtn = document.querySelector('[data-save="' + curRecipe.id + '"]');
+    if (cardSaveBtn) {
+        cardSaveBtn.classList.toggle('saved-active', newSaved);
+        cardSaveBtn.innerHTML = newSaved ? '🔖 Đã lưu' : '🤍 Lưu món';
+    }
+
+    if (typeof renderFavorites === 'function') renderFavorites();
+    showToast(newSaved ? 'Đã lưu công thức vào bộ sưu tập của bạn! 🎉' : 'Đã bỏ lưu món.', 'success');
 }
 
 function addCurToPlan() {
@@ -10066,19 +10628,33 @@ function renderPlan(days) {
             ['morning', 'lunch', 'dinner'].map(function (slot) {
                 const e = meals[slot];
                 if (e) {
-                    return '<div class="meal-row" id="meal-slot-' + key + '-' + slot + '"><span class="meal-slot">' + SLOT[slot][0] + ' ' + SLOT[slot][1] + '</span>' +
-                        '<span class="meal-name" title="' + escapeHtml(e.recipeTitle) + '">' + escapeHtml(e.recipeTitle) + '</span>' +
-                        '<span class="meal-kcal">' + (e.recipeKcal || 0) + ' kcal</span>' +
-                        '<div class="meal-actions">' +
-                            '<button class="meal-swap-btn" data-swap-date="' + key + '" data-swap-slot="' + slot + '" title="🤖 AI Đổi món khác ngay">🔄 Đổi</button>' +
-                            '<button class="meal-x" data-rm-date="' + key + '" data-rm-slot="' + slot + '" title="Xoá món">✕</button>' +
-                        '</div></div>';
+                    return '<div class="meal-row" id="meal-slot-' + key + '-' + slot + '">' +
+                        '<div class="meal-row-header">' +
+                            '<span class="meal-slot-tag">' + SLOT[slot][0] + ' ' + SLOT[slot][1] + '</span>' +
+                            '<span class="meal-kcal-badge">' + (e.recipeKcal || 0) + ' kcal</span>' +
+                            '<div class="meal-actions">' +
+                                '<button type="button" class="meal-edit-btn" data-add-date="' + key + '" data-add-slot="' + slot + '" title="Đổi hoặc tự chọn món khác">✏️ Đổi</button>' +
+                                '<button type="button" class="meal-swap-btn" data-swap-date="' + key + '" data-swap-slot="' + slot + '" title="🤖 AI Đổi món tự động">⚡ AI</button>' +
+                                '<button type="button" class="meal-x" data-rm-date="' + key + '" data-rm-slot="' + slot + '" title="Xoá món">✕</button>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="meal-row-body">' +
+                            '<div class="meal-name" title="' + escapeHtml(e.recipeTitle) + '" data-open-recipe="' + (e.recipeId || '') + '">' +
+                                escapeHtml(e.recipeTitle) +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
                 }
-                return '<div class="meal-row empty" id="meal-slot-' + key + '-' + slot + '"><span class="meal-slot">' + SLOT[slot][0] + ' ' + SLOT[slot][1] + '</span>' +
-                    '<div class="slot-empty-actions">' +
-                        '<button class="ai-suggest-slot-btn" data-ai-slot-date="' + key + '" data-ai-slot-type="' + slot + '" title="AI tự động đề xuất món ngon phù hợp vào ô này">🤖 AI Gợi ý</button>' +
-                        '<button class="add-meal-btn" data-add-date="' + key + '" data-add-slot="' + slot + '" title="Tự nhập món hoặc chọn từ kho">＋ Thêm</button>' +
-                    '</div></div>';
+                return '<div class="meal-row empty" id="meal-slot-' + key + '-' + slot + '">' +
+                    '<div class="meal-row-header">' +
+                        '<span class="meal-slot-tag">' + SLOT[slot][0] + ' ' + SLOT[slot][1] + '</span>' +
+                        '<span class="meal-empty-hint">Trống</span>' +
+                        '<div class="slot-empty-actions">' +
+                            '<button type="button" class="ai-suggest-slot-btn" data-ai-slot-date="' + key + '" data-ai-slot-type="' + slot + '" title="AI tự động đề xuất món ngon">✨ AI</button>' +
+                            '<button type="button" class="add-meal-btn" data-add-date="' + key + '" data-add-slot="' + slot + '" title="Tự nhập món hoặc chọn từ kho">＋ Thêm</button>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
             }).join('') + '</div>';
     }).join('');
 
@@ -10109,6 +10685,16 @@ function renderPlan(days) {
             openAddMeal(b.getAttribute('data-add-date'), b.getAttribute('data-add-slot'));
         });
     });
+
+    // Mở chi tiết công thức khi bấm vào tên món
+    document.querySelectorAll('[data-open-recipe]').forEach(function (el) {
+        el.addEventListener('click', function () {
+            const rid = el.getAttribute('data-open-recipe');
+            if (rid) {
+                openRecipeDetail(rid);
+            }
+        });
+    });
 }
 
 let currentPlanDate = null;
@@ -10122,8 +10708,9 @@ async function quickAiSuggest(date, slot, prompt) {
     const SLOT_TEXT = { morning: '🌅 Sáng', lunch: '☀️ Trưa', dinner: '🌙 Tối' };
     const slotEl = document.getElementById('meal-slot-' + date + '-' + slot);
     if (slotEl) {
-        slotEl.innerHTML = '<span class="meal-slot">' + (SLOT_TEXT[slot] || 'Bữa ăn') + '</span>' +
-            '<span style="color:var(--green);font-weight:600;font-size:11px;display:flex;align-items:center;gap:4px;">⏳ AI đang sáng tạo món...</span>';
+        slotEl.innerHTML = '<div class="meal-row-header"><span class="meal-slot-tag">' + (SLOT_TEXT[slot] || 'Bữa ăn') + '</span></div>' +
+            '<div style="color:var(--green);font-weight:700;font-size:12px;padding:6px 0;display:flex;align-items:center;gap:4px;">' +
+            '⏳ AI đang sáng tạo món...</div>';
     }
     try {
         const res = await apiRequest('/api/plan/suggest-slot', {
@@ -10233,9 +10820,17 @@ function switchPlanModalTab(tabName) {
     }
 }
 
-function renderPmmRecipes(filterText) {
+async function renderPmmRecipes(filterText) {
     const listEl = document.getElementById('pmmRecipeList');
     if (!listEl) return;
+    if (!recipesCache || !recipesCache.length) {
+        try {
+            const res = await apiRequest('/api/recipes');
+            if (Array.isArray(res) && res.length) {
+                recipesCache = res;
+            }
+        } catch (_) {}
+    }
     let list = recipesCache || [];
     if (filterText) {
         const q = filterText.toLowerCase();
@@ -10245,11 +10840,11 @@ function renderPmmRecipes(filterText) {
         listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-soft);font-size:13px;">Chưa có món ăn phù hợp trong kho</div>';
         return;
     }
-    listEl.innerHTML = list.slice(0, 15).map(function (r) {
-        return '<div class="pmm-recipe-item" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;background:var(--card-bg);border:1px solid var(--border);cursor:pointer;margin-bottom:6px;" data-pick-recipe="' + r.id + '">' +
-            '<div><div style="font-weight:600;font-size:14px;">' + escapeHtml(r.title) + '</div>' +
+    listEl.innerHTML = list.slice(0, 20).map(function (r) {
+        return '<div class="pmm-recipe-item" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;background:var(--card);border:1px solid var(--border);cursor:pointer;margin-bottom:6px;" data-pick-recipe="' + r.id + '">' +
+            '<div><div style="font-weight:700;font-size:14px;color:var(--text);">' + escapeHtml(r.title) + '</div>' +
             '<div style="font-size:12px;color:var(--text-soft);margin-top:2px;">' + (r.kcal || 400) + ' kcal · ' + (r.cookTime ? r.cookTime + ' phút' : 'Dễ nấu') + '</div></div>' +
-            '<button type="button" class="secondary-button" style="padding:6px 12px;font-size:12px;border-radius:6px;pointer-events:none;">Chọn</button>' +
+            '<button type="button" class="secondary-button" style="padding:5px 12px;font-size:12px;border-radius:6px;pointer-events:none;">Chọn</button>' +
             '</div>';
     }).join('');
 
@@ -10289,32 +10884,7 @@ async function autoPlan() {
 /* =========================================================
    STATS - THỐNG KÊ (gop tu dk-dn)
 ========================================================= */
-async function loadStats() {
-    try {
-        const s = await apiRequest('/api/stats');
-        if (!s) return;
-        const kpi = document.getElementById('kpiGrid');
-        if (kpi) {
-            kpi.innerHTML =
-                '<div class="kpi"><span class="k-ic">🍳</span><b>' + s.totalCooked + '</b><span>món đã nấu</span></div>' +
-                '<div class="kpi"><span class="k-ic">📅</span><b>' + s.weekCooked + '</b><span>trong 7 ngày</span></div>' +
-                '<div class="kpi"><span class="k-ic">🗓</span><b>' + s.monthCooked + '</b><span>trong 30 ngày</span></div>';
-        }
-        drawLineChart(s.byDay);
-        const top = document.getElementById('topDishes');
-        if (top) {
-            top.innerHTML = (s.topRecipes && s.topRecipes.length)
-                ? s.topRecipes.map(function (t) {
-                    return '<div class="top-row"><span class="top-emoji">' + recipeEmoji({ title: t.title }) + '</span>' +
-                        '<span class="top-name">' + escapeHtml(t.title) + '</span><span class="top-cnt">×' + t.count + ' lần</span></div>';
-                }).join('')
-                : '<div class="social-empty">Chưa có dữ liệu nấu ăn.</div>';
-        }
-    } catch (e) {
-        const kpi = document.getElementById('kpiGrid');
-        if (kpi) kpi.innerHTML = '<div class="social-empty">Đăng nhập để xem thống kê.</div>';
-    }
-}
+/* loadStats is implemented in STATS section with full insights & waste tracker */
 
 function drawLineChart(byDay) {
     const svg = document.getElementById('statsLine');
@@ -10551,14 +11121,13 @@ async function addCurRecipeMissingToShopping() {
         });
     });
 
-    // Load dữ liệu khi mở view tương ứng
-    const origOpenView = window.openView;
-    window.openView = function (name) {
-        origOpenView(name);
-        if (name === 'recipes') loadRecipes();
-        if (name === 'plan') loadPlan();
-        if (name === 'stats') loadStats();
-    };
+    const pmmOverlay = document.getElementById('planMealModal');
+    if (pmmOverlay) {
+        pmmOverlay.addEventListener('click', function (e) {
+            if (e.target === pmmOverlay) pmmOverlay.hidden = true;
+        });
+    }
+
 })();
 
 
@@ -10788,7 +11357,11 @@ function renderRecipeDetail() {
         '<div class="nutri-row"><span>Đạm (Protein)</span><b>' + n.p + ' g</b></div>' +
         '<div class="nutri-row"><span>Tinh bột (Carbs)</span><b>' + n.c + ' g</b></div>' +
         '<div class="nutri-row"><span>Chất béo (Fat)</span><b>' + n.f + ' g</b></div>';
-    document.getElementById('rdSave').innerHTML = '🤍 Lưu món';
+    
+    const isSaved = !!savedPostsState[String(r.id)];
+    const saveBtn = document.getElementById('rdSave');
+    if (saveBtn) saveBtn.innerHTML = isSaved ? '❤️ Đã lưu vào công thức của tôi' : '🤍 Lưu món';
+    
     renderRelated(r);
 }
 
@@ -10905,6 +11478,45 @@ async function delShop(id) {
     }
 }
 
+let currentShopFilter = 'all';
+let currentShopSearch = '';
+let allShoppingItemsCache = [];
+let srmSelectedRecipe = null;
+
+function formatShopTime(dateStr) {
+    if (!dateStr) return 'Vừa thêm';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return 'Vừa thêm';
+    const now = new Date();
+    const diffSec = Math.floor((now - d) / 1000);
+    if (diffSec < 60) return 'Vừa xong';
+    if (diffSec < 3600) return Math.floor(diffSec / 60) + ' phút trước';
+    const isToday = d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    const timeStr = d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+    if (isToday) return 'Hôm nay, ' + timeStr;
+    return d.getDate() + '/' + (d.getMonth() + 1) + ' ' + timeStr;
+}
+
+function shopEmoji(name) {
+    const t = String(name || '').toLowerCase();
+    if (t.includes('bò') || t.includes('thịt bò') || t.includes('xương')) return '🥩';
+    if (t.includes('heo') || t.includes('lợn') || t.includes('sườn') || t.includes('ba chỉ')) return '🥓';
+    if (t.includes('gà') || t.includes('vịt') || t.includes('cánh gà') || t.includes('ức gà')) return '🍗';
+    if (t.includes('cá') || t.includes('tôm') || t.includes('mực') || t.includes('hải sản') || t.includes('cua')) return '🐟';
+    if (t.includes('trứng')) return '🥚';
+    if (t.includes('sữa') || t.includes('bơ') || t.includes('phô mai')) return '🥛';
+    if (t.includes('rau') || t.includes('cải') || t.includes('xà lách') || t.includes('mồng tơi') || t.includes('muống')) return '🥬';
+    if (t.includes('cà chua')) return '🍅';
+    if (t.includes('hành') || t.includes('ngò') || t.includes('mùi')) return '🧅';
+    if (t.includes('tỏi') || t.includes('gừng') || t.includes('sả') || t.includes('ớt')) return '🧄';
+    if (t.includes('bánh phở') || t.includes('bún') || t.includes('mì') || t.includes('miến') || t.includes('gạo') || t.includes('cơm')) return '🍜';
+    if (t.includes('hồi') || t.includes('quế') || t.includes('thảo quả') || t.includes('gia vị') || t.includes('nước mắm') || t.includes('tiêu')) return '🧂';
+    if (t.includes('chanh') || t.includes('quất') || t.includes('tắc')) return '🍋';
+    if (t.includes('nấm')) return '🍄';
+    if (t.includes('dầu')) return '🫒';
+    return '🛒';
+}
+
 async function addShop() {
     const input = document.getElementById('shoppingInput');
     const v = (input ? input.value.trim() : '');
@@ -10930,69 +11542,350 @@ async function addShop() {
     }
 }
 
+async function addShopByName(name, qty, category) {
+    if (!name) return;
+    if (!isUserLoggedIn()) {
+        requireAuth('shopping');
+        return;
+    }
+    try {
+        await apiRequest('/api/shopping', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name, quantity: qty || '1 phần', price: 25000, category: category || 'Nguyên liệu' })
+        });
+        await renderShopping();
+        showToast(`Đã thêm "${name}" vào Danh sách mua 🛒`, 'success');
+    } catch (e) {
+        showToast('Không thể thêm món vào danh sách mua: ' + e.message, 'error');
+    }
+}
+
 async function renderShopping() {
+    try {
+        allShoppingItemsCache = await apiRequest('/api/shopping') || [];
+    } catch (e) {
+        allShoppingItemsCache = [];
+    }
+    renderShoppingFiltered();
+}
+
+function renderShoppingFiltered() {
     const list = document.getElementById('shoppingList');
     if (!list) return;
-    let items = [];
-    try {
-        items = await apiRequest('/api/shopping') || [];
-    } catch (e) {
-        items = [];
-    }
-    const done = items.filter(function (i) { return i.done; }).length;
-    const pct = items.length ? Math.round(done / items.length * 100) : 0;
+
+    const items = allShoppingItemsCache || [];
+    const totalCount = items.length;
+    const doneCount = items.filter(function (i) { return i.done; }).length;
+    const pendingCount = totalCount - doneCount;
+    const pct = totalCount ? Math.round(doneCount / totalCount * 100) : 0;
+
+    // Update progress numbers
+    const cntAll = document.getElementById('shopCntAll');
+    const cntPending = document.getElementById('shopCntPending');
+    const cntDone = document.getElementById('shopCntDone');
+    if (cntAll) cntAll.textContent = '(' + totalCount + ')';
+    if (cntPending) cntPending.textContent = '(' + pendingCount + ')';
+    if (cntDone) cntDone.textContent = '(' + doneCount + ')';
 
     const sumEl = document.getElementById('shoppingSummary');
     const bar = document.getElementById('shoppingBar');
-    if (sumEl) sumEl.innerHTML = '<span>Đã mua: <b>' + done + '/' + items.length + ' món</b></span>';
+    if (sumEl) {
+        sumEl.innerHTML = 'Đã hoàn thành: <b>' + doneCount + '/' + totalCount + ' món (' + pct + '%)</b>';
+    }
     if (bar) bar.style.width = pct + '%';
 
+    // Filter items
+    let filtered = items;
+    if (currentShopFilter === 'pending') {
+        filtered = filtered.filter(function (i) { return !i.done; });
+    } else if (currentShopFilter === 'done') {
+        filtered = filtered.filter(function (i) { return !!i.done; });
+    }
+
+    // Keyword search
+    const kw = (currentShopSearch || '').trim().toLowerCase();
+    if (kw) {
+        filtered = filtered.filter(function (i) {
+            return String(i.name || '').toLowerCase().includes(kw) ||
+                   String(i.quantity || '').toLowerCase().includes(kw) ||
+                   String(i.category || '').toLowerCase().includes(kw);
+        });
+    }
+
     if (!items.length) {
-        renderEmpty(list, '🛒', 'Danh sách mua sắm đang trống', 'Thêm nguyên liệu bạn cần mua.', '+ Thêm nguyên liệu', function () {
+        renderEmpty(list, '🛒', 'Danh sách mua sắm đang trống', 'Nhập nguyên liệu hoặc chọn gợi ý nhanh bên trên.', '+ Thêm nguyên liệu', function () {
             const input = document.getElementById('shoppingInput');
             if (input) { input.focus(); }
         });
         return;
     }
-    list.innerHTML = items.map(function (i) {
+
+    if (!filtered.length) {
+        list.innerHTML = '<div class="card" style="text-align:center;padding:36px 20px;border-radius:16px;">' +
+            '<div style="font-size:32px;margin-bottom:8px;">🔍</div>' +
+            '<b style="font-size:15px;color:var(--text);">Không tìm thấy nguyên liệu nào</b>' +
+            '<p style="font-size:13px;color:var(--text-soft);margin-top:4px;">Thử tìm từ khóa khác hoặc chuyển tab bộ lọc.</p>' +
+            '</div>';
+        return;
+    }
+
+    list.innerHTML = filtered.map(function (i) {
+        const emoji = shopEmoji(i.name);
+        const isRecipeOrigin = i.category && (i.category.includes('Công thức') || i.category.includes('Món'));
+        const timeBadge = '<span class="shop-time-badge">⏱ ' + formatShopTime(i.createdAt) + '</span>';
+        const recipeBadge = isRecipeOrigin
+            ? '<span class="shop-recipe-badge">🍲 ' + escapeHtml(i.category) + '</span>'
+            : (i.category ? '<span class="shop-cat-badge">' + escapeHtml(i.category) + '</span>' : '');
+
         return '<div class="shop-row' + (i.done ? ' done' : '') + '">' +
-            '<input type="checkbox" data-shop-toggle="' + i.id + '"' + (i.done ? ' checked' : '') + '>' +
-            '<div class="shop-info" style="flex:1; margin-left:8px;">' +
-            '<div class="shop-name' + (i.done ? ' done' : '') + '">' + escapeHtml(i.name) + '</div>' +
-            '<div class="shop-sub" style="font-size:12px; color:var(--text-soft);">' + escapeHtml(i.quantity || '1 phần') + '</div>' +
+            '<input type="checkbox" class="shop-item-check" data-shop-toggle="' + i.id + '"' + (i.done ? ' checked' : '') + ' title="Đánh dấu đã mua">' +
+            '<div class="shop-emoji-icon">' + emoji + '</div>' +
+            '<div class="shop-info">' +
+                '<div class="shop-name' + (i.done ? ' done' : '') + '">' + escapeHtml(i.name) + '</div>' +
+                '<div class="shop-meta-row">' +
+                    '<span class="shop-qty-badge">' + escapeHtml(i.quantity || '1 phần') + '</span>' +
+                    recipeBadge +
+                    timeBadge +
+                '</div>' +
             '</div>' +
-            '<button class="shop-item-del" data-shop-del="' + i.id + '" aria-label="Xoá mục" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:16px; padding:4px 8px;">🗑</button>' +
+            '<button type="button" class="shop-item-del" data-shop-del="' + i.id + '" title="Xoá món này">🗑</button>' +
             '</div>';
     }).join('');
-    document.querySelectorAll('[data-shop-toggle]').forEach(function (c) {
+
+    // Wire toggle
+    list.querySelectorAll('[data-shop-toggle]').forEach(function (c) {
         c.addEventListener('change', function () { toggleShop(+c.getAttribute('data-shop-toggle')); });
     });
-    document.querySelectorAll('[data-shop-del]').forEach(function (b) {
+
+    // Wire delete
+    list.querySelectorAll('[data-shop-del]').forEach(function (b) {
         b.addEventListener('click', function () { delShop(+b.getAttribute('data-shop-del')); });
     });
 }
+
+// Shopping Recipe Import Modal
+function openShoppingRecipeModal() {
+    const modal = document.getElementById('shoppingRecipeModal');
+    if (!modal) return;
+    modal.hidden = false;
+    srmSelectedRecipe = null;
+    const box = document.getElementById('srmIngredientsBox');
+    if (box) box.style.display = 'none';
+    renderSrmRecipes('');
+}
+
+function renderSrmRecipes(kw) {
+    const listEl = document.getElementById('srmRecipeList');
+    if (!listEl) return;
+    const query = String(kw || '').trim().toLowerCase();
+    
+    let allR = (recipesCache || []);
+    if (typeof sampleBlogPosts !== 'undefined' && Array.isArray(sampleBlogPosts)) {
+        allR = allR.concat(sampleBlogPosts);
+    }
+    if (typeof communityFeedPosts !== 'undefined' && Array.isArray(communityFeedPosts)) {
+        allR = allR.concat(communityFeedPosts);
+    }
+
+    // Unique by title
+    const seen = new Set();
+    const uniqueList = allR.filter(function (r) {
+        const title = r.title || r.name;
+        if (!title || seen.has(title)) return false;
+        seen.add(title);
+        return true;
+    });
+
+    let filtered = uniqueList;
+    if (query) {
+        filtered = filtered.filter(function (r) {
+            return String(r.title || r.name || '').toLowerCase().includes(query) ||
+                   String(r.category || '').toLowerCase().includes(query);
+        });
+    }
+
+    if (!filtered.length) {
+        listEl.innerHTML = '<div style="font-size:12.5px;color:var(--text-soft);text-align:center;padding:12px 0;">Không tìm thấy công thức phù hợp.</div>';
+        return;
+    }
+
+    listEl.innerHTML = filtered.slice(0, 15).map(function (r) {
+        return '<div class="srm-recipe-item" data-srm-recipe="' + r.id + '" style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:8px;background:var(--bg);border:1px solid var(--border);cursor:pointer;transition:all 0.15s ease;">' +
+            '<div style="display:flex;align-items:center;gap:10px;">' +
+                '<span style="font-size:20px;">' + recipeEmoji(r) + '</span>' +
+                '<div>' +
+                    '<strong style="font-size:13.5px;color:var(--text);display:block;">' + escapeHtml(r.title || r.name) + '</strong>' +
+                    '<span style="font-size:11.5px;color:var(--text-soft);">' + (r.cookTime ? r.cookTime + ' phút · ' : '') + (r.kcal ? r.kcal + ' kcal' : '') + '</span>' +
+                '</div>' +
+            '</div>' +
+            '<button type="button" class="secondary-button" style="padding:4px 10px;font-size:11.5px;font-weight:600;pointer-events:none;">Chọn món →</button>' +
+            '</div>';
+    }).join('');
+
+    listEl.querySelectorAll('[data-srm-recipe]').forEach(function (el) {
+        el.addEventListener('click', function () {
+            const rId = el.getAttribute('data-srm-recipe');
+            const found = uniqueList.find(function (r) { return String(r.id) === String(rId); });
+            if (found) selectSrmRecipe(found);
+        });
+    });
+}
+
+async function selectSrmRecipe(recipe) {
+    srmSelectedRecipe = recipe;
+    const box = document.getElementById('srmIngredientsBox');
+    const titleEl = document.getElementById('srmRecipeTitle');
+    const listEl = document.getElementById('srmIngredientsList');
+    if (!box || !titleEl || !listEl) return;
+
+    box.style.display = 'block';
+    titleEl.innerHTML = '🍲 Món: ' + escapeHtml(recipe.title || recipe.name);
+
+    let fridgeNames = [];
+    try {
+        const fridgeItems = await apiRequest('/api/fridge') || [];
+        if (Array.isArray(fridgeItems)) {
+            fridgeNames = fridgeItems
+                .map(function (f) { return String((f && f.name) || (f && f.food && f.food.name) || '').trim().toLowerCase(); })
+                .filter(function (n) { return n.length >= 2; });
+        }
+    } catch (_) {}
+    if (!fridgeNames.length) {
+        fridgeNames = getFridgeIngredientNames();
+    }
+
+    const ings = recipe.ingredients || [];
+    if (!ings.length) {
+        listEl.innerHTML = '<div style="font-size:12.5px;color:var(--text-soft);padding:6px 0;">Công thức này chưa có danh sách nguyên liệu chi tiết.</div>';
+        return;
+    }
+
+    listEl.innerHTML = ings.map(function (ing, idx) {
+        const name = typeof ing === 'string' ? ing : (ing.ingredientName || ing.name || '');
+        const qty = typeof ing === 'object' ? ((ing.quantity != null ? ing.quantity : '') + ' ' + (ing.unit || '')) : '';
+        const inFridge = checkIngredientInFridge(name, fridgeNames);
+
+        return '<label style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg);border-radius:8px;border:1px solid var(--border);cursor:pointer;">' +
+            '<div style="display:flex;align-items:center;gap:10px;">' +
+                '<input type="checkbox" class="srm-ing-cb" data-srm-ing-idx="' + idx + '"' + (!inFridge ? ' checked' : '') + ' style="width:18px;height:18px;accent-color:var(--green);">' +
+                '<div>' +
+                    '<b style="font-size:13px;color:var(--text);">' + escapeHtml(name) + '</b>' +
+                    (qty.trim() ? '<span style="font-size:11.5px;color:var(--text-soft);margin-left:6px;">(' + escapeHtml(qty.trim()) + ')</span>' : '') +
+                '</div>' +
+            '</div>' +
+            '<div>' +
+                (inFridge
+                    ? '<span style="font-size:11px;font-weight:700;color:var(--green);background:var(--green-light);padding:2px 8px;border-radius:999px;">✅ Có trong tủ lạnh</span>'
+                    : '<span style="font-size:11px;font-weight:700;color:#d97706;background:#fffbeb;padding:2px 8px;border-radius:999px;">🛒 Cần mua thêm</span>') +
+            '</div>' +
+            '</label>';
+    }).join('');
+}
+
+// Shopping global listeners initializer
+(function initShoppingEnhanced() {
+    // Quick filter tabs
+    document.querySelectorAll('[data-shop-filter]').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            document.querySelectorAll('[data-shop-filter]').forEach(function (t) { t.classList.remove('active'); });
+            tab.classList.add('active');
+            currentShopFilter = tab.getAttribute('data-shop-filter');
+            renderShoppingFiltered();
+        });
+    });
+
+    // Search input
+    const searchInput = document.getElementById('shopSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            currentShopSearch = searchInput.value;
+            renderShoppingFiltered();
+        });
+    }
+
+    // Quick suggestion chips
+    document.querySelectorAll('[data-quick-add]').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+            const val = chip.getAttribute('data-quick-add');
+            if (val) addShopByName(val);
+        });
+    });
+
+    // Import from Recipe button
+    const importBtn = document.getElementById('shopImportRecipeBtn');
+    if (importBtn) {
+        importBtn.addEventListener('click', openShoppingRecipeModal);
+    }
+
+    // Modal recipe search
+    const srmSearch = document.getElementById('srmSearch');
+    if (srmSearch) {
+        srmSearch.addEventListener('input', function () {
+            renderSrmRecipes(srmSearch.value);
+        });
+    }
+
+    // Modal submit
+    const srmSubmitBtn = document.getElementById('srmSubmitBtn');
+    if (srmSubmitBtn) {
+        srmSubmitBtn.addEventListener('click', async function () {
+            if (!srmSelectedRecipe) return;
+            if (!isUserLoggedIn()) {
+                requireAuth('shopping');
+                return;
+            }
+            const checkedBoxes = document.querySelectorAll('.srm-ing-cb:checked');
+            if (!checkedBoxes.length) {
+                showToast('Chưa chọn nguyên liệu nào để thêm.', 'warning');
+                return;
+            }
+
+            srmSubmitBtn.disabled = true;
+            let addedCount = 0;
+            const recipeTitle = srmSelectedRecipe.title || srmSelectedRecipe.name || 'Món ăn';
+            const ings = srmSelectedRecipe.ingredients || [];
+
+            for (const cb of checkedBoxes) {
+                const idx = +cb.getAttribute('data-srm-ing-idx');
+                const ing = ings[idx];
+                if (!ing) continue;
+                const name = typeof ing === 'string' ? ing : (ing.ingredientName || ing.name || '');
+                const qty = typeof ing === 'object' ? ((ing.quantity != null ? ing.quantity : '') + ' ' + (ing.unit || '')) : '1 phần';
+                try {
+                    await apiRequest('/api/shopping', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: name,
+                            quantity: qty.trim() || '1 phần',
+                            price: 25000,
+                            category: 'Công thức: ' + recipeTitle
+                        })
+                    });
+                    addedCount++;
+                } catch (_) {}
+            }
+
+            srmSubmitBtn.disabled = false;
+            const modal = document.getElementById('shoppingRecipeModal');
+            if (modal) modal.hidden = true;
+            await renderShopping();
+            showToast('Đã thêm ' + addedCount + ' nguyên liệu của món "' + recipeTitle + '" vào Danh sách mua! 🛒', 'success');
+        });
+    }
+})();
 
 async function clearDoneShopping() {
     let items = [];
     try { items = await apiRequest('/api/shopping') || []; } catch (e) { }
     const doneItems = items.filter(function (i) { return i.done; });
-    if (!doneItems.length) { showToast('Chưa có món nào được mua.', 'info'); return; }
+    if (!doneItems.length) { showToast('Chưa có món nào được đánh dấu đã mua.', 'info'); return; }
     lastClearedShop = doneItems;
     try {
         await apiRequest('/api/shopping/done', { method: 'DELETE' });
-        renderShopping();
-        showToast('Đã xóa ' + doneItems.length + ' món — ', 'success');
-        const toastEl = document.getElementById('toast');
-        if (toastEl) {
-            const undo = document.createElement('button');
-            undo.textContent = 'Hoàn tác';
-            undo.style.cssText = 'margin-left:10px;background:var(--green);color:#fff;border:none;border-radius:8px;padding:5px 12px;font-weight:700;cursor:pointer;';
-            undo.addEventListener('click', function () { undoClearDone(); });
-            toastEl.appendChild(undo);
-            toastEl.classList.add('show');
-            clearTimeout(toastEl._tm);
-            toastEl._tm = setTimeout(function () { toastEl.classList.remove('show'); }, 4000);
-        }
+        await renderShopping();
+        showToast('Đã dọn ' + doneItems.length + ' món đã mua xong! 🧹', 'success');
     } catch (e) {
         showToast('Cần đăng nhập.', 'error');
     }
@@ -11012,18 +11905,7 @@ async function clearAllShopping() {
     try {
         await apiRequest('/api/shopping/all', { method: 'DELETE' });
         await renderShopping();
-        showToast('Đã xóa toàn bộ ' + items.length + ' món — ', 'success');
-        const toastEl = document.getElementById('toast');
-        if (toastEl) {
-            const undo = document.createElement('button');
-            undo.textContent = 'Hoàn tác';
-            undo.style.cssText = 'margin-left:10px;background:var(--green);color:#fff;border:none;border-radius:8px;padding:5px 12px;font-weight:700;cursor:pointer;';
-            undo.addEventListener('click', function () { undoClearDone(); });
-            toastEl.appendChild(undo);
-            toastEl.classList.add('show');
-            clearTimeout(toastEl._tm);
-            toastEl._tm = setTimeout(function () { toastEl.classList.remove('show'); }, 4000);
-        }
+        showToast('Đã xóa toàn bộ ' + items.length + ' món mua sắm.', 'success');
     } catch (e) {
         showToast('Không thể xóa danh sách: ' + e.message, 'error');
     }
@@ -11035,7 +11917,7 @@ async function undoClearDone() {
             await apiRequest('/api/shopping', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: it.name, quantity: it.quantity, price: it.price, category: it.category || 'spice' })
+                body: JSON.stringify({ name: it.name, quantity: it.quantity, price: it.price, category: it.category || 'Nguyên liệu' })
             });
         }
         lastClearedShop = [];
@@ -11050,20 +11932,10 @@ async function undoClearDone() {
 /* =========================================================
    BOTTOM NAV + QUICK ACTION + DRAWER
 ========================================================= */
-let qaOpen = false;
-
 function syncBottomNav(name) {
     document.querySelectorAll('[data-bottom-nav]').forEach(function (b) {
         b.classList.toggle('active', b.getAttribute('data-bottom-nav') === name);
     });
-}
-
-function closeQa() {
-    qaOpen = false;
-    const fab = document.getElementById('qaFab');
-    const menu = document.getElementById('qaMenu');
-    if (fab) fab.classList.remove('open');
-    if (menu) menu.hidden = true;
 }
 
 function toggleQa() {
@@ -11072,10 +11944,6 @@ function toggleQa() {
     const menu = document.getElementById('qaMenu');
     if (fab) fab.classList.toggle('open', qaOpen);
     if (menu) menu.hidden = !qaOpen;
-}
-
-function closeDrawer() {
-    document.body.classList.remove('drawer-open');
 }
 
 async function handleQa(action) {
@@ -11138,6 +12006,7 @@ function openRecipeCreateModal() {
     recipeCreateModal.classList.add('open');
     setTimeout(function () { const t = document.getElementById('rcTitle'); if (t) t.focus(); }, 80);
 }
+window.openRecipeCreateModal = openRecipeCreateModal;
 
 async function submitNewRecipe() {
     const title = document.getElementById('rcTitle').value.trim();
@@ -11179,100 +12048,6 @@ async function submitNewRecipe() {
 /* =========================================================
    HOME BLOG RECIPE SECTION RENDERER
 ========================================================= */
-let currentBlogCategory = 'all';
-
-const sampleBlogPosts = [
-    {
-        id: 101,
-        title: "Bí quyết nấu Phở Bò truyền thống chuẩn vị Hà Nội tại nhà",
-        description: "Hướng dẫn chi tiết từ khâu hầm xương ngọt tự nhiên đến chuẩn bị gia vị hoa hồi, thảo quả thanh ngọt dịu mát...",
-        author: "Mẹ Bi",
-        authorRole: "Food Blogger",
-        timeAgo: "3 giờ trước",
-        cookTime: "45 phút",
-        kcal: "450",
-        likes: 189,
-        comments: 24,
-        category: "family",
-        image: "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=800&q=80",
-        difficulty: "Vừa"
-    },
-    {
-        id: 102,
-        title: "Salad Ức Gà Sốt Bơ Chanh — Món ăn Eat Clean tăng cơ giảm mỡ",
-        description: "Bữa trưa lành mạnh, giàu đạm và chất xơ, chuẩn bị chỉ trong 15 phút với những nguyên liệu đơn giản sẵn có...",
-        author: "Coach Hoàng Anh",
-        authorRole: "Fitness & Nutrition",
-        timeAgo: "5 giờ trước",
-        cookTime: "15 phút",
-        kcal: "280",
-        likes: 312,
-        comments: 45,
-        category: "eatclean",
-        image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80",
-        difficulty: "Dễ"
-    },
-    {
-        id: 103,
-        title: "Cơm Tấm Sườn Nướng Chả Trứng — Hương vị Sài Gòn đậm đà",
-        description: "Bí quyết ướp sườn mềm mọng nước, chả trứng hấp béo ngậy cùng nước mắm chua ngọt chuẩn quán...",
-        author: "Chef Tuấn Kiệt",
-        authorRole: "Đầu bếp gia đình",
-        timeAgo: "1 ngày trước",
-        cookTime: "35 phút",
-        kcal: "580",
-        likes: 420,
-        comments: 67,
-        category: "hot",
-        image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80",
-        difficulty: "Vừa"
-    },
-    {
-        id: 104,
-        title: "Canh Cua Đồng Nấu Mồng Tơi & Rạm giải nhiệt ngày hè",
-        description: "Món canh quốc dân ngọt mát béo ngậy gạch cua, kết hợp cà pháo muối giòn rụm cực đưa cơm...",
-        author: "Chị Thảo",
-        authorRole: "Yêu Bếp",
-        timeAgo: "2 ngày trước",
-        cookTime: "25 phút",
-        kcal: "210",
-        likes: 156,
-        comments: 19,
-        category: "family",
-        image: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=800&q=80",
-        difficulty: "Dễ"
-    },
-    {
-        id: 105,
-        title: "Trứng Cuộn Bơ Nấm 10 Phút Cho Bữa Sáng Năng Lượng",
-        description: "Tiết kiệm thời gian mỗi buổi sáng với món trứng cuộn bơ mềm mịn, thơm ngon cực kỳ giàu vitamin...",
-        author: "Bếp Nhà An",
-        authorRole: "Foodie",
-        timeAgo: "3 ngày trước",
-        cookTime: "10 phút",
-        kcal: "310",
-        likes: 278,
-        comments: 31,
-        category: "quick",
-        image: "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=800&q=80",
-        difficulty: "Rất dễ"
-    },
-    {
-        id: 106,
-        title: "Bánh Matchalicious Mousse Matcha Trà Xanh Béo Ngậy",
-        description: "Công thức làm bánh mousse không cần lò nướng, chất bánh mịn mượt thanh đắng vị trà xanh Nhật Bản...",
-        author: "Linh Pastry",
-        authorRole: "Baker",
-        timeAgo: "4 ngày trước",
-        cookTime: "40 phút",
-        kcal: "340",
-        likes: 389,
-        comments: 52,
-        category: "dessert",
-        image: "https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=800&q=80",
-        difficulty: "Trung bình"
-    }
-];
 
 function renderHomeBlogSection(catFilter) {
     const grid = document.getElementById('homeBlogGrid');
@@ -11363,14 +12138,6 @@ function renderHomeBlogSection(catFilter) {
     });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeQa(); closeDrawer(); } });
 
-    // openView wrapper: sync bottom nav + close overlays
-    const prevOpen = window.openView;
-    window.openView = function (name) {
-        prevOpen(name);
-        syncBottomNav(name);
-        closeQa();
-        closeDrawer();
-    };
 })();
 
 
@@ -12206,13 +12973,7 @@ function typing(on) {
     }
 }
 
-function askFromTag(txt) {
-    const input = document.getElementById('chatInputFx');
-    if (input) {
-        input.value = txt;
-        sendMessage();
-    }
-}
+
 
 function formatAiReply(text) {
     if (!text) return '';
