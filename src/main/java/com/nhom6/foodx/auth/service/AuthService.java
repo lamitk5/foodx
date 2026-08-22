@@ -75,6 +75,18 @@ public class AuthService {
         }
     }
 
+    @Transactional
+    public void changePassword(User user, String oldPassword, String newPassword) {
+        if (oldPassword != null && !oldPassword.isBlank()) {
+            if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+                throw new BusinessException(400, "Mật khẩu cũ không chính xác");
+            }
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+    }
+
     private AuthResponse buildAuthResponse(User user) {
         String token = jwtTokenProvider.generateToken(user.getId(), user.getUsername(), user.getRole().name());
         return AuthResponse.builder()

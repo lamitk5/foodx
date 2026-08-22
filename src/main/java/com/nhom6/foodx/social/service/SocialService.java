@@ -152,7 +152,7 @@ public class SocialService {
         if (text == null || text.isBlank()) {
             return List.of();
         }
-        return Arrays.stream(text.split("\n"))
+        return Arrays.stream(text.split("[\\r\\n,;]+"))
                 .map(String::trim)
                 .filter(line -> !line.isBlank())
                 .toList();

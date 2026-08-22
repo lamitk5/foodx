@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Yêu cầu đăng nhập (hỗ trợ cả username và email).
+ * Yeu cau dang nhap (ho tro ca username va email).
  */
 @Data
 @Builder
@@ -19,15 +19,6 @@ public class LoginRequest {
     @JsonAlias({"email", "loginName", "user"})
     private String username;
 
-    private String email;
-
-    @NotBlank(message = "Mật khẩu không được để trống")
+    @NotBlank(message = "Mat khau khong duoc de trong")
     private String password;
-
-    public String getUsername() {
-        if (username != null && !username.isBlank()) {
-            return username;
-        }
-        return email;
-    }
 }

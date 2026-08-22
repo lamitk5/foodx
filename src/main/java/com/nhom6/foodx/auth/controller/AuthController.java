@@ -33,6 +33,18 @@ public class AuthController {
         return ApiResponse.success(authService.login(request), "Đăng nhập thành công");
     }
 
+    /** Đổi mật khẩu của tài khoản đang đăng nhập. */
+    @PostMapping("/change-password")
+    public ApiResponse<Void> changePassword(@RequestBody java.util.Map<String, String> body) {
+        String oldPass = body.get("oldPassword");
+        String newPass = body.get("newPassword");
+        if (newPass == null || newPass.isBlank()) {
+            throw new com.nhom6.foodx.common.exception.BusinessException(400, "Mật khẩu mới không được để trống");
+        }
+        authService.changePassword(securityUtils.getCurrentUser(), oldPass, newPass);
+        return ApiResponse.success(null, "Đổi mật khẩu thành công");
+    }
+
     /** Lấy thông tin người dùng đang đăng nhập (theo JWT). */
     @GetMapping("/me")
     public ApiResponse<AuthResponse> me() {

@@ -6628,63 +6628,30 @@ function isRecipeSafeForProfile(recipe) {
 
 
 function recipeScore(recipe) {
-
     const fridgeIngredients =
-        state.fridge
-            .flatMap(
-                item => [
+        (state.fridge || [])
+            .flatMap(item => [
+                item.name,
+                ...(item.ingredients || [])
+            ])
+            .filter(Boolean)
+            .map(normalize);
 
-                    item.name,
+    let matched = 0;
+    const ings = normalizeIngredientList(recipe.ingredients);
 
-                    ...(item.ingredients || [])
-                ]
-            )
-            .map(
-                normalize
-            );
-
-
-    let matched =
-        0;
-
-
-    recipe.ingredients.forEach(
-        ingredient => {
-
-            const value =
-                normalize(
-                    ingredient
-                );
-
-
-            if (
-                fridgeIngredients.some(
-                    fridge =>
-                        fridge.includes(
-                            value
-                        ) ||
-                        value.includes(
-                            fridge
-                        )
-                )
-            ) {
-
-                matched++;
-            }
+    ings.forEach(ingredient => {
+        const raw = ingredient.ingredientName || ingredient.name || ingredient;
+        const value = normalize(raw);
+        if (value && fridgeIngredients.some(fridge => fridge.includes(value) || value.includes(fridge))) {
+            matched++;
         }
-    );
+    });
 
-
-    let score =
-        25;
-
-
-    score +=
-        (
-            matched /
-            recipe.ingredients.length
-        ) *
-        50;
+    let score = 25;
+    if (ings.length > 0) {
+        score += (matched / ings.length) * 50;
+    }
 
 
     if (
@@ -8229,6 +8196,70 @@ document
         }
     );
 
+function parseIngredientString(str) {
+    if (!str) return { ingredientName: '', name: '', quantity: '', unit: '', raw: '' };
+    const s = String(str).trim();
+    const qtyMatch = s.match(/^(\d+(?:[\.,\/]\d+)?\s*(?:kg|g|gr|củ|quả|bó|hộp|vỉ|lít|l|ml|muỗng\s*(?:canh|cà\s*phê)?|thìa|gói|túi|phần|trái|con|nhánh|lát|tép|chén|bát|ổ|cây|khoanh|khúc)?)\s*(.+)$/i);
+    if (qtyMatch && qtyMatch[2] && qtyMatch[2].trim()) {
+        const qtyUnit = qtyMatch[1].trim();
+        const ingName = qtyMatch[2].trim();
+        const numMatch = qtyUnit.match(/^(\d+(?:[\.,\/]\d+)?)\s*(.*)$/);
+        const qty = numMatch ? numMatch[1] : '';
+        const unit = numMatch ? numMatch[2].trim() : qtyUnit;
+        return {
+            ingredientName: ingName,
+            name: ingName,
+            quantity: qty || '',
+            unit: unit || '',
+            raw: s
+        };
+    }
+    return {
+        ingredientName: s,
+        name: s,
+        quantity: '',
+        unit: '',
+        raw: s
+    };
+}
+
+function normalizeIngredientList(raw) {
+    if (!raw) return [];
+    if (typeof raw === 'string') {
+        return raw.split(/[\r\n,;]+/)
+            .map(s => s.trim())
+            .filter(Boolean)
+            .map(s => parseIngredientString(s));
+    }
+    if (Array.isArray(raw)) {
+        const result = [];
+        raw.forEach(item => {
+            if (!item) return;
+            if (typeof item === 'string') {
+                const subItems = item.split(/[\r\n,;]+/).map(s => s.trim()).filter(Boolean);
+                subItems.forEach(s => result.push(parseIngredientString(s)));
+            } else if (typeof item === 'object') {
+                const rawName = String(item.ingredientName || item.name || item.foodName || '').trim();
+                if (rawName.includes(',') || rawName.includes(';') || rawName.includes('\n')) {
+                    const subNames = rawName.split(/[\r\n,;]+/).map(s => s.trim()).filter(Boolean);
+                    subNames.forEach(s => result.push(parseIngredientString(s)));
+                } else if (rawName) {
+                    result.push({
+                        ingredientName: rawName,
+                        name: rawName,
+                        quantity: item.quantity != null ? item.quantity : '',
+                        unit: item.unit || '',
+                        note: item.note || '',
+                        raw: rawName
+                    });
+                }
+            }
+        });
+        return result;
+    }
+    return [];
+}
+
 function getFridgeIngredientNames() {
     let names = [];
     if (typeof state !== 'undefined' && Array.isArray(state.fridge)) {
@@ -8245,14 +8276,16 @@ function checkIngredientInFridge(ingName, fridgeNamesList) {
     const lower = String(ingName || '').toLowerCase().trim();
     if (!lower || lower.length < 2) return false;
     
-    // Strip leading quantities/units (e.g., "1kg Xương ống bò tươi" -> "xương ống bò tươi", "3 củ Hành tây" -> "hành tây")
-    const cleaned = lower.replace(/^(\d+([\.,]\d+)?\s*(kg|g|củ|quả|bó|hộp|vỉ|lít|ml|muỗng|gói|túi|phần|trái|con|nhánh|lát|tép)\s*)/i, '').trim();
+    // Strip leading quantities/units
+    const cleaned = lower.replace(/^(\d+(?:[\.,\/]\d+)?\s*(kg|g|gr|củ|quả|bó|hộp|vỉ|lít|l|ml|muỗng|thìa|gói|túi|phần|trái|con|nhánh|lát|tép|chén|bát|ổ|cây|khoanh|khúc)\s*)/i, '').trim();
+    if (!cleaned || cleaned.length < 2) return false;
     
     return fridgeNamesList.some(fn => {
         if (!fn || fn.length < 2) return false;
-        if (cleaned === fn || lower === fn) return true;
-        if (fn.length >= 3 && cleaned.includes(fn)) return true;
-        if (cleaned.length >= 3 && fn.includes(cleaned)) return true;
+        const fnLower = fn.toLowerCase().trim();
+        if (cleaned === fnLower || lower === fnLower) return true;
+        if (fnLower.length >= 3 && cleaned.includes(fnLower)) return true;
+        if (cleaned.length >= 3 && fnLower.includes(cleaned)) return true;
         return false;
     });
 }
@@ -8278,15 +8311,10 @@ async function addMissingIngredients(recipeId) {
                 recipe = recipes.find(r => String(r.id) === String(recipeId));
             }
             if (!recipe && recipeId) {
-                try {
-                    recipe = await apiRequest('/api/recipes/' + recipeId);
-                } catch (_) {}
+                try { recipe = await apiRequest('/api/recipes/' + recipeId); } catch (_) {}
             }
         }
-        if (!recipe) {
-            showToast('Không tìm thấy thông tin công thức để thêm nguyên liệu.', 'warning');
-            return;
-        }
+        if (!recipe) { showToast('Không tìm thấy thông tin công thức để thêm nguyên liệu.', 'warning'); return; }
 
         let fridgeNames = [];
         try {
@@ -8297,62 +8325,51 @@ async function addMissingIngredients(recipeId) {
                     .filter(n => n.length >= 2);
             }
         } catch (_) {}
-        if (!fridgeNames.length) {
-            fridgeNames = getFridgeIngredientNames();
-        }
+        if (!fridgeNames.length) { fridgeNames = getFridgeIngredientNames(); }
 
-        const ings = recipe.ingredients || [];
+        const normalizedIngs = normalizeIngredientList(recipe.ingredients);
         let added = 0;
 
-        if (!ings.length) {
+        if (!normalizedIngs.length) {
             await apiRequest('/api/shopping', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: recipe.title || recipe.name || 'Món ăn',
-                    quantity: '1 phần',
-                    price: 25000,
-                    category: 'Công thức: ' + (recipe.title || recipe.name || 'Món ngon')
-                })
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: recipe.title || recipe.name || 'Món ăn', quantity: '1 phần', price: 25000, category: 'Công thức: ' + (recipe.title || recipe.name || 'Món ngon') })
             });
             added = 1;
         } else {
-            for (const ing of ings) {
-                const rawName = typeof ing === 'string' ? ing : (ing.ingredientName || ing.name || '');
+            for (const ing of normalizedIngs) {
+                const rawName = ing.ingredientName || ing.name || '';
                 if (!rawName || !rawName.trim()) continue;
                 const inFridge = checkIngredientInFridge(rawName, fridgeNames);
                 if (!inFridge) {
-                    let qty = (typeof ing === 'object' && ing.quantity != null ? String(ing.quantity) : '') + (typeof ing === 'object' && ing.unit ? ' ' + ing.unit : '');
-                    let displayName = rawName.trim();
-                    const qtyMatch = rawName.match(/^(\d+([\.,]\d+)?\s*(kg|g|củ|quả|bó|hộp|vỉ|lít|ml|muỗng|gói|túi|phần|trái|con|nhánh|lát|tép)\s*)/i);
-                    if (qtyMatch && !qty.trim()) {
-                        qty = qtyMatch[0].trim();
-                        displayName = rawName.substring(qtyMatch[0].length).trim();
-                    }
+                    let qty = (ing.quantity != null && String(ing.quantity).trim() ? String(ing.quantity).trim() : '') +
+                              (ing.unit && String(ing.unit).trim() ? ' ' + String(ing.unit).trim() : '');
                     try {
-                        await apiRequest('/api/shopping', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                name: displayName || rawName,
-                                quantity: qty.trim() || '1 phần',
-                                price: 25000,
-                                category: 'Công thức: ' + (recipe.title || recipe.name || 'Món ngon')
-                            })
+                        const res = await apiRequest('/api/shopping', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name: rawName.trim(), quantity: qty.trim() || '1 phần', price: 25000, category: 'Công thức: ' + (recipe.title || recipe.name || 'Món ngon') })
+                        });
+                        if (!Array.isArray(state.shopping)) state.shopping = [];
+                        state.shopping.push({
+                            id: (res && res.id) || (Date.now() + Math.floor(Math.random() * 1000)),
+                            name: rawName.trim(),
+                            quantity: qty.trim() || '1 phần',
+                            price: 25000,
+                            category: 'Công thức: ' + (recipe.title || recipe.name || 'Món ngon'),
+                            done: false
                         });
                         added++;
-                    } catch (e) {
-                        console.error('addMissingIngredients item POST error:', e);
-                    }
+                    } catch (e) { console.error('addMissingIngredients item POST error:', e); }
                 }
             }
         }
 
-        if (typeof renderShopping === 'function') await renderShopping();
+        saveState();
+        if (typeof renderShopping === 'function') { try { await renderShopping(); } catch (e) {} }
         if (added > 0) {
             showToast(`🛒 Đã thêm ${added} nguyên liệu còn thiếu của món "${recipe.title || recipe.name}" vào Danh sách mua!`, 'success');
         } else {
-            showToast(`Tủ lạnh của bạn đã có đủ nguyên liệu cho món "${recipe.title || recipe.name}"! 🎉`, 'info');
+            showToast(`Tủ lạnh của bạn đã có đủ ${normalizedIngs.length} nguyên liệu cho món "${recipe.title || recipe.name}"! (Nếu muốn mua thêm, bạn có thể thêm trực tiếp ở mục Đi chợ) 🎉`, 'info');
         }
     } catch (err) {
         console.error('addMissingIngredients main error:', err);
@@ -8360,7 +8377,56 @@ async function addMissingIngredients(recipeId) {
     }
 }
 
+async function addRecipeIngredientsToFridge(recipeId) {
+    if (!isUserLoggedIn()) { requireAuth('fridge'); return; }
+    try {
+        let recipe = curRecipe;
+        if (!recipe || (recipeId && String(recipe.id) !== String(recipeId))) {
+            const id = recipeId || (curRecipe && curRecipe.id);
+            if (id) {
+                const savedPosts = JSON.parse(localStorage.getItem('foodx_saved_posts') || '{}');
+                recipe = savedPosts[String(id)] || (recipesCache || []).find(r => String(r.id) === String(id));
+            }
+        }
+        if (!recipe) { showToast('Không tìm thấy thông tin công thức.', 'warning'); return; }
 
+        const normalizedIngs = normalizeIngredientList(recipe.ingredients);
+        if (!normalizedIngs.length) { showToast('Công thức này chưa có danh sách nguyên liệu để thêm vào tủ lạnh.', 'warning'); return; }
+
+        let added = 0, lastError = null;
+        const expiryStr = toDateInputValue(futureDate(7));
+
+        for (const ing of normalizedIngs) {
+            const rawName = ing.ingredientName || ing.name || '';
+            if (!rawName || !rawName.trim()) continue;
+            const qtyNum = parseFloat(ing.quantity) || 1;
+            const unit = (ing.unit && String(ing.unit).trim()) ? String(ing.unit).trim() : 'phần';
+            try {
+                await apiRequest(FRIDGE_API, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sourceKey: null, name: rawName.trim(), type: 'Nguyên liệu', quantity: qtyNum, unit: unit, kcal: 80, protein: 4, carb: 8, fat: 2, components: rawName.trim(), benefit: 'Tươi ngon', imageUrl: '', expiresAt: expiryStr, note: 'Thêm từ: ' + (recipe.title || recipe.name || 'Công thức'), customFood: true })
+                });
+                added++;
+            } catch (e) { lastError = e; console.error('addRecipeIngredientsToFridge item POST error:', e); }
+        }
+
+        await loadFridgeFromApi(false);
+        if (typeof renderFridge === 'function') renderFridge();
+        if (typeof renderExpiring === 'function') renderExpiring();
+        if (typeof renderStats === 'function') renderStats();
+
+        if (added > 0) {
+            showToast(`🧊 Đã thêm ${added} nguyên liệu của món "${recipe.title || recipe.name}" vào Tủ lạnh! 🎉`, 'success');
+        } else if (lastError) {
+            showToast('Không thể thêm vào tủ lạnh: ' + (lastError.message || 'Lỗi kết nối'), 'error');
+        } else {
+            showToast('Không tìm thấy nguyên liệu hợp lệ để thêm.', 'warning');
+        }
+    } catch (err) {
+        console.error('addRecipeIngredientsToFridge error:', err);
+        showToast('Lỗi khi thêm nguyên liệu vào tủ lạnh: ' + err.message, 'error');
+    }
+}
 /* =========================================================
    STATS
 ========================================================= */
@@ -10423,9 +10489,7 @@ async function openRecipeDetail(id) {
             difficulty: socialMatch.difficulty || (socialMatch.category === 'eatclean' ? 'Healthy' : 'Dễ nấu'),
             category: socialMatch.category || 'Món chính',
             imageUrl: socialMatch.imageUrl || socialMatch.image || '',
-            ingredients: Array.isArray(socialMatch.ingredients)
-                ? socialMatch.ingredients.map(i => typeof i === 'string' ? { ingredientName: i, quantity: '', unit: '' } : i)
-                : [],
+            ingredients: normalizeIngredientList(socialMatch.ingredients),
             instructions: socialMatch.instructions || (Array.isArray(socialMatch.steps) ? socialMatch.steps.join('\n') : (socialMatch.description || '')),
             steps: Array.isArray(socialMatch.steps)
                 ? socialMatch.steps
@@ -10438,6 +10502,9 @@ async function openRecipeDetail(id) {
             curRecipe = (recipesCache || []).find(r => r.id === Number(id) || String(r.id) === String(id))
                 || (typeof recipes !== 'undefined' ? recipes.find(r => r.id === Number(id) || String(r.id) === String(id)) : null);
         }
+        if (curRecipe && curRecipe.ingredients) {
+            curRecipe.ingredients = normalizeIngredientList(curRecipe.ingredients);
+        }
     }
 
     if (!curRecipe) {
@@ -10449,12 +10516,15 @@ async function openRecipeDetail(id) {
     if (!curRecipe.title && curRecipe.name) curRecipe.title = curRecipe.name;
     if (!curRecipe.time && curRecipe.cookTime) curRecipe.time = curRecipe.cookTime;
     if (!curRecipe.cookTime && curRecipe.time) curRecipe.cookTime = curRecipe.time;
+    if (curRecipe.ingredients) {
+        curRecipe.ingredients = normalizeIngredientList(curRecipe.ingredients);
+    }
 
     activeRecipeContext = {
         id: curRecipe.id,
         name: curRecipe.title || curRecipe.name,
         ingredients: Array.isArray(curRecipe.ingredients)
-            ? curRecipe.ingredients.map(i => typeof i === 'string' ? i : (i.ingredientName || i.name))
+            ? curRecipe.ingredients.map(i => i.ingredientName || i.name || i)
             : [],
         steps: Array.isArray(curRecipe.steps)
             ? [...curRecipe.steps]
@@ -10940,6 +11010,10 @@ async function addCurRecipeMissingToShopping() {
     if (plan) plan.addEventListener('click', addCurToPlan);
     const cook = document.getElementById('rdCook');
     if (cook) cook.addEventListener('click', cookNow);
+    const addFridgeBtn = document.getElementById('rdAddFridge');
+    if (addFridgeBtn) addFridgeBtn.addEventListener('click', function () {
+        if (curRecipe) addRecipeIngredientsToFridge(curRecipe.id);
+    });
     const addShopBtn = document.getElementById('rdAddShop');
     if (addShopBtn) addShopBtn.addEventListener('click', addCurRecipeMissingToShopping);
 
@@ -11340,11 +11414,12 @@ function renderRecipeDetail() {
         if (r.imageUrl) { img.src = r.imageUrl; img.hidden = false; }
         else { img.hidden = true; img.removeAttribute('src'); }
     }
-    const ings = r.ingredients || [];
+    const ings = normalizeIngredientList(r.ingredients);
     document.getElementById('rdIng').innerHTML = ings.length
         ? '<ul class="rd-ing-list">' + ings.map(function (i) {
-            return '<li><span>' + escapeHtml(i.ingredientName || '') + '</span>' +
-                '<span class="qty">' + (i.quantity != null ? i.quantity : '') + ' ' + escapeHtml(i.unit || '') + '</span></li>';
+            const qtyStr = (i.quantity != null && String(i.quantity).trim() ? String(i.quantity).trim() + ' ' : '') + escapeHtml(i.unit || '');
+            return '<li><span>' + escapeHtml(i.ingredientName || i.name || '') + '</span>' +
+                (qtyStr.trim() ? '<span class="qty">' + qtyStr.trim() + '</span>' : '') + '</li>';
         }).join('') + '</ul>'
         : '<div class="empty-state"><span class="es-icon">🧺</span><b>Chưa cập nhật nguyên liệu</b></div>';
     const steps = String(r.instructions || '').split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
@@ -11755,15 +11830,17 @@ async function selectSrmRecipe(recipe) {
         fridgeNames = getFridgeIngredientNames();
     }
 
-    const ings = recipe.ingredients || [];
+    const ings = normalizeIngredientList(recipe.ingredients);
+    srmSelectedRecipe.normalizedIngredients = ings;
+
     if (!ings.length) {
         listEl.innerHTML = '<div style="font-size:12.5px;color:var(--text-soft);padding:6px 0;">Công thức này chưa có danh sách nguyên liệu chi tiết.</div>';
         return;
     }
 
     listEl.innerHTML = ings.map(function (ing, idx) {
-        const name = typeof ing === 'string' ? ing : (ing.ingredientName || ing.name || '');
-        const qty = typeof ing === 'object' ? ((ing.quantity != null ? ing.quantity : '') + ' ' + (ing.unit || '')) : '';
+        const name = ing.ingredientName || ing.name || '';
+        const qty = (ing.quantity != null && String(ing.quantity).trim() ? String(ing.quantity).trim() : '') + (ing.unit && String(ing.unit).trim() ? ' ' + String(ing.unit).trim() : '');
         const inFridge = checkIngredientInFridge(name, fridgeNames);
 
         return '<label style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg);border-radius:8px;border:1px solid var(--border);cursor:pointer;">' +
@@ -11844,14 +11921,14 @@ async function selectSrmRecipe(recipe) {
             srmSubmitBtn.disabled = true;
             let addedCount = 0;
             const recipeTitle = srmSelectedRecipe.title || srmSelectedRecipe.name || 'Món ăn';
-            const ings = srmSelectedRecipe.ingredients || [];
+            const ings = srmSelectedRecipe.normalizedIngredients || normalizeIngredientList(srmSelectedRecipe.ingredients);
 
             for (const cb of checkedBoxes) {
                 const idx = +cb.getAttribute('data-srm-ing-idx');
                 const ing = ings[idx];
                 if (!ing) continue;
-                const name = typeof ing === 'string' ? ing : (ing.ingredientName || ing.name || '');
-                const qty = typeof ing === 'object' ? ((ing.quantity != null ? ing.quantity : '') + ' ' + (ing.unit || '')) : '1 phần';
+                const name = ing.ingredientName || ing.name || '';
+                const qty = (ing.quantity != null && String(ing.quantity).trim() ? String(ing.quantity).trim() : '') + (ing.unit && String(ing.unit).trim() ? ' ' + String(ing.unit).trim() : '');
                 try {
                     await apiRequest('/api/shopping', {
                         method: 'POST',
@@ -11871,6 +11948,7 @@ async function selectSrmRecipe(recipe) {
             const modal = document.getElementById('shoppingRecipeModal');
             if (modal) modal.hidden = true;
             await renderShopping();
+            if (typeof loadShoppingList === 'function') await loadShoppingList();
             showToast('Đã thêm ' + addedCount + ' nguyên liệu của món "' + recipeTitle + '" vào Danh sách mua! 🛒', 'success');
         });
     }
@@ -13734,13 +13812,13 @@ onbBindSeg("#onbDiet", null, "diet");
 
                 const missingIngredients = [];
                 plannedRecipes.forEach(function(r) {
-                    const ings = Array.isArray(r.ingredients) ? r.ingredients : (r.ingredientsText || '').split('\n');
-                    ings.forEach(function(ingStr) {
-                        const cleanStr = String(ingStr).trim();
-                        if (!cleanStr) return;
-                        const inFridge = fridgeFoodNames.some(function(f) { return f && cleanStr.toLowerCase().includes(f); });
+                    const ings = normalizeIngredientList(r.ingredients || r.ingredientsText);
+                    ings.forEach(function(ingObj) {
+                        const ingName = ingObj.ingredientName || ingObj.name || '';
+                        if (!ingName) return;
+                        const inFridge = checkIngredientInFridge(ingName, fridgeFoodNames);
                         if (!inFridge) {
-                            missingIngredients.push(cleanStr);
+                            missingIngredients.push(ingName);
                         }
                     });
                 });
