@@ -291,8 +291,7 @@ const catalog = [
         quantity: 6,
         unit: "quả",
         expiryDays: 10,
-        image:
-            "https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&w=700&q=85"
+        image: "/images/foods/egg.jpg"
     },
 
     {
@@ -304,8 +303,7 @@ const catalog = [
         quantity: 450,
         unit: "g",
         expiryDays: 3,
-        image:
-            "https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&w=700&q=85"
+        image: "/images/foods/chicken.jpg"
     },
 
     {
@@ -317,8 +315,7 @@ const catalog = [
         quantity: 4,
         unit: "quả",
         expiryDays: 6,
-        image:
-            "https://images.unsplash.com/photo-1546470427-e5ac89cd0b31?auto=format&fit=crop&w=700&q=85"
+        image: "/images/foods/tomato.jpg"
     },
 
     {
@@ -330,8 +327,7 @@ const catalog = [
         quantity: 250,
         unit: "g",
         expiryDays: 5,
-        image:
-            "https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?auto=format&fit=crop&w=700&q=85"
+        image: "/images/foods/broccoli.jpg"
     },
 
     {
@@ -343,8 +339,7 @@ const catalog = [
         quantity: 1,
         unit: "lít",
         expiryDays: 2,
-        image:
-            "https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=700&q=85"
+        image: "/images/foods/milk.jpg"
     },
 
     {
@@ -356,8 +351,7 @@ const catalog = [
         quantity: 2,
         unit: "quả",
         expiryDays: 4,
-        image:
-            "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=700&q=85"
+        image: "/images/foods/avocado.jpg"
     },
 
     {
@@ -369,8 +363,7 @@ const catalog = [
         quantity: 300,
         unit: "g",
         expiryDays: 3,
-        image:
-            "https://images.unsplash.com/photo-1588168333986-5078d3ae3976?auto=format&fit=crop&w=700&q=85"
+        image: "/images/foods/beef.jpg"
     },
 
     {
@@ -382,8 +375,7 @@ const catalog = [
         quantity: 4,
         unit: "củ",
         expiryDays: 14,
-        image:
-            "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=700&q=85"
+        image: "/images/foods/potato.jpg"
     },
 
     {
@@ -395,8 +387,7 @@ const catalog = [
         quantity: 3,
         unit: "củ",
         expiryDays: 9,
-        image:
-            "https://images.unsplash.com/photo-1447175008436-170170753e16?auto=format&fit=crop&w=700&q=85"
+        image: "/images/foods/carrot.jpg"
     },
 
     {
@@ -408,8 +399,7 @@ const catalog = [
         quantity: 4,
         unit: "hộp",
         expiryDays: 6,
-        image:
-            "https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=700&q=85"
+        image: "/images/foods/yogurt.jpg"
     },
 
     {
@@ -421,8 +411,7 @@ const catalog = [
         quantity: 500,
         unit: "g",
         expiryDays: 2,
-        image:
-            "https://images.unsplash.com/photo-1516684732162-798a0062be99?auto=format&fit=crop&w=700&q=85"
+        image: "/images/foods/rice.jpg"
     },
 
     {
@@ -434,8 +423,7 @@ const catalog = [
         quantity: 5,
         unit: "quả",
         expiryDays: 5,
-        image:
-            "https://images.unsplash.com/photo-1603833665858-e61d17a86224?auto=format&fit=crop&w=700&q=85"
+        image: "/images/foods/banana.jpg"
     }
 
 ];
@@ -1036,39 +1024,17 @@ function createDefaultState() {
             null,
 
         profile: {
-
-            name:
-                "Người dùng Food X",
-
-            avatarUrl:
-                "",
-
-            gender:
-                "male",
-
-            age:
-                21,
-
-            weight:
-                53,
-
-            height:
-                153,
-
-            target:
-                53,
-
-            activity:
-                1.2,
-
-            diet:
-                "Ăn linh tinh",
-
-            allergies:
-                "",
-
-            dislikes:
-                ""
+            name: "Khách",
+            avatarUrl: "",
+            gender: "male",
+            age: 25,
+            weight: 60,
+            height: 165,
+            target: 60,
+            activity: 1.2,
+            diet: "Cân bằng",
+            allergies: "",
+            dislikes: ""
         },
 
         fridge:
@@ -1163,26 +1129,23 @@ window.state = state;
 ========================================================= */
 
 var authState = {
-
-    authenticated:
-        false,
-
-    userId:
-        null,
-
-    fullName:
-        "",
-
-    email:
-        "",
-
-    role:
-        "",
-
-    avatarUrl:
-        ""
+    authenticated: false,
+    userId: null,
+    fullName: "",
+    email: "",
+    role: "",
+    avatarUrl: ""
 };
+
+try {
+    const savedUser = JSON.parse(localStorage.getItem("foodx_user") || "null");
+    const token = localStorage.getItem("foodx_token");
+    if (savedUser && token) {
+        authState = { ...authState, ...savedUser, authenticated: true };
+    }
+} catch (_) {}
 window.authState = authState;
+
 
 /* =========================================================
    CROSS-MODULE SHARED STATES & DATASETS (GLOBAL)
@@ -1989,6 +1952,10 @@ document
 
             event.stopPropagation();
 
+            if (!isUserLoggedIn()) {
+                requireAuth("profile");
+                return;
+            }
 
             settingsPanel
                 ?.classList
@@ -2152,37 +2119,22 @@ function applyAuthResponse(data) {
         );
     }
 
+    const isAuth = Boolean(data?.accessToken || data?.userId || (getToken() && data?.username));
     authState = {
-
-        authenticated:
-            Boolean(
-                data?.accessToken ||
-                data?.userId
-            ),
-
-        userId:
-            data?.userId ??
-            null,
-
-        fullName:
-            data?.fullName ||
-            data?.username ||
-            "",
-
-        email:
-            data?.email ||
-            "",
-
-        role:
-            data?.role ||
-            "",
-
-        avatarUrl:
-            data?.avatarUrl ||
-            ""
+        authenticated: isAuth,
+        userId: data?.userId ?? (isAuth ? authState.userId : null),
+        fullName: data?.fullName || data?.username || (isAuth ? authState.fullName : ""),
+        email: data?.email || (isAuth ? authState.email : ""),
+        role: data?.role || (isAuth ? authState.role : ""),
+        avatarUrl: data?.avatarUrl || (isAuth ? authState.avatarUrl : "")
     };
+    window.authState = authState;
 
     if (authState.authenticated) {
+        try {
+            localStorage.setItem("foodx_user", JSON.stringify(authState));
+        } catch (_) {}
+
         state.userId = authState.userId;
         if (authState.fullName) {
             state.profile.name = authState.fullName;
@@ -2201,6 +2153,10 @@ function applyAuthResponse(data) {
             initChatForCurrentUser();
         }
     } else {
+        try {
+            localStorage.removeItem("foodx_user");
+        } catch (_) {}
+
         state.userId = null;
         state.profile = createDefaultState().profile;
         state.fridge = [];
@@ -2217,6 +2173,7 @@ function applyAuthResponse(data) {
 
     renderAuthSettings();
 }
+
 
 
 /* =========================================================
@@ -2307,68 +2264,58 @@ function renderAuthSettings() {
 async function loadAuthState(
     showErrorToast = false
 ) {
+    const token = getToken();
+    if (!token) return false;
 
     try {
-
-        const data =
-            await authRequest(
-                `${AUTH_API}/me`
-            );
-
-
-        applyAuthResponse(
-            data
-        );
-
-
-        return true;
-
-
+        const data = await authRequest(`${AUTH_API}/me`);
+        if (data) {
+            applyAuthResponse(data);
+            return true;
+        }
+        return false;
     } catch (error) {
-
-        console.error(
-            "Không kiểm tra được đăng nhập:",
+        console.warn(
+            "Không kiểm tra được đăng nhập từ server:",
             error
         );
 
+        // Chỉ đăng xuất nếu token thực sự hết hạn hoặc bị từ chối (401, 403)
+        const errMsg = String(error?.message || "");
+        if (errMsg.includes("401") || errMsg.includes("403") || errMsg.includes("hết hạn") || errMsg.includes("Unauthorized")) {
+            setToken("");
+            try { localStorage.removeItem("foodx_user"); } catch (_) {}
+            authState = {
+                authenticated: false,
+                userId: null,
+                fullName: "",
+                email: "",
+                role: "",
+                avatarUrl: ""
+            };
+            window.authState = authState;
 
-        authState = {
+            if (typeof createDefaultState === 'function' && typeof state !== 'undefined') {
+                state.userId = null;
+                state.profile = createDefaultState().profile;
+                saveState();
+                if (typeof renderAvatar === 'function') renderAvatar();
+            }
 
-            authenticated:
-                false,
+            renderAuthSettings();
 
-            userId:
-                null,
-
-            fullName:
-                "",
-
-            email:
-                "",
-
-            role:
-                "",
-
-            avatarUrl:
-                ""
-        };
-
-
-        renderAuthSettings();
-
-
-        if (showErrorToast) {
-
-            showToast(
-                "Không kiểm tra được trạng thái đăng nhập.",
-                "error"
-            );
+            if (showErrorToast) {
+                showToast(
+                    "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+                    "warning"
+                );
+            }
         }
-
 
         return false;
     }
 }
+
 
 
 /* =========================================================
@@ -2870,7 +2817,8 @@ window.handleHeroCtaClick = handleHeroCtaClick;
 
 function openView(name) {
     if (!name) name = "home";
-    const AUTH_REQUIRED_VIEWS = ["fridge", "favorites", "shopping", "plan", "stats"];
+    if (name === "stats") name = "home";
+    const AUTH_REQUIRED_VIEWS = ["fridge", "favorites", "shopping", "plan"];
     if (AUTH_REQUIRED_VIEWS.includes(name) && !isUserLoggedIn()) {
         requireAuth(name);
         return;
@@ -2920,8 +2868,6 @@ function openView(name) {
             if (typeof renderRecipeDetail === "function") renderRecipeDetail();
         } else if (name === "plan") {
             if (typeof loadPlan === "function") loadPlan();
-        } else if (name === "stats") {
-            if (typeof loadStats === "function") loadStats();
         } else if (name === "favorites") {
             if (typeof renderFavorites === "function") renderFavorites();
         } else if (name === "shopping") {
@@ -3764,6 +3710,11 @@ document
     ?.addEventListener(
         "click",
         () => {
+
+            if (!isUserLoggedIn()) {
+                requireAuth("profile");
+                return;
+            }
 
             fillProfileForm();
 
@@ -4966,30 +4917,47 @@ async function addFoodToFridge(
 ========================================================= */
 
 function getFridgeImage(item) {
-
-    if (item.image) {
-
+    if (item.image && item.image.trim() !== '' && !item.image.includes('unsplash.com/photo-1542838132') && !item.image.includes('photo-1540420773420')) {
         return item.image;
     }
 
-
-    const food =
-        catalog.find(
-            food =>
-                food.id ===
-                item.sourceId
-        );
-
-
+    const food = catalog.find(f => f.id === item.sourceId || (f.id && item.sourceKey === f.id));
     if (food?.image) {
-
         return food.image;
     }
 
+    const n = normalize(item.name || item.ingredientName || '').toLowerCase();
+    if (n === 'trung' || n.includes('trung ga') || n.includes('trung vit')) return '/images/foods/egg.jpg';
+    if (n === 'ga' || n.includes('uc ga') || n.includes('thit ga')) return '/images/foods/chicken.jpg';
+    if (n === 'bo' || n.includes('thit bo')) return '/images/foods/beef.jpg';
+    if (n === 'heo' || n.includes('thit heo') || n.includes('thit lon')) return '/images/foods/pork.jpg';
+    if (n.includes('ca hoi')) return '/images/foods/salmon.jpg';
+    if (n === 'tom' || n.includes('tom tuoi')) return '/images/foods/shrimp.jpg';
+    if (n.includes('ca chua')) return '/images/foods/tomato.jpg';
+    if (n.includes('bong cai') || n.includes('sup lo') || n.includes('broccoli')) return '/images/foods/broccoli.jpg';
+    if (n.includes('ca rot')) return '/images/foods/carrot.jpg';
+    if (n.includes('khoai tay')) return '/images/foods/potato.jpg';
+    if (n.includes('hanh tim')) return '/images/foods/shallot.jpg';
+    if (n === 'toi') return '/images/foods/garlic.jpg';
+    if (n === 'gung') return '/images/foods/ginger.jpg';
+    if (n.includes('sua chua')) return '/images/foods/yogurt.jpg';
+    if (n === 'sua' || n.includes('sua tuoi')) return '/images/foods/milk.jpg';
+    if (n.includes('qua bo') || n.includes('trai bo')) return '/images/foods/avocado.jpg';
+    if (n === 'chuoi') return '/images/foods/banana.jpg';
+    if (n.includes('com') || n === 'gao') return '/images/foods/rice.jpg';
+    if (n.includes('dau hu') || n.includes('dau phu')) return '/images/foods/tofu.jpg';
+    if (n.includes('pho mai')) return '/images/foods/cheese.jpg';
 
-    return (
-        "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=900&q=85"
-    );
+    // Nếu là món tự thêm có tên riêng (như "cá chép"), sinh đường dẫn ảnh slug tương ứng
+    const slug = (item.name || '').toLowerCase().trim()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd').replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    if (slug) {
+        return `/images/foods/${slug}.jpg`;
+    }
+
+    return '/images/placeholder.jpg';
 }
 
 
@@ -5845,6 +5813,39 @@ async function deleteFridgeFood(id) {
     }
 }
 
+async function clearAllFridge() {
+    if (!isUserLoggedIn()) {
+        requireAuth('fridge');
+        return;
+    }
+    const total = (state.fridge && Array.isArray(state.fridge)) ? state.fridge.length : 0;
+    if (total === 0) {
+        showToast('Tủ lạnh hiện đang trống.', 'info');
+        return;
+    }
+    const confirmed = window.confirm(`Bạn có chắc muốn xóa toàn bộ ${total} thực phẩm khỏi tủ lạnh?`);
+    if (!confirmed) return;
+
+    try {
+        await apiRequest(`${FRIDGE_API}/all`, {
+            method: "DELETE"
+        });
+        state.fridge = [];
+        state.selectedFridgeIds = [];
+        saveState();
+        await loadFridgeFromApi(false);
+        if (typeof renderFridge === 'function') renderFridge();
+        if (typeof renderExpiring === 'function') renderExpiring();
+        if (typeof renderStats === 'function') renderStats();
+        if (typeof updateFridgeSummaryCounters === 'function') updateFridgeSummaryCounters();
+        showToast('Đã xóa toàn bộ thực phẩm trong tủ lạnh! 🧹', 'success');
+    } catch (error) {
+        console.error('clearAllFridge error:', error);
+        showToast('Không thể xóa tủ lạnh: ' + (error.message || 'Lỗi kết nối'), 'error');
+    }
+}
+window.clearAllFridge = clearAllFridge;
+
 
 /* =========================================================
    SELECT FRIDGE
@@ -6312,6 +6313,11 @@ function openCustomIngredientModal() {
         "customIngredientModal"
     );
 
+    const calcStatus = document.getElementById("nutritionCalcStatus");
+    if (calcStatus) {
+        calcStatus.style.display = "none";
+        calcStatus.innerHTML = "";
+    }
 
     document
         .getElementById(
@@ -6331,6 +6337,15 @@ document
         openCustomIngredientModal
     );
 
+document
+    .getElementById(
+        "clearAllFridgeBtn"
+    )
+    ?.addEventListener(
+        "click",
+        clearAllFridge
+    );
+
 
 document
     .getElementById(
@@ -6340,6 +6355,99 @@ document
         "click",
         openCustomIngredientModal
     );
+
+/* =========================================================
+   AUTO CALCULATE NUTRITION HANDLER
+========================================================= */
+document
+    .getElementById("btnAutoCalculateNutrition")
+    ?.addEventListener("click", async function () {
+        const name = document.getElementById("customFoodName")?.value.trim();
+        const quantity = parseFloat(document.getElementById("customFoodQuantity")?.value) || 0;
+        const unit = document.getElementById("customFoodUnit")?.value || "g";
+        const statusEl = document.getElementById("nutritionCalcStatus");
+
+        if (!name) {
+            showToast("Vui lòng nhập tên nguyên liệu trước khi tính calo.", "warning");
+            document.getElementById("customFoodName")?.focus();
+            return;
+        }
+
+        if (quantity <= 0) {
+            showToast("Vui lòng nhập số lượng hợp lệ (> 0).", "warning");
+            document.getElementById("customFoodQuantity")?.focus();
+            return;
+        }
+
+        const btn = this;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = "⏳ Đang tính...";
+        btn.disabled = true;
+
+        try {
+            const res = await apiRequest(`/api/fridge/estimate-nutrition?name=${encodeURIComponent(name)}&quantity=${quantity}&unit=${encodeURIComponent(unit)}`);
+            if (res && res.data) {
+                const d = res.data;
+                const calInput = document.getElementById("customFoodCalories");
+                const proInput = document.getElementById("customFoodProtein");
+                const carbInput = document.getElementById("customFoodCarb");
+                const fatInput = document.getElementById("customFoodFat");
+                const benefitSelect = document.getElementById("customFoodBenefit");
+                const ingInput = document.getElementById("customFoodIngredients");
+
+                if (calInput) calInput.value = d.kcal;
+                if (proInput) proInput.value = d.protein;
+                if (carbInput) carbInput.value = d.carb;
+                if (fatInput) fatInput.value = d.fat;
+                if (benefitSelect && d.benefit) benefitSelect.value = d.benefit;
+                if (ingInput && (!ingInput.value || ingInput.value.trim() === "") && d.components) {
+                    ingInput.value = d.components;
+                }
+
+                if (statusEl) {
+                    statusEl.style.display = "flex";
+                    statusEl.innerHTML = `✓ ${d.basisNote}: <strong>${d.kcal} kcal</strong> (Protein: ${d.protein}g, Carb: ${d.carb}g, Béo: ${d.fat}g)`;
+                }
+
+                showToast(`✓ Đã tính xong: ${d.kcal} kcal (bạn có thể sửa lại nếu muốn)`, "success");
+            } else {
+                throw new Error("Không có dữ liệu trả về");
+            }
+        } catch (err) {
+            console.warn("Lỗi API estimate nutrition, dùng fallback nội bộ:", err);
+            // Fallback tính toán tại client
+            let multiplier = quantity / 100.0;
+            const u = unit.toLowerCase();
+            if (u === "kg" || u === "lít" || u === "lit" || u === "l") multiplier = (quantity * 1000) / 100.0;
+            else if (u === "quả" || u === "qua" || u === "củ" || u === "cu") multiplier = (quantity * 100) / 100.0;
+            else if (u === "hộp" || u === "hop" || u === "phần" || u === "phan") multiplier = (quantity * 150) / 100.0;
+
+            const kcal = Math.round(150 * multiplier);
+            const protein = Math.round(15 * multiplier * 10) / 10;
+            const carb = Math.round(10 * multiplier * 10) / 10;
+            const fat = Math.round(5 * multiplier * 10) / 10;
+
+            const calInput = document.getElementById("customFoodCalories");
+            const proInput = document.getElementById("customFoodProtein");
+            const carbInput = document.getElementById("customFoodCarb");
+            const fatInput = document.getElementById("customFoodFat");
+
+            if (calInput) calInput.value = kcal;
+            if (proInput) proInput.value = protein;
+            if (carbInput) carbInput.value = carb;
+            if (fatInput) fatInput.value = fat;
+
+            if (statusEl) {
+                statusEl.style.display = "flex";
+                statusEl.innerHTML = `✓ Ước tính cho ${quantity} ${unit} ${name}: <strong>${kcal} kcal</strong>`;
+            }
+            showToast(`✓ Đã ước tính: ${kcal} kcal`, "success");
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    });
+
 
 
 document
@@ -6751,26 +6859,33 @@ function recipeScore(recipe) {
 
 
 function suggestedRecipes() {
+    if (!state.fridge || state.fridge.length === 0) {
+        return [];
+    }
+
+    const fridgeIngredients = (state.fridge || [])
+        .flatMap(item => [item.name, ...(item.ingredients || [])])
+        .filter(Boolean)
+        .map(normalize);
 
     return recipes
-        .filter(
-            isRecipeSafeForProfile
-        )
+        .filter(isRecipeSafeForProfile)
+        .filter(recipe => {
+            const ings = normalizeIngredientList(recipe.ingredients);
+            return ings.some(ingredient => {
+                const raw = ingredient.ingredientName || ingredient.name || ingredient;
+                const value = normalize(raw);
+                return value && fridgeIngredients.some(fridge => fridge.includes(value) || value.includes(fridge));
+            });
+        })
         .map(
             recipe => ({
-
                 ...recipe,
-
-                score:
-                    recipeScore(
-                        recipe
-                    )
+                score: recipeScore(recipe)
             })
         )
         .sort(
-            (a, b) =>
-                b.score -
-                a.score
+            (a, b) => b.score - a.score
         );
 }
 
@@ -8290,7 +8405,7 @@ function checkIngredientInFridge(ingName, fridgeNamesList) {
     });
 }
 
-async function addMissingIngredients(recipeId) {
+async function addRecipeIngredientsToShopping(recipeId, onlyMissing = false) {
     if (!isUserLoggedIn()) {
         requireAuth('shopping');
         return;
@@ -8298,17 +8413,14 @@ async function addMissingIngredients(recipeId) {
     try {
         let recipe = curRecipe;
         if (!recipe || (recipeId && String(recipe.id) !== String(recipeId))) {
-            if (typeof allSocialPostsCache !== 'undefined' && Array.isArray(allSocialPostsCache)) {
-                recipe = allSocialPostsCache.find(p => String(p.id) === String(recipeId));
-            }
-            if (!recipe && typeof communityFeedPosts !== 'undefined' && Array.isArray(communityFeedPosts)) {
-                recipe = communityFeedPosts.find(p => String(p.id) === String(recipeId));
-            }
-            if (!recipe && typeof recipesCache !== 'undefined' && Array.isArray(recipesCache)) {
-                recipe = recipesCache.find(r => String(r.id) === String(recipeId));
-            }
-            if (!recipe && typeof recipes !== 'undefined' && Array.isArray(recipes)) {
-                recipe = recipes.find(r => String(r.id) === String(recipeId));
+            const id = recipeId || (curRecipe && curRecipe.id);
+            if (id) {
+                const savedPosts = JSON.parse(localStorage.getItem('foodx_saved_posts') || '{}');
+                recipe = savedPosts[String(id)]
+                    || (typeof allSocialPostsCache !== 'undefined' && (allSocialPostsCache || []).find(p => String(p.id) === String(id)))
+                    || (typeof communityFeedPosts !== 'undefined' && (communityFeedPosts || []).find(p => String(p.id) === String(id)))
+                    || (recipesCache || []).find(r => String(r.id) === String(id))
+                    || (typeof recipes !== 'undefined' ? recipes.find(r => String(r.id) === String(id)) : null);
             }
             if (!recipe && recipeId) {
                 try { recipe = await apiRequest('/api/recipes/' + recipeId); } catch (_) {}
@@ -8316,117 +8428,98 @@ async function addMissingIngredients(recipeId) {
         }
         if (!recipe) { showToast('Không tìm thấy thông tin công thức để thêm nguyên liệu.', 'warning'); return; }
 
+        const recipeTitle = recipe.title || recipe.name || 'Món ngon';
         let fridgeNames = [];
-        try {
-            const fridgeItems = await apiRequest('/api/fridge') || [];
-            if (Array.isArray(fridgeItems)) {
-                fridgeNames = fridgeItems
-                    .map(f => String((f && f.name) || (f && f.food && f.food.name) || '').trim().toLowerCase())
-                    .filter(n => n.length >= 2);
-            }
-        } catch (_) {}
-        if (!fridgeNames.length) { fridgeNames = getFridgeIngredientNames(); }
+        if (onlyMissing === true) {
+            try {
+                const fridgeItems = await apiRequest('/api/fridge') || [];
+                if (Array.isArray(fridgeItems)) {
+                    fridgeNames = fridgeItems
+                        .map(f => String((f && f.name) || (f && f.food && f.food.name) || '').trim().toLowerCase())
+                        .filter(n => n.length >= 2);
+                }
+            } catch (_) {}
+            if (!fridgeNames.length) { fridgeNames = getFridgeIngredientNames(); }
+        }
 
         const normalizedIngs = normalizeIngredientList(recipe.ingredients);
         let added = 0;
+        let lastError = null;
+
+        const catTag = 'Công thức: ' + (recipeTitle.length > 50 ? recipeTitle.substring(0, 47) + '...' : recipeTitle);
 
         if (!normalizedIngs.length) {
-            await apiRequest('/api/shopping', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: recipe.title || recipe.name || 'Món ăn', quantity: '1 phần', price: 25000, category: 'Công thức: ' + (recipe.title || recipe.name || 'Món ngon') })
-            });
-            added = 1;
+            try {
+                const res = await apiRequest('/api/shopping', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: recipeTitle, quantity: '1 phần', price: 25000, category: catTag })
+                });
+                if (!Array.isArray(state.shopping)) state.shopping = [];
+                state.shopping.push({
+                    id: (res && res.id) || (Date.now() + Math.floor(Math.random() * 1000)),
+                    name: recipeTitle,
+                    quantity: '1 phần',
+                    price: 25000,
+                    category: catTag,
+                    done: false
+                });
+                added = 1;
+            } catch (e) { lastError = e; }
         } else {
             for (const ing of normalizedIngs) {
                 const rawName = ing.ingredientName || ing.name || '';
                 if (!rawName || !rawName.trim()) continue;
-                const inFridge = checkIngredientInFridge(rawName, fridgeNames);
-                if (!inFridge) {
-                    let qty = (ing.quantity != null && String(ing.quantity).trim() ? String(ing.quantity).trim() : '') +
-                              (ing.unit && String(ing.unit).trim() ? ' ' + String(ing.unit).trim() : '');
-                    try {
-                        const res = await apiRequest('/api/shopping', {
-                            method: 'POST', headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ name: rawName.trim(), quantity: qty.trim() || '1 phần', price: 25000, category: 'Công thức: ' + (recipe.title || recipe.name || 'Món ngon') })
-                        });
-                        if (!Array.isArray(state.shopping)) state.shopping = [];
-                        state.shopping.push({
-                            id: (res && res.id) || (Date.now() + Math.floor(Math.random() * 1000)),
-                            name: rawName.trim(),
-                            quantity: qty.trim() || '1 phần',
-                            price: 25000,
-                            category: 'Công thức: ' + (recipe.title || recipe.name || 'Món ngon'),
-                            done: false
-                        });
-                        added++;
-                    } catch (e) { console.error('addMissingIngredients item POST error:', e); }
+                if (onlyMissing === true && checkIngredientInFridge(rawName, fridgeNames)) {
+                    continue;
                 }
+                let qty = (ing.quantity != null && String(ing.quantity).trim() ? String(ing.quantity).trim() : '') +
+                          (ing.unit && String(ing.unit).trim() ? ' ' + String(ing.unit).trim() : '');
+                try {
+                    const res = await apiRequest('/api/shopping', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: rawName.trim(), quantity: qty.trim() || '1 phần', price: 25000, category: catTag })
+                    });
+                    if (!Array.isArray(state.shopping)) state.shopping = [];
+                    state.shopping.push({
+                        id: (res && res.id) || (Date.now() + Math.floor(Math.random() * 1000)),
+                        name: rawName.trim(),
+                        quantity: qty.trim() || '1 phần',
+                        price: 25000,
+                        category: catTag,
+                        done: false
+                    });
+                    added++;
+                } catch (e) { lastError = e; console.error('addRecipeIngredientsToShopping item error:', e); }
             }
         }
 
         saveState();
         if (typeof renderShopping === 'function') { try { await renderShopping(); } catch (e) {} }
-        if (added > 0) {
-            showToast(`🛒 Đã thêm ${added} nguyên liệu còn thiếu của món "${recipe.title || recipe.name}" vào Danh sách mua!`, 'success');
-        } else {
-            showToast(`Tủ lạnh của bạn đã có đủ ${normalizedIngs.length} nguyên liệu cho món "${recipe.title || recipe.name}"! (Nếu muốn mua thêm, bạn có thể thêm trực tiếp ở mục Đi chợ) 🎉`, 'info');
-        }
-    } catch (err) {
-        console.error('addMissingIngredients main error:', err);
-        showToast('Không thể thêm nguyên liệu vào danh sách mua: ' + err.message, 'error');
-    }
-}
-
-async function addRecipeIngredientsToFridge(recipeId) {
-    if (!isUserLoggedIn()) { requireAuth('fridge'); return; }
-    try {
-        let recipe = curRecipe;
-        if (!recipe || (recipeId && String(recipe.id) !== String(recipeId))) {
-            const id = recipeId || (curRecipe && curRecipe.id);
-            if (id) {
-                const savedPosts = JSON.parse(localStorage.getItem('foodx_saved_posts') || '{}');
-                recipe = savedPosts[String(id)] || (recipesCache || []).find(r => String(r.id) === String(id));
-            }
-        }
-        if (!recipe) { showToast('Không tìm thấy thông tin công thức.', 'warning'); return; }
-
-        const normalizedIngs = normalizeIngredientList(recipe.ingredients);
-        if (!normalizedIngs.length) { showToast('Công thức này chưa có danh sách nguyên liệu để thêm vào tủ lạnh.', 'warning'); return; }
-
-        let added = 0, lastError = null;
-        const expiryStr = toDateInputValue(futureDate(7));
-
-        for (const ing of normalizedIngs) {
-            const rawName = ing.ingredientName || ing.name || '';
-            if (!rawName || !rawName.trim()) continue;
-            const qtyNum = parseFloat(ing.quantity) || 1;
-            const unit = (ing.unit && String(ing.unit).trim()) ? String(ing.unit).trim() : 'phần';
-            try {
-                await apiRequest(FRIDGE_API, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ sourceKey: null, name: rawName.trim(), type: 'Nguyên liệu', quantity: qtyNum, unit: unit, kcal: 80, protein: 4, carb: 8, fat: 2, components: rawName.trim(), benefit: 'Tươi ngon', imageUrl: '', expiresAt: expiryStr, note: 'Thêm từ: ' + (recipe.title || recipe.name || 'Công thức'), customFood: true })
-                });
-                added++;
-            } catch (e) { lastError = e; console.error('addRecipeIngredientsToFridge item POST error:', e); }
-        }
-
-        await loadFridgeFromApi(false);
-        if (typeof renderFridge === 'function') renderFridge();
-        if (typeof renderExpiring === 'function') renderExpiring();
-        if (typeof renderStats === 'function') renderStats();
+        if (typeof loadShoppingList === 'function') { try { await loadShoppingList(); } catch (e) {} }
 
         if (added > 0) {
-            showToast(`🧊 Đã thêm ${added} nguyên liệu của món "${recipe.title || recipe.name}" vào Tủ lạnh! 🎉`, 'success');
+            showToast(`🛒 Đã thêm ${added} nguyên liệu của món "${recipeTitle}" vào Danh sách mua! 🎉`, 'success');
         } else if (lastError) {
-            showToast('Không thể thêm vào tủ lạnh: ' + (lastError.message || 'Lỗi kết nối'), 'error');
+            showToast('Không thể thêm vào danh sách mua: ' + (lastError.message || 'Lỗi kết nối'), 'error');
         } else {
             showToast('Không tìm thấy nguyên liệu hợp lệ để thêm.', 'warning');
         }
     } catch (err) {
-        console.error('addRecipeIngredientsToFridge error:', err);
-        showToast('Lỗi khi thêm nguyên liệu vào tủ lạnh: ' + err.message, 'error');
+        console.error('addRecipeIngredientsToShopping error:', err);
+        showToast('Lỗi khi thêm nguyên liệu vào danh sách mua: ' + err.message, 'error');
     }
 }
+window.addRecipeIngredientsToShopping = addRecipeIngredientsToShopping;
+
+async function addMissingIngredients(recipeId) {
+    return addRecipeIngredientsToShopping(recipeId, false);
+}
+window.addMissingIngredients = addMissingIngredients;
+
+async function addRecipeIngredientsToFridge(recipeId) {
+    return addRecipeIngredientsToShopping(recipeId, false);
+}
+window.addRecipeIngredientsToFridge = addRecipeIngredientsToFridge;
 /* =========================================================
    STATS
 ========================================================= */
@@ -9701,6 +9794,14 @@ function renderAll() {
 ========================================================= */
 
 async function startFoodX() {
+    /* 0. Khôi phục phiên đăng nhập từ token trước khi render giao diện */
+    if (getToken()) {
+        try {
+            await loadAuthState(false);
+        } catch (_) {}
+    }
+
+
     /* 1. Tự động ẩn màn hình chào nếu đã truy cập trước đó hoặc đã đăng nhập */
     const screen = document.getElementById("welcomeScreen");
     if (screen && (localStorage.getItem("foodx_welcome_seen") === "true" || isUserLoggedIn())) {
@@ -9710,7 +9811,7 @@ async function startFoodX() {
     /* 2. Khôi phục tab đang mở trước đó */
     const hash = window.location.hash ? window.location.hash.replace("#", "").trim() : "";
     const savedView = localStorage.getItem("foodx_active_view");
-    const validViews = ["home", "fridge", "recipes", "plan", "stats", "favorites", "shopping", "social"];
+    const validViews = ["home", "fridge", "recipes", "plan", "favorites", "shopping", "social"];
     let initialView = "home";
 
     if (hash && validViews.includes(hash)) {
@@ -9719,7 +9820,7 @@ async function startFoodX() {
         initialView = savedView;
     }
 
-    const AUTH_REQUIRED = ["fridge", "favorites", "shopping", "plan", "stats"];
+    const AUTH_REQUIRED = ["fridge", "favorites", "shopping", "plan"];
     if (AUTH_REQUIRED.includes(initialView) && !isUserLoggedIn()) {
         initialView = "home";
     }
@@ -9740,30 +9841,15 @@ async function startFoodX() {
             ),
             loadProfileFromApi(
                 false
-            ),
-            loadAuthState(
-                false
             )
         ]);
 
-    const fridgeConnected =
-        results[0];
-    const profileConnected =
-        results[1];
-    const authConnected =
-        results[2];
+    const fridgeConnected = results[0];
+    const profileConnected = results[1];
 
-    if (
-        fridgeConnected &&
-        profileConnected &&
-        authConnected
-    ) {
+    if (fridgeConnected && profileConnected) {
         console.log(
             "✅ Food X đã đồng bộ MySQL: Tủ lạnh + Hồ sơ + Auth."
-        );
-    } else {
-        console.warn(
-            "⚠ Một số dữ liệu chưa đồng bộ được với MySQL."
         );
     }
 
@@ -9773,7 +9859,7 @@ async function startFoodX() {
 
 window.addEventListener("hashchange", function () {
     const hash = window.location.hash ? window.location.hash.replace("#", "").trim() : "";
-    const validViews = ["home", "fridge", "recipes", "plan", "stats", "favorites", "shopping", "social"];
+    const validViews = ["home", "fridge", "recipes", "plan", "favorites", "shopping", "social"];
     if (hash && validViews.includes(hash)) {
         openView(hash);
     }
@@ -10992,7 +11078,19 @@ async function addCurRecipeMissingToShopping() {
         requireAuth('shopping');
         return;
     }
-    await addMissingIngredients(curRecipe.id);
+    await addRecipeIngredientsToShopping(curRecipe.id, false);
+}
+
+async function addCurRecipeAllToShopping() {
+    if (!curRecipe) {
+        showToast('Chưa chọn món ăn.', 'warning');
+        return;
+    }
+    if (!isUserLoggedIn()) {
+        requireAuth('shopping');
+        return;
+    }
+    await addRecipeIngredientsToShopping(curRecipe.id, false);
 }
 
 /* =========================================================
@@ -11010,12 +11108,12 @@ async function addCurRecipeMissingToShopping() {
     if (plan) plan.addEventListener('click', addCurToPlan);
     const cook = document.getElementById('rdCook');
     if (cook) cook.addEventListener('click', cookNow);
-    const addFridgeBtn = document.getElementById('rdAddFridge');
-    if (addFridgeBtn) addFridgeBtn.addEventListener('click', function () {
-        if (curRecipe) addRecipeIngredientsToFridge(curRecipe.id);
-    });
     const addShopBtn = document.getElementById('rdAddShop');
     if (addShopBtn) addShopBtn.addEventListener('click', addCurRecipeMissingToShopping);
+    const addShopAllBtn = document.getElementById('rdAddShopAll');
+    if (addShopAllBtn) addShopAllBtn.addEventListener('click', addCurRecipeAllToShopping);
+    const addFridgeBtn = document.getElementById('rdAddFridge');
+    if (addFridgeBtn) addFridgeBtn.addEventListener('click', addCurRecipeAllToShopping);
 
     document.querySelectorAll('[data-rdtab]').forEach(function (t) {
         t.addEventListener('click', function () {
@@ -11532,8 +11630,19 @@ async function toggleShop(id) {
         return;
     }
     try {
-        await apiRequest('/api/shopping/' + id + '/toggle', { method: 'PATCH' });
+        const res = await apiRequest('/api/shopping/' + id + '/toggle', { method: 'PATCH' });
         await renderShopping();
+        
+        // Tự động cập nhật dữ liệu và giao diện Tủ lạnh
+        await loadFridgeFromApi(false);
+        if (typeof renderFridge === 'function') renderFridge();
+        if (typeof renderExpiring === 'function') renderExpiring();
+        if (typeof renderStats === 'function') renderStats();
+        if (typeof updateFridgeSummaryCounters === 'function') updateFridgeSummaryCounters();
+
+        if (res && res.done) {
+            showToast(`✅ Đã mua "${res.name}" và cập nhật vào Tủ lạnh! 🧊`, 'success');
+        }
     } catch (e) {
         showToast('Lỗi cập nhật món: ' + e.message, 'error');
     }
@@ -12222,7 +12331,7 @@ function renderHomeBlogSection(catFilter) {
 
 
 function isUserLoggedIn() {
-    return Boolean(getToken());
+    return Boolean(getToken() && window.authState && window.authState.authenticated);
 }
 
 function requireAuth(actionName, callback) {
@@ -12235,6 +12344,9 @@ function requireAuth(actionName, callback) {
 
     let msg = 'Vui lòng đăng nhập hoặc đăng ký để sử dụng tính năng này!';
     switch (actionName) {
+        case 'profile':
+            msg = 'Vui lòng đăng nhập để xem và quản lý hồ sơ dinh dưỡng!';
+            break;
         case 'chat':
             msg = 'Vui lòng đăng nhập để trò chuyện cùng Trợ lý AI FoodX!';
             break;
@@ -13293,6 +13405,24 @@ async function loadAiStatus() {
     }
 }
 
+window.createChatSession = createChatSession;
+window.switchChatSession = switchChatSession;
+window.deleteChatSession = deleteChatSession;
+window.toggleChatSessions = toggleChatSessions;
+window.renameCurrentChatSession = renameCurrentChatSession;
+window.openChat = openChat;
+window.closeChat = closeChat;
+window.toggleChat = toggleChat;
+window.setMode = setMode;
+window.sendMessage = sendMessage;
+window.askFromTag = function (text) {
+    const input = document.getElementById('chatInputFx');
+    if (input) {
+        input.value = text;
+        sendMessage();
+    }
+};
+
 (function initChat() {
     const body = document.getElementById('chatBody');
     if (body && !body.childElementCount) {
@@ -13300,6 +13430,14 @@ async function loadAiStatus() {
     }
     loadAiStatus();
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeChat(); });
+
+    const newBtn = document.getElementById('chatNewSession');
+    if (newBtn) {
+        newBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            createChatSession('Cuộc trò chuyện mới', chatMode || 'chat', true);
+        });
+    }
 })();
 
 
@@ -13863,7 +14001,6 @@ onbBindSeg("#onbDiet", null, "diet");
                 requireAuth('fridge');
                 return;
             }
-            showToast('⏳ AI đang quét nguyên liệu trong tủ lạnh...', 'info');
             try {
                 const fridgeItems = await apiRequest('/api/fridge') || [];
                 if (!fridgeItems.length) {
@@ -13871,20 +14008,21 @@ onbBindSeg("#onbDiet", null, "diet");
                     return;
                 }
                 const foodList = fridgeItems.map(function (f) { return f.name || f.foodName; }).filter(Boolean).join(', ');
-                
-                openView('home');
-                const chatInput = document.getElementById('chatInput') || document.getElementById('aiChatInput');
-                const prompt = 'Tôi đang có các nguyên liệu trong tủ lạnh gồm: ' + foodList + '. Hãy gợi ý cho tôi 1 món ăn nấu ngay ngon nhất để tận dụng và tránh hỏng nguyên liệu.';
-                if (chatInput) {
-                    chatInput.value = prompt;
-                    chatInput.focus();
-                    const sendBtn = document.getElementById('chatSendBtn') || document.getElementById('sendChatBtn');
-                    if (sendBtn) sendBtn.click();
+                const prompt = 'Tôi đang có các nguyên liệu trong tủ lạnh gồm: ' + foodList + '. Hãy gợi ý cho tôi 1 món ăn nấu ngay ngon nhất để tận dụng và tránh lãng phí thực phẩm.';
+
+                // Mở giao diện Trợ lý AI và tự động gửi yêu cầu gợi ý
+                await openChat('chat');
+                if (typeof doSend === 'function') {
+                    doSend(prompt);
                 } else {
-                    showToast('Đã phân tích tủ lạnh: ' + foodList, 'success');
+                    const input = document.getElementById('chatInputFx');
+                    if (input) {
+                        input.value = prompt;
+                        sendMessage();
+                    }
                 }
             } catch(e) {
-                showToast('Không thể phân tích tủ lạnh lúc này', 'error');
+                showToast('Không thể phân tích tủ lạnh lúc này: ' + e.message, 'error');
             }
         });
     }

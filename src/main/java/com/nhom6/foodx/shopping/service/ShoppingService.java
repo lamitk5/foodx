@@ -20,6 +20,7 @@ import java.util.List;
 public class ShoppingService {
 
     private final ShoppingItemRepository shoppingItemRepository;
+    private final com.nhom6.foodx.fridge.service.FridgeService fridgeService;
 
     @Transactional(readOnly = true)
     public List<ShoppingItemResponse> getAll(User user) {
@@ -34,12 +35,16 @@ public class ShoppingService {
         if (request.name() == null || request.name().isBlank()) {
             throw new BusinessException(400, "Tên nguyên liệu không được để trống");
         }
+        String category = request.category() == null || request.category().isBlank() ? "spice" : request.category().trim();
+        if (category.length() > 250) {
+            category = category.substring(0, 250);
+        }
         ShoppingItem item = ShoppingItem.builder()
                 .user(user)
                 .name(request.name().trim())
                 .quantity(request.quantity() == null ? "1 phần" : request.quantity())
                 .price(request.price() == null ? 0 : request.price())
-                .category(request.category() == null ? "spice" : request.category())
+                .category(category)
                 .done(false)
                 .build();
         return toResponse(shoppingItemRepository.save(item));
@@ -48,8 +53,13 @@ public class ShoppingService {
     @Transactional
     public ShoppingItemResponse toggle(User user, Long id) {
         ShoppingItem item = findItem(user, id);
-        item.setDone(!Boolean.TRUE.equals(item.getDone()));
-        return toResponse(shoppingItemRepository.save(item));
+        boolean newDone = !Boolean.TRUE.equals(item.getDone());
+        item.setDone(newDone);
+        ShoppingItem saved = shoppingItemRepository.save(item);
+        if (newDone) {
+            fridgeService.addOrUpdateBoughtItem(user, item.getName(), item.getQuantity(), item.getCategory());
+        }
+        return toResponse(saved);
     }
 
     @Transactional

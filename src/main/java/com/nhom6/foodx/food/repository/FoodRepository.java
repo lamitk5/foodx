@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface FoodRepository extends JpaRepository<Food, Long> {
 
     Optional<Food> findBySourceKey(String sourceKey);
+
+    Optional<Food> findFirstByNameIgnoreCase(String name);
 }

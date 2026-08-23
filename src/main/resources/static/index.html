@@ -154,15 +154,6 @@
 
             </button>
 
-            <button
-                    type="button"
-                    class="menu-item"
-                    data-view="stats">
-
-                <svg class="icon"><use href="#i-stats"/></svg>
-                <b>Thống kê</b>
-
-            </button>
 
             <button
                     type="button"
@@ -974,11 +965,11 @@
 
                     <button
                             type="button"
-                            class="secondary-button"
+                            class="primary-button"
                             id="fridgeRescueBtn"
-                            style="border-color:#ff9800;color:#ff9800;font-weight:700;"
+                            style="background:linear-gradient(135deg, #10b981, #059669);font-weight:700;"
                             title="AI tự động phân tích các nguyên liệu trong tủ để gợi ý món nấu ngay">
-                        🚨 AI Cứu Tủ Lạnh
+                        ✨ AI Cứu Tủ Lạnh
                     </button>
 
                     <button
@@ -993,15 +984,11 @@
 
                     <button
                             type="button"
-                            class="primary-button selected-ai-top"
-                            id="openSelectedAI">
-
-                        ✦ AI gợi ý
-
-                        <span id="selectedCountHeader">
-                    0
-                </span>
-
+                            class="secondary-button"
+                            id="clearAllFridgeBtn"
+                            style="border-color:#ef4444;color:#ef4444;font-weight:600;"
+                            title="Xóa tất cả thực phẩm trong tủ lạnh">
+                        🗑 Xóa tất cả
                     </button>
 
                 </div>
@@ -1563,12 +1550,12 @@
                         🍳 Nấu ngay
                     </button>
 
-                    <button type="button" class="secondary-button" id="rdAddFridge" style="border-color:#38bdf8;color:#0284c7;font-weight:600;">
-                        📥 Thêm nguyên liệu vào Tủ lạnh
-                    </button>
-
                     <button type="button" class="secondary-button" id="rdAddShop" style="border-color:var(--green);color:var(--green);font-weight:600;">
                         🛒 Thêm nguyên liệu thiếu vào Danh sách mua
+                    </button>
+
+                    <button type="button" class="secondary-button" id="rdAddShopAll" style="border-color:#0284c7;color:#0284c7;font-weight:600;">
+                        🛒 Lưu tất cả nguyên liệu vào Danh sách mua
                     </button>
 
                 </div>
@@ -1670,68 +1657,6 @@
 
         </section>
 
-
-        <!-- =====================================================
-             STATS - THỐNG KÊ
-        ====================================================== -->
-
-        <section
-                class="view"
-                id="view-stats">
-
-            <div class="page-title">
-
-                <span class="page-eyebrow">
-                    THỐNG KÊ
-                </span>
-
-                <h1>
-                    Thống kê nấu ăn
-                </h1>
-
-                <p>
-                    Nhìn lại thói quen nấu nướng của bạn.
-                </p>
-
-            </div>
-
-
-            <div
-                    class="kpi-grid"
-                    id="kpiGrid">
-
-            </div>
-
-
-            <div class="stats-insights" id="statsInsights"></div>
-
-            <div class="stats-waste" id="statsWaste"></div>
-
-
-            <div class="card stats-card">
-
-                <h3>
-                    <svg class="icon"><use href="#i-flame"/></svg> Calo theo ngày (14 ngày gần nhất)
-                </h3>
-
-                <svg id="statsLine" viewBox="0 0 340 150" class="stats-svg"></svg>
-
-                <div class="stats-labels" id="statsLabels"></div>
-
-            </div>
-
-
-            <div class="card stats-card">
-
-                <h3>
-                    🏆 Món nấu nhiều nhất
-                </h3>
-
-                <div id="topDishes"></div>
-
-            </div>
-
-        </section>
 
 
         <!-- =====================================================
@@ -1841,9 +1766,9 @@
         <span>Kế hoạch</span>
     </button>
 
-    <button type="button" class="bn-item" data-bottom-nav="stats" aria-label="Thống kê">
-        <svg class="icon"><use href="#i-stats"/></svg>
-        <span>Thống kê</span>
+    <button type="button" class="bn-item" data-bottom-nav="shopping" aria-label="Đi chợ">
+        <svg class="icon"><use href="#i-cart"/></svg>
+        <span>Đi chợ</span>
     </button>
 
 </nav>
@@ -2816,11 +2741,24 @@
 
                 </label>
 
+                <div class="nutrition-lookup-box">
+                    <div class="nutrition-lookup-header">
+                        <div class="nutrition-lookup-title">
+                            📊 Giá trị dinh dưỡng
+                            <span class="nutrition-lookup-desc">Bấm nút để tự tính theo g/kg/lít hoặc tự nhập tay bên dưới</span>
+                        </div>
+                        <button type="button" id="btnAutoCalculateNutrition" class="btn-lookup-nutrition">
+                            ⚡ Tra cứu & Tự tính Calo
+                        </button>
+                    </div>
+                    <div id="nutritionCalcStatus" class="nutrition-status-msg" style="display:none;"></div>
+                </div>
 
                 <label>
 
                     <span>
                         Calo
+
                     </span>
 
                     <input
@@ -4284,7 +4222,7 @@
 </div>
 
 
-<script src="/js/app.js"></script>
+<script src="/js/app.js?v=20260823_10"></script>
 
 </body>
 </html>

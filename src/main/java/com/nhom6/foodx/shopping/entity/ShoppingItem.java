@@ -50,8 +50,8 @@ public class ShoppingItem {
     /** Giá (VNĐ). */
     private Integer price;
 
-    /** Phân loại: veg / meat / dairy / spice. */
-    @Column(length = 30)
+    /** Phân loại: veg / meat / dairy / spice / hoặc tên công thức: "Công thức: ...". */
+    @Column(length = 255)
     private String category;
 
     @Builder.Default

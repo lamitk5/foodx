@@ -26,6 +26,7 @@ public class FridgeService {
 
     private final FoodRepository foodRepository;
     private final FridgeItemRepository fridgeItemRepository;
+    private final com.nhom6.foodx.food.service.FoodImageSearchService foodImageSearchService;
 
     @Transactional(readOnly = true)
     public List<FridgeItemResponse> getAll(User user) {
@@ -87,6 +88,10 @@ public class FridgeService {
     }
 
     private Food createFood(FridgeItemRequest request, String sourceKey) {
+        String img = request.imageUrl();
+        if (img == null || img.isBlank() || img.contains("unsplash.com/photo-1542838132") || img.contains("photo-1540420773420")) {
+            img = foodImageSearchService.findOrDownloadImage(request.name());
+        }
         return foodRepository.save(Food.builder()
                 .sourceKey(sourceKey)
                 .name(request.name())
@@ -97,7 +102,7 @@ public class FridgeService {
                 .fat(valueOrZero(request.fat()))
                 .components(request.components())
                 .benefit(request.benefit())
-                .imageUrl(request.imageUrl())
+                .imageUrl(img)
                 .defaultQuantity(request.quantity() == null ? 1.0 : request.quantity())
                 .unit(request.unit())
                 .customFood(Boolean.TRUE.equals(request.customFood()))
@@ -134,6 +139,79 @@ public class FridgeService {
         fridgeItemRepository.delete(findFridgeItem(user, id));
     }
 
+    @Transactional
+    public void clearAll(User user) {
+        fridgeItemRepository.deleteByUser_Id(user.getId());
+    }
+
+    @Transactional
+    public FridgeItemResponse addOrUpdateBoughtItem(User user, String name, String quantityStr, String category) {
+        if (name == null || name.isBlank()) return null;
+        String cleanName = name.trim();
+
+        // Parse quantity and unit from quantityStr (ví dụ: "500g", "2 quả", "1.5 kg", "1 phần")
+        double qty = 1.0;
+        String unit = "phần";
+        if (quantityStr != null && !quantityStr.isBlank()) {
+            try {
+                java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("^([0-9]+(?:[.,][0-9]+)?)\\s*(.*)$").matcher(quantityStr.trim());
+                if (matcher.find()) {
+                    qty = Double.parseDouble(matcher.group(1).replace(",", "."));
+                    String parsedUnit = matcher.group(2).trim();
+                    if (!parsedUnit.isBlank()) {
+                        unit = parsedUnit;
+                    }
+                }
+            } catch (Exception ignored) {
+                qty = 1.0;
+            }
+        }
+
+        // Kiểm tra nguyên liệu đã có sẵn trong tủ lạnh chưa
+        Optional<FridgeItem> existing = fridgeItemRepository.findFirstByUser_IdAndFood_NameIgnoreCase(user.getId(), cleanName);
+        if (existing.isPresent()) {
+            FridgeItem item = existing.get();
+            double oldQty = item.getQuantity() == null ? 0 : item.getQuantity();
+            item.setQuantity(oldQty + qty);
+            if (item.getExpiresAt() == null || item.getExpiresAt().isBefore(LocalDate.now())) {
+                item.setExpiresAt(LocalDate.now().plusDays(7));
+            }
+            item.setNote("Đã cập nhật từ danh sách mua");
+            return toResponse(fridgeItemRepository.save(item));
+        }
+
+        final String finalUnit = unit;
+
+        // Tìm hoặc tạo mới Food
+        Food food = foodRepository.findFirstByNameIgnoreCase(cleanName)
+                .orElseGet(() -> foodRepository.save(Food.builder()
+                        .sourceKey("bought-" + UUID.randomUUID())
+                        .name(cleanName)
+                        .type("Nguyên liệu")
+                        .kcal(80.0)
+                        .protein(4.0)
+                        .carb(8.0)
+                        .fat(2.0)
+                        .components(cleanName)
+                        .benefit("Tươi ngon")
+                        .imageUrl(foodImageSearchService.findOrDownloadImage(cleanName))
+                        .defaultQuantity(1.0)
+                        .unit(finalUnit)
+                        .customFood(true)
+                        .build()));
+
+        FridgeItem newItem = FridgeItem.builder()
+                .user(user)
+                .food(food)
+                .quantity(qty)
+                .unit(finalUnit)
+                .expiresAt(LocalDate.now().plusDays(food.getDefaultExpiryDays() == null ? 7 : food.getDefaultExpiryDays()))
+                .note("Đã mua từ danh sách mua sắm")
+                .build();
+
+        return toResponse(fridgeItemRepository.save(newItem));
+    }
+
     private FridgeItem findFridgeItem(User user, Long id) {
         return fridgeItemRepository.findByIdAndUser_Id(id, user.getId())
                 .orElseThrow(() -> new BusinessException(404, "Không tìm thấy thực phẩm trong tủ lạnh"));
@@ -141,6 +219,10 @@ public class FridgeService {
 
     private FridgeItemResponse toResponse(FridgeItem item) {
         Food food = item.getFood();
+        String img = food.getImageUrl();
+        if (img == null || img.isBlank() || img.contains("unsplash.com/photo-1542838132") || img.contains("photo-1540420773420")) {
+            img = foodImageSearchService.findOrDownloadImage(food.getName());
+        }
         return new FridgeItemResponse(
                 item.getId(),
                 food.getId(),
@@ -155,7 +237,7 @@ public class FridgeService {
                 food.getFat(),
                 food.getComponents(),
                 food.getBenefit(),
-                food.getImageUrl(),
+                img,
                 item.getExpiresAt(),
                 item.getNote(),
                 food.getCustomFood()

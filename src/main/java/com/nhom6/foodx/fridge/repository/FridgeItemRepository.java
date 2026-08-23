@@ -13,4 +13,8 @@ public interface FridgeItemRepository extends JpaRepository<FridgeItem, Long> {
     Optional<FridgeItem> findByIdAndUser_Id(Long id, Long userId);
 
     Optional<FridgeItem> findFirstByUser_IdAndFood_Id(Long userId, Long foodId);
+
+    Optional<FridgeItem> findFirstByUser_IdAndFood_NameIgnoreCase(Long userId, String name);
+
+    void deleteByUser_Id(Long userId);
 }

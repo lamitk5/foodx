@@ -48,12 +48,6 @@ public class ShoppingController {
         return ApiResponse.success(shoppingService.update(securityUtils.getCurrentUser(), id, request), "Đã cập nhật");
     }
 
-    @DeleteMapping("/{id}")
-    public ApiResponse<Void> delete(@PathVariable Long id) {
-        shoppingService.delete(securityUtils.getCurrentUser(), id);
-        return ApiResponse.success(null, "Đã xoá");
-    }
-
     @DeleteMapping("/done")
     public ApiResponse<Void> clearDone() {
         shoppingService.clearDone(securityUtils.getCurrentUser());
@@ -64,5 +58,11 @@ public class ShoppingController {
     public ApiResponse<Void> clearAll() {
         shoppingService.clearAll(securityUtils.getCurrentUser());
         return ApiResponse.success(null, "Đã xoá toàn bộ danh sách mua");
+    }
+
+    @DeleteMapping("/{id:[0-9]+}")
+    public ApiResponse<Void> delete(@PathVariable Long id) {
+        shoppingService.delete(securityUtils.getCurrentUser(), id);
+        return ApiResponse.success(null, "Đã xoá");
     }
 }

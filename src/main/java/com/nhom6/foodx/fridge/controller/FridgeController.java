@@ -29,6 +29,8 @@ public class FridgeController {
 
     private final FridgeService fridgeService;
     private final SecurityUtils securityUtils;
+    private final com.nhom6.foodx.food.service.FoodImageSearchService foodImageSearchService;
+    private final com.nhom6.foodx.food.service.NutritionEstimateService nutritionEstimateService;
 
     @GetMapping
     public ApiResponse<List<FridgeItemResponse>> getAll() {
@@ -54,7 +56,29 @@ public class FridgeController {
                 "Đã cập nhật hạn sử dụng");
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping({"", "/all", "/clear-all"})
+    public ApiResponse<Void> clearAll() {
+        fridgeService.clearAll(securityUtils.getCurrentUser());
+        return ApiResponse.success(null, "Đã dọn sạch toàn bộ thực phẩm trong tủ lạnh");
+    }
+
+    @GetMapping("/search-image")
+    public ApiResponse<java.util.Map<String, String>> searchImage(@RequestParam String query) {
+        String img = foodImageSearchService.findOrDownloadImage(query);
+        return ApiResponse.success(java.util.Map.of("imageUrl", img), "Tìm ảnh thành công");
+    }
+
+    @GetMapping("/estimate-nutrition")
+    public ApiResponse<com.nhom6.foodx.food.dto.NutritionEstimateResponse> estimateNutrition(
+            @RequestParam String name,
+            @RequestParam(required = false, defaultValue = "100") Double quantity,
+            @RequestParam(required = false, defaultValue = "g") String unit) {
+        var res = nutritionEstimateService.estimate(name, quantity, unit);
+        return ApiResponse.success(res, "Tra cứu calo và dinh dưỡng thành công");
+    }
+
+
+    @DeleteMapping("/{id:[0-9]+}")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         fridgeService.delete(securityUtils.getCurrentUser(), id);
         return ApiResponse.success(null, "Đã xóa khỏi tủ lạnh");
