@@ -8,6 +8,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="FoodX — Smart Kitchen & Meal Planner: quản lý tủ lạnh, kế hoạch bữa ăn, công thức và trợ lý AI nấu ăn.">
+    <meta name="theme-color" content="#059669">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="FoodX">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon.svg">
 
     <title>FoodX — Smart Kitchen & Meal Planner</title>
 
@@ -1487,6 +1493,18 @@
 
                 <p class="rd-desc" id="rdDesc"></p>
 
+                <div class="serving-selector" id="rdServingSelector">
+                    <span class="serving-label">
+                        <svg class="icon" style="width:16px;height:16px"><use href="#i-user"/></svg>
+                        Khẩu phần ăn:
+                    </span>
+                    <div class="serving-buttons">
+                        <button type="button" class="serving-btn" data-servings="1" onclick="setRecipeServings(1)">1 người</button>
+                        <button type="button" class="serving-btn" data-servings="2" onclick="setRecipeServings(2)">2 người</button>
+                        <button type="button" class="serving-btn active" data-servings="4" onclick="setRecipeServings(4)">4 người (chuẩn)</button>
+                        <button type="button" class="serving-btn" data-servings="6" onclick="setRecipeServings(6)">6 người</button>
+                    </div>
+                </div>
 
                 <div class="tabbar">
 

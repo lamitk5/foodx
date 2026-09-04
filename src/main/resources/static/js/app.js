@@ -8433,8 +8433,29 @@ document
         }
     );
 
+function formatScaledNumber(num) {
+    if (isNaN(num)) return '';
+    const rounded = Math.round(num * 100) / 100;
+    return String(rounded);
+}
+
+function scaleIngredientQuantity(qty, factor) {
+    if (qty == null || qty === '' || !factor || factor === 1) return qty != null ? String(qty) : '';
+    const str = String(qty).trim().replace(',', '.');
+    if (/^\d+\s*\/\s*\d+$/.test(str)) {
+        const parts = str.split('/');
+        const val = (parseFloat(parts[0]) / parseFloat(parts[1])) * factor;
+        return formatScaledNumber(val);
+    }
+    const parsed = parseFloat(str);
+    if (!isNaN(parsed) && /^[\d\.]+$/.test(str)) {
+        return formatScaledNumber(parsed * factor);
+    }
+    return str;
+}
+
 function parseIngredientString(str) {
-    if (!str) return { ingredientName: '', name: '', quantity: '', unit: '', raw: '' };
+    if (!str) return { ingredientName: '', name: '', quantity: '', baseQuantity: '', unit: '', raw: '' };
     const s = String(str).trim();
     const qtyMatch = s.match(/^(\d+(?:[\.,\/]\d+)?\s*(?:kg|g|gr|củ|quả|bó|hộp|vỉ|lít|l|ml|muỗng\s*(?:canh|cà\s*phê)?|thìa|gói|túi|phần|trái|con|nhánh|lát|tép|chén|bát|ổ|cây|khoanh|khúc)?)\s*(.+)$/i);
     if (qtyMatch && qtyMatch[2] && qtyMatch[2].trim()) {
@@ -8447,6 +8468,7 @@ function parseIngredientString(str) {
             ingredientName: ingName,
             name: ingName,
             quantity: qty || '',
+            baseQuantity: qty || '',
             unit: unit || '',
             raw: s
         };
@@ -8455,6 +8477,7 @@ function parseIngredientString(str) {
         ingredientName: s,
         name: s,
         quantity: '',
+        baseQuantity: '',
         unit: '',
         raw: s
     };
@@ -8481,10 +8504,13 @@ function normalizeIngredientList(raw) {
                     const subNames = rawName.split(/[\r\n,;]+/).map(s => s.trim()).filter(Boolean);
                     subNames.forEach(s => result.push(parseIngredientString(s)));
                 } else if (rawName) {
+                    const q = item.quantity != null ? item.quantity : '';
+                    const baseQ = item.baseQuantity != null ? item.baseQuantity : q;
                     result.push({
                         ingredientName: rawName,
                         name: rawName,
-                        quantity: item.quantity != null ? item.quantity : '',
+                        quantity: q,
+                        baseQuantity: baseQ,
                         unit: item.unit || '',
                         note: item.note || '',
                         raw: rawName
@@ -8568,19 +8594,24 @@ async function addRecipeIngredientsToShopping(recipeId, onlyMissing = false) {
         let added = 0;
         let lastError = null;
 
+        const recipeServingRatio = (recipe && recipe.currentServings && recipe.baseServings)
+            ? (recipe.currentServings / recipe.baseServings)
+            : 1;
+
         const catTag = 'Công thức: ' + (recipeTitle.length > 50 ? recipeTitle.substring(0, 47) + '...' : recipeTitle);
 
         if (!normalizedIngs.length) {
+            const defaultServingQty = (recipe && recipe.currentServings ? recipe.currentServings : 1) + ' phần';
             try {
                 const res = await apiRequest('/api/shopping', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: recipeTitle, quantity: '1 phần', price: 25000, category: catTag })
+                    body: JSON.stringify({ name: recipeTitle, quantity: defaultServingQty, price: 25000, category: catTag })
                 });
                 if (!Array.isArray(state.shopping)) state.shopping = [];
                 state.shopping.push({
                     id: (res && res.id) || (Date.now() + Math.floor(Math.random() * 1000)),
                     name: recipeTitle,
-                    quantity: '1 phần',
+                    quantity: defaultServingQty,
                     price: 25000,
                     category: catTag,
                     done: false
@@ -8594,7 +8625,9 @@ async function addRecipeIngredientsToShopping(recipeId, onlyMissing = false) {
                 if (onlyMissing === true && checkIngredientInFridge(rawName, fridgeNames)) {
                     continue;
                 }
-                let qty = (ing.quantity != null && String(ing.quantity).trim() ? String(ing.quantity).trim() : '') +
+                const rawQty = ing.baseQuantity != null && ing.baseQuantity !== '' ? ing.baseQuantity : ing.quantity;
+                const scaledQty = scaleIngredientQuantity(rawQty, recipeServingRatio);
+                let qty = (scaledQty != null && String(scaledQty).trim() ? String(scaledQty).trim() : '') +
                           (ing.unit && String(ing.unit).trim() ? ' ' + String(ing.unit).trim() : '');
                 try {
                     const res = await apiRequest('/api/shopping', {
@@ -10889,6 +10922,13 @@ async function openRecipeDetail(id) {
         curRecipe.ingredients = normalizeIngredientList(curRecipe.ingredients);
     }
 
+    curRecipe.baseServings = parseInt(curRecipe.servings) || 4;
+    curRecipe.currentServings = curRecipe.baseServings;
+    curRecipe.baseKcal = parseInt(curRecipe.kcal) || 0;
+    curRecipe.baseProtein = parseFloat(curRecipe.protein) || 0;
+    curRecipe.baseCarb = parseFloat(curRecipe.carb) || 0;
+    curRecipe.baseFat = parseFloat(curRecipe.fat) || 0;
+
     activeRecipeContext = {
         id: curRecipe.id,
         name: curRecipe.title || curRecipe.name,
@@ -10907,6 +10947,14 @@ async function openRecipeDetail(id) {
     openView('recipe');
 }
 window.openRecipeDetail = openRecipeDetail;
+
+function setRecipeServings(servings) {
+    if (!curRecipe) return;
+    const targetServings = parseInt(servings) || 4;
+    curRecipe.currentServings = targetServings;
+    renderRecipeDetail();
+}
+window.setRecipeServings = setRecipeServings;
 
 
 async function toggleSaveRecipe() {
@@ -11361,7 +11409,7 @@ async function addCurRecipeMissingToShopping() {
         requireAuth('shopping');
         return;
     }
-    await addRecipeIngredientsToShopping(curRecipe.id, false);
+    await addRecipeIngredientsToShopping(curRecipe.id, true);
 }
 
 async function addCurRecipeAllToShopping() {
@@ -11803,43 +11851,72 @@ function renderRecipeDetail() {
     const r = curRecipe;
     if (!r) return;
 
+    const baseServings = r.baseServings || parseInt(r.servings) || 4;
+    const currentServings = r.currentServings || baseServings;
+    const servingRatio = currentServings / baseServings;
+    r.baseServings = baseServings;
+    r.currentServings = currentServings;
+
     document.getElementById('rdEmoji').textContent = recipeEmoji(r);
     document.getElementById('rdTitle').textContent = r.title || r.name || 'Chi tiết món';
 
-    let kcal = parseInt(r.kcal) || 0;
-    let p = parseFloat(r.protein) || 0;
-    let c = parseFloat(r.carb) || 0;
-    let f = parseFloat(r.fat) || 0;
+    let baseKcal = parseInt(r.baseKcal) || parseInt(r.kcal) || 0;
+    let baseP = parseFloat(r.baseProtein) || parseFloat(r.protein) || 0;
+    let baseC = parseFloat(r.baseCarb) || parseFloat(r.carb) || 0;
+    let baseF = parseFloat(r.baseFat) || parseFloat(r.fat) || 0;
 
-    if (!kcal || kcal < 50) {
+    if (!baseKcal || baseKcal < 50) {
         const t = (r.title || '').toLowerCase();
-        if (t.includes('pho') || t.includes('bun') || t.includes('com')) kcal = 520;
-        else if (t.includes('banh mi') || t.includes('chao') || t.includes('trung')) kcal = 380;
-        else if (t.includes('salad') || t.includes('canh') || t.includes('yen mach')) kcal = 280;
-        else kcal = 420;
-        r.kcal = kcal;
+        if (t.includes('pho') || t.includes('bun') || t.includes('com')) baseKcal = 520;
+        else if (t.includes('banh mi') || t.includes('chao') || t.includes('trung')) baseKcal = 380;
+        else if (t.includes('salad') || t.includes('canh') || t.includes('yen mach')) baseKcal = 280;
+        else baseKcal = 420;
     }
 
-    if (!p || !c || !f) {
+    if (!baseP || !baseC || !baseF) {
         const t = (r.title || '').toLowerCase();
         if (t.includes('bo') || t.includes('ga') || t.includes('ca ') || t.includes('tom') || t.includes('thit') || t.includes('trung') || t.includes('eatclean')) {
-            p = Math.round(kcal * 0.28 / 4 * 10) / 10;
-            c = Math.round(kcal * 0.46 / 4 * 10) / 10;
-            f = Math.round(kcal * 0.26 / 9 * 10) / 10;
+            baseP = Math.round(baseKcal * 0.28 / 4 * 10) / 10;
+            baseC = Math.round(baseKcal * 0.46 / 4 * 10) / 10;
+            baseF = Math.round(baseKcal * 0.26 / 9 * 10) / 10;
         } else {
-            p = Math.round(kcal * 0.20 / 4 * 10) / 10;
-            c = Math.round(kcal * 0.55 / 4 * 10) / 10;
-            f = Math.round(kcal * 0.25 / 9 * 10) / 10;
+            baseP = Math.round(baseKcal * 0.20 / 4 * 10) / 10;
+            baseC = Math.round(baseKcal * 0.55 / 4 * 10) / 10;
+            baseF = Math.round(baseKcal * 0.25 / 9 * 10) / 10;
         }
-        r.protein = p;
-        r.carb = c;
-        r.fat = f;
+    }
+
+    r.baseKcal = baseKcal;
+    r.baseProtein = baseP;
+    r.baseCarb = baseC;
+    r.baseFat = baseF;
+
+    let kcal = Math.round(baseKcal * servingRatio);
+    let p = Math.round((baseP * servingRatio) * 10) / 10;
+    let c = Math.round((baseC * servingRatio) * 10) / 10;
+    let f = Math.round((baseF * servingRatio) * 10) / 10;
+    r.kcal = kcal;
+    r.protein = p;
+    r.carb = c;
+    r.fat = f;
+
+    // Sync serving selector buttons
+    const servingBtns = document.querySelectorAll('#rdServingSelector .serving-btn');
+    if (servingBtns.length) {
+        servingBtns.forEach(function (btn) {
+            const s = parseInt(btn.getAttribute('data-servings'));
+            if (s === currentServings) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
     }
 
     document.getElementById('rdMeta').innerHTML =
         '<span><svg class="icon"><use href="#i-clock"/></svg> ' + (r.cookTime || r.time || 30) + ' phút</span>' +
         '<span><svg class="icon"><use href="#i-stats"/></svg> ' + escapeHtml(r.difficulty || 'Dễ') + '</span>' +
-        '<span><svg class="icon"><use href="#i-users"/></svg> ' + (r.servings || 1) + ' người</span>' +
+        '<span><svg class="icon"><use href="#i-user"/></svg> ' + currentServings + ' người' + (currentServings !== baseServings ? ' (đã chỉnh)' : '') + '</span>' +
         (kcal ? '<span><svg class="icon"><use href="#i-flame"/></svg> ' + kcal + ' kcal</span>' : '');
 
     document.getElementById('rdDesc').textContent = r.description || '';
@@ -11879,7 +11956,9 @@ function renderRecipeDetail() {
     const ings = normalizeIngredientList(r.ingredients);
     document.getElementById('rdIng').innerHTML = ings.length
         ? '<ul class="rd-ing-list">' + ings.map(function (i) {
-            const qtyStr = (i.quantity != null && String(i.quantity).trim() ? String(i.quantity).trim() + ' ' : '') + escapeHtml(i.unit || '');
+            const rawQty = i.baseQuantity != null && i.baseQuantity !== '' ? i.baseQuantity : i.quantity;
+            const scaledQtyStr = scaleIngredientQuantity(rawQty, servingRatio);
+            const qtyStr = (scaledQtyStr != null && String(scaledQtyStr).trim() ? String(scaledQtyStr).trim() + ' ' : '') + escapeHtml(i.unit || '');
             return '<li><span>' + escapeHtml(i.ingredientName || i.name || '') + '</span>' +
                 (qtyStr.trim() ? '<span class="qty">' + qtyStr.trim() + '</span>' : '') + '</li>';
         }).join('') + '</ul>'
@@ -14819,3 +14898,18 @@ onbBindSeg("#onbDiet", null, "diet");
         });
     }
 })();
+
+/* =========================================================
+   5. SERVICE WORKER & PWA REGISTRATION
+========================================================= */
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js')
+            .then(function (reg) {
+                console.log('[FoodX PWA] Service Worker registered successfully, scope:', reg.scope);
+            })
+            .catch(function (err) {
+                console.warn('[FoodX PWA] Service Worker registration failed:', err);
+            });
+    });
+}
