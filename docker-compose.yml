@@ -1,0 +1,171 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: foodx-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: foodx
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - foodx-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: foodx-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    networks:
+      - foodx-network
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: foodx-api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      GATEWAY_SERVICES_USER_SERVICE: "http://user-service:8081"
+      GATEWAY_SERVICES_INVENTORY_SERVICE: "http://inventory-service:8082"
+      GATEWAY_SERVICES_RECIPE_SERVICE: "http://recipe-service:8083"
+      GATEWAY_SERVICES_PLAN_SHOPPING_SERVICE: "http://plan-shopping-service:8084"
+      GATEWAY_SERVICES_AI_SERVICE: "http://ai-service:8085"
+      GATEWAY_SERVICES_SOCIAL_STATS_SERVICE: "http://social-stats-service:8086"
+      SPRING_DATA_REDIS_HOST: "redis"
+      SPRING_DATA_REDIS_PORT: "6379"
+      APP_RATE_LIMIT_BACKEND: "redis"
+      APP_RATE_LIMIT_PER_MINUTE: "120"
+      APP_AI_MAX_CONCURRENT_GLOBAL: "24"
+      JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+    depends_on:
+      - user-service
+      - inventory-service
+      - recipe-service
+      - plan-shopping-service
+      - ai-service
+      - social-stats-service
+      - redis
+    networks:
+      - foodx-network
+
+  user-service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    container_name: foodx-user-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/foodx?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "root"
+      JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+    depends_on:
+      - mysql
+    networks:
+      - foodx-network
+
+  inventory-service:
+    build:
+      context: ./services/inventory-service
+      dockerfile: Dockerfile
+    container_name: foodx-inventory-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/foodx?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "root"
+      JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+    depends_on:
+      - mysql
+    networks:
+      - foodx-network
+
+  recipe-service:
+    build:
+      context: ./services/recipe-service
+      dockerfile: Dockerfile
+    container_name: foodx-recipe-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/foodx?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "root"
+      JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+    depends_on:
+      - mysql
+    networks:
+      - foodx-network
+
+  plan-shopping-service:
+    build:
+      context: ./services/plan-shopping-service
+      dockerfile: Dockerfile
+    container_name: foodx-plan-shopping-service
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/foodx?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "root"
+      JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+    depends_on:
+      - mysql
+    networks:
+      - foodx-network
+
+  ai-service:
+    build:
+      context: ./services/ai-service
+      dockerfile: Dockerfile
+    container_name: foodx-ai-service
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/foodx?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "root"
+      JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+      GROQ_API_KEY: "${GROQ_API_KEY:-}"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+      APP_AI_MAX_CONCURRENT: "12"
+      APP_RATE_LIMIT_PER_MINUTE: "120"
+    depends_on:
+      - mysql
+    networks:
+      - foodx-network
+
+  social-stats-service:
+    build:
+      context: ./services/social-stats-service
+      dockerfile: Dockerfile
+    container_name: foodx-social-stats-service
+    ports:
+      - "8086:8086"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/foodx?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "root"
+      JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+    depends_on:
+      - mysql
+    networks:
+      - foodx-network
+
+networks:
+  foodx-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  redis_data:
