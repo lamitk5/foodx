@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -40,6 +41,22 @@ public class FridgeController {
     @PostMapping
     public ApiResponse<FridgeItemResponse> add(@RequestBody FridgeItemRequest request) {
         return ApiResponse.success(fridgeService.add(securityUtils.getCurrentUser(), request), "Đã thêm vào tủ lạnh");
+    }
+
+    @PutMapping("/{id}")
+    public ApiResponse<FridgeItemResponse> update(
+            @PathVariable Long id,
+            @RequestBody com.nhom6.foodx.fridge.dto.FridgeItemUpdateRequest request) {
+        return ApiResponse.success(
+                fridgeService.update(securityUtils.getCurrentUser(), id, request),
+                "Đã cập nhật nguyên liệu thành công");
+    }
+
+    @PostMapping("/merge-duplicates")
+    public ApiResponse<List<FridgeItemResponse>> mergeDuplicates() {
+        return ApiResponse.success(
+                fridgeService.mergeDuplicates(securityUtils.getCurrentUser()),
+                "Đã gộp các nguyên liệu trùng hạn sử dụng thành công");
     }
 
     @PatchMapping("/{id}/quantity")

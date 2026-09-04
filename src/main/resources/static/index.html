@@ -62,41 +62,7 @@
 </svg>
 
 
-<!-- =====================================================
-     WELCOME SCREEN (màn hình chào)
-====================================================== -->
 
-<div class="welcome-screen" id="welcomeScreen">
-
-    <div class="welcome-inner">
-
-        <div class="welcome-logo">🌿</div>
-
-        <h1 class="welcome-title">
-            Food<span>X</span>
-        </h1>
-
-        <p class="welcome-tagline">
-            Bạn đói bụng? Để <b>AI FoodX</b> lo bữa ăn hôm nay!
-        </p>
-
-        <p class="welcome-sub">
-            Quản lý tủ lạnh thông minh · Khám phá công thức ·
-            Chia sẻ món ngon với cộng đồng
-        </p>
-
-        <button
-                type="button"
-                class="primary-button welcome-enter"
-                id="welcomeEnter">
-
-            🚀 Vào trang chủ
-
-        </button>
-
-    </div>
-
-</div>
 
 
 <div class="app">
@@ -1126,23 +1092,12 @@
 
 
                 <select id="fridgeFilter">
-
-                    <option value="all">
-                        Tất cả thực phẩm
-                    </option>
-
-                    <option value="soon">
-                        Cần dùng sớm
-                    </option>
-
-                    <option value="ingredient">
-                        Nguyên liệu
-                    </option>
-
-                    <option value="dish">
-                        Món ăn
-                    </option>
-
+                    <option value="all">Tất cả thực phẩm</option>
+                    <option value="soon">⚠️ Cần dùng sớm (≤ 3 ngày)</option>
+                    <option value="meat">🥩 Thịt & Hải sản</option>
+                    <option value="veggie">🥦 Rau củ & Trái cây</option>
+                    <option value="dairy">🥚 Trứng & Sữa</option>
+                    <option value="grain">🌾 Tinh bột & Ngũ cốc</option>
                 </select>
 
             </div>
@@ -1414,7 +1369,7 @@
             <div class="page-title">
 
                 <span class="page-eyebrow">
-                    THỰC ĐƠN
+                    THỰC ĐƠN & GỢI Ý MÓN
                 </span>
 
                 <h1>
@@ -1422,16 +1377,26 @@
                 </h1>
 
                 <p>
-                    Tìm món theo nguyên liệu trong tủ lạnh —
-                    tỷ lệ khớp tự động cập nhật.
+                    Tìm món theo nguyên liệu, lọc theo bữa sáng / trưa / tối, tốc độ nấu nhanh / ăn chậm.
                 </p>
 
             </div>
 
+            <!-- QUICK FILTER CHIPS -->
+            <div class="recipe-quick-chips">
+                <button type="button" class="rc-chip active" data-chip="all">✨ Tất cả</button>
+                <button type="button" class="rc-chip" data-chip="morning">🌅 Bữa sáng</button>
+                <button type="button" class="rc-chip" data-chip="lunch">☀️ Bữa trưa</button>
+                <button type="button" class="rc-chip" data-chip="dinner">🌙 Bữa tối</button>
+                <button type="button" class="rc-chip" data-chip="quick">⚡ Ăn nhanh (≤ 15-20p)</button>
+                <button type="button" class="rc-chip" data-chip="slow">🥘 Nấu kỹ / Ăn chậm (> 35p)</button>
+                <button type="button" class="rc-chip" data-chip="eatclean">🥗 Eat Clean</button>
+                <button type="button" class="rc-chip" data-chip="soup">🍲 Món canh / Nước</button>
+            </div>
 
-            <div class="card fridge-toolbar">
+            <div class="card fridge-toolbar" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
 
-                <div class="fridge-search">
+                <div class="fridge-search" style="flex: 1; min-width: 180px;">
 
                     <span>
                         ⌕
@@ -1440,25 +1405,38 @@
                     <input
                             type="text"
                             id="recipeSearch"
-                            placeholder="Tìm món ăn...">
+                            placeholder="Tìm món ăn, nguyên liệu...">
 
                 </div>
 
+                <select id="recipeMealSlot" title="Lọc theo bữa ăn">
+                    <option value="">🕒 Mọi bữa ăn</option>
+                    <option value="morning">🌅 Bữa sáng</option>
+                    <option value="lunch">☀️ Bữa trưa</option>
+                    <option value="dinner">🌙 Bữa tối</option>
+                    <option value="snack">🥪 Ăn nhẹ / Phụ</option>
+                </select>
 
-                <select id="recipeFilter">
+                <select id="recipeSpeed" title="Lọc theo tốc độ / thời gian">
+                    <option value="">⏱ Tốc độ / Thời gian</option>
+                    <option value="quick">⚡ Ăn nhanh (≤ 20 phút)</option>
+                    <option value="medium">🍲 Vừa phải (20 - 35 phút)</option>
+                    <option value="slow">🥘 Nấu kỹ / Ăn chậm (> 35 phút)</option>
+                </select>
 
-                    <option value="">
-                        Tất cả
-                    </option>
+                <select id="recipeCategory" title="Lọc theo danh mục">
+                    <option value="">📂 Danh mục</option>
+                    <option value="Bữa sáng">Bữa sáng</option>
+                    <option value="Món chính">Món chính / Cơm nhà</option>
+                    <option value="Canh">Món canh / Nước</option>
+                    <option value="Eat Clean">Eat Clean / Healthy</option>
+                </select>
 
-                    <option value="Bữa sáng">
-                        Bữa sáng
-                    </option>
-
-                    <option value="Món chính">
-                        Món chính
-                    </option>
-
+                <select id="recipeDifficulty" title="Lọc theo độ khó">
+                    <option value="">📊 Độ khó</option>
+                    <option value="Dễ">Dễ nấu</option>
+                    <option value="Trung bình">Trung bình</option>
+                    <option value="Khó">Nâng cao / Khó</option>
                 </select>
 
             </div>
@@ -1573,7 +1551,7 @@
                 class="view"
                 id="view-plan">
 
-            <div class="fridge-page-header">
+            <div class="plan-page-header page-header">
 
                 <div>
 
@@ -1811,13 +1789,23 @@
 </button>
 
 <div class="chat-panel" id="chatPanel">
+    <!-- Resize Handles -->
+    <div class="chat-resize-handle chat-resize-top" id="chatResizeTop" title="Kéo để chỉnh chiều cao"></div>
+    <div class="chat-resize-handle chat-resize-left" id="chatResizeLeft" title="Kéo để chỉnh chiều rộng"></div>
+    <div class="chat-resize-handle chat-resize-top-left" id="chatResizeTopLeft" title="Kéo góc để co giãn khung chat">
+        <svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M0 10 L10 0 L8 0 L0 8 Z M0 5 L5 0 L3 0 L0 3 Z"/></svg>
+    </div>
+
     <div class="chat-head">
         <div class="chat-avatar">🤖<span class="on-dot" id="chatDot"></span></div>
         <div class="chat-head-info">
             <b>Trợ lý AI FoodX</b>
             <small id="chatStatusText">Đang kết nối…</small>
         </div>
-        <button class="chat-close" onclick="closeChat()" aria-label="Đóng">✕</button>
+        <div class="chat-head-actions">
+            <button class="chat-head-btn chat-maximize-btn" id="chatMaximizeBtn" onclick="toggleChatMaximize()" title="Phóng to / Thu nhỏ" aria-label="Phóng to / Thu nhỏ">⛶</button>
+            <button class="chat-head-btn chat-close" onclick="closeChat()" aria-label="Đóng">✕</button>
+        </div>
     </div>
     <div class="chat-toolbar">
         <div class="ct-info" onclick="toggleChatSessions()" title="Xem tất cả phiên trò chuyện">
@@ -2665,7 +2653,9 @@
                             type="text"
                             id="customFoodName"
                             required
+                            maxlength="100"
                             placeholder="Ví dụ: cá hồi">
+                    <span id="customFoodNameError" style="display:none; color: #ef4444; font-size: 12px; margin-top: 5px; font-weight: 600;">⚠️ Tên nguyên liệu không được vượt quá 100 ký tự</span>
 
                 </label>
 
@@ -2682,7 +2672,8 @@
                             required
                             step="0.1"
                             min="0.1"
-                            placeholder="500">
+                            placeholder="Nhập số lượng...">
+                    <span id="customFoodQuantityError" style="display:none; color: #ef4444; font-size: 12px; margin-top: 5px; font-weight: 600;">⚠️ Số lượng phải lớn hơn 0</span>
 
                 </label>
 
@@ -4222,7 +4213,7 @@
 </div>
 
 
-<script src="/js/app.js?v=20260823_10"></script>
+<script src="/js/app.js?v=20260825_1959"></script>
 
 </body>
 </html>

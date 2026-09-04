@@ -46,8 +46,10 @@ public class SecurityConfig {
             "/images/**",
             // Tìm kiếm ảnh tự động & tra cứu calo dinh dưỡng
             "/api/fridge/search-image",
+            "/api/recipes/search-image",
             "/api/fridge/estimate-nutrition",
-            // Ảnh avatar tải lên
+            // Upload ảnh và file tĩnh đã tải lên
+            "/api/upload",
             "/uploads/**"
     };
 

@@ -6,6 +6,7 @@ import com.nhom6.foodx.food.entity.Food;
 import com.nhom6.foodx.food.repository.FoodRepository;
 import com.nhom6.foodx.fridge.dto.FridgeItemRequest;
 import com.nhom6.foodx.fridge.dto.FridgeItemResponse;
+import com.nhom6.foodx.fridge.dto.FridgeItemUpdateRequest;
 import com.nhom6.foodx.fridge.entity.FridgeItem;
 import com.nhom6.foodx.fridge.repository.FridgeItemRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Quản lý tủ lạnh của người dùng (gộp từ dự án food-x, có phân quyền theo user).
@@ -27,6 +30,7 @@ public class FridgeService {
     private final FoodRepository foodRepository;
     private final FridgeItemRepository fridgeItemRepository;
     private final com.nhom6.foodx.food.service.FoodImageSearchService foodImageSearchService;
+    private final com.nhom6.foodx.food.service.NutritionEstimateService nutritionEstimateService;
 
     @Transactional(readOnly = true)
     public List<FridgeItemResponse> getAll(User user) {
@@ -41,45 +45,121 @@ public class FridgeService {
         if (request.name() == null || request.name().isBlank()) {
             throw new BusinessException(400, "Tên thực phẩm không được để trống");
         }
-
-        String sourceKey = request.sourceKey();
-        if (sourceKey == null || sourceKey.isBlank()) {
-            sourceKey = "custom-" + UUID.randomUUID();
+        String cleanName = request.name().trim();
+        if (!cleanName.matches("^[\\p{L}\\s]+$")) {
+            throw new BusinessException(400, "Tên thực phẩm chỉ được chứa chữ cái");
         }
-        final String finalSourceKey = sourceKey;
+        if (cleanName.length() > 100) {
+            throw new BusinessException(400, "Tên thực phẩm không được vượt quá 100 ký tự");
+        }
+        if (request.quantity() == null || request.quantity() <= 0) {
+            throw new BusinessException(400, "Số lượng phải lớn hơn 0");
+        }
 
-        Food food = foodRepository.findBySourceKey(finalSourceKey)
-                .orElseGet(() -> createFood(request, finalSourceKey));
+        // Ước tính dinh dưỡng tự động nếu người dùng chưa nhập hoặc nhập 0
+        Double reqKcal = request.kcal();
+        Double reqProtein = request.protein();
+        Double reqCarb = request.carb();
+        Double reqFat = request.fat();
+        String reqBenefit = request.benefit();
+        String reqComponents = request.components();
 
-        Optional<FridgeItem> existing = fridgeItemRepository
-                .findFirstByUser_IdAndFood_Id(user.getId(), food.getId());
+        if (reqKcal == null || reqKcal <= 0) {
+            try {
+                var est = nutritionEstimateService.estimate(cleanName, request.quantity(), request.unit());
+                if (est != null && est.kcal() != null && est.kcal() > 0) {
+                    reqKcal = est.kcal();
+                    reqProtein = est.protein();
+                    reqCarb = est.carb();
+                    reqFat = est.fat();
+                    if (reqBenefit == null || reqBenefit.isBlank()) reqBenefit = est.benefit();
+                    if (reqComponents == null || reqComponents.isBlank()) reqComponents = est.components();
+                }
+            } catch (Exception ignored) {}
+        }
+
+        // 1. Tìm hoặc tạo mới Food
+        Food food = null;
+        if (request.sourceKey() != null && !request.sourceKey().isBlank()) {
+            food = foodRepository.findBySourceKey(request.sourceKey()).orElse(null);
+        }
+        if (food == null) {
+            food = foodRepository.findFirstByNameIgnoreCase(cleanName).orElse(null);
+        }
+        if (food == null) {
+            String sourceKey = (request.sourceKey() != null && !request.sourceKey().isBlank())
+                    ? request.sourceKey()
+                    : "custom-" + UUID.randomUUID();
+            food = createFood(request, sourceKey, reqKcal, reqProtein, reqCarb, reqFat, reqComponents, reqBenefit);
+        } else {
+            // Cập nhật giá trị dinh dưỡng vào Food nếu trước đó bằng 0 hoặc có giá trị mới
+            boolean foodUpdated = false;
+            if (reqKcal != null && reqKcal > 0 && (food.getKcal() == null || food.getKcal() == 0 || !Objects.equals(food.getKcal(), reqKcal))) {
+                food.setKcal(reqKcal);
+                foodUpdated = true;
+            }
+            if (reqProtein != null && reqProtein > 0) {
+                food.setProtein(reqProtein);
+                foodUpdated = true;
+            }
+            if (reqCarb != null && reqCarb > 0) {
+                food.setCarb(reqCarb);
+                foodUpdated = true;
+            }
+            if (reqFat != null && reqFat > 0) {
+                food.setFat(reqFat);
+                foodUpdated = true;
+            }
+            if (reqBenefit != null && !reqBenefit.isBlank()) {
+                food.setBenefit(reqBenefit.trim());
+                foodUpdated = true;
+            }
+            if (reqComponents != null && !reqComponents.isBlank()) {
+                food.setComponents(reqComponents.trim());
+                foodUpdated = true;
+            }
+            if (foodUpdated) {
+                foodRepository.save(food);
+            }
+        }
+
+        // 2. Xác định hạn sử dụng mục tiêu
+        LocalDate targetExpiry = request.expiresAt() != null
+                ? request.expiresAt()
+                : LocalDate.now().plusDays(food.getDefaultExpiryDays() == null ? 7 : food.getDefaultExpiryDays());
+
+        // 3. Tìm trong tủ lạnh người dùng xem đã có món này với CÙNG HẠN SỬ DỤNG chưa
+        List<FridgeItem> candidateItems = fridgeItemRepository.findByUser_IdAndFood_Id(user.getId(), food.getId());
+        if (candidateItems.isEmpty()) {
+            candidateItems = fridgeItemRepository.findByUser_IdAndFood_NameIgnoreCase(user.getId(), cleanName);
+        }
+
+        Optional<FridgeItem> sameExpiryItem = candidateItems.stream()
+                .filter(item -> Objects.equals(item.getExpiresAt(), targetExpiry))
+                .findFirst();
 
         FridgeItem fridgeItem;
-        if (existing.isPresent()) {
-            fridgeItem = existing.get();
+        if (sameExpiryItem.isPresent()) {
+            // Gộp chung số lượng nếu cùng hạn sử dụng
+            fridgeItem = sameExpiryItem.get();
             double oldQuantity = fridgeItem.getQuantity() == null ? 0 : fridgeItem.getQuantity();
-            double addedQuantity = request.quantity() == null ? 1 : request.quantity();
+            double addedQuantity = request.quantity() == null ? 1.0 : request.quantity();
             fridgeItem.setQuantity(oldQuantity + addedQuantity);
 
             if (request.unit() != null && !request.unit().isBlank()) {
-                fridgeItem.setUnit(request.unit());
+                fridgeItem.setUnit(request.unit().trim());
             }
-            if (request.expiresAt() != null) {
-                fridgeItem.setExpiresAt(request.expiresAt());
-            }
-            if (request.note() != null) {
-                fridgeItem.setNote(request.note());
+            if (request.note() != null && !request.note().isBlank()) {
+                fridgeItem.setNote(request.note().trim());
             }
         } else {
+            // Tách riêng bản ghi mới nếu khác hạn sử dụng hoặc chưa có
             fridgeItem = FridgeItem.builder()
                     .user(user)
                     .food(food)
                     .quantity(request.quantity() == null ? 1.0 : request.quantity())
-                    .unit(request.unit() == null || request.unit().isBlank() ? "phần" : request.unit())
-                    .expiresAt(request.expiresAt() != null
-                            ? request.expiresAt()
-                            : LocalDate.now().plusDays(
-                                    food.getDefaultExpiryDays() == null ? 7 : food.getDefaultExpiryDays()))
+                    .unit(request.unit() == null || request.unit().isBlank() ? (food.getUnit() != null ? food.getUnit() : "phần") : request.unit().trim())
+                    .expiresAt(targetExpiry)
                     .note(request.note())
                     .build();
         }
@@ -87,21 +167,128 @@ public class FridgeService {
         return toResponse(fridgeItemRepository.save(fridgeItem));
     }
 
-    private Food createFood(FridgeItemRequest request, String sourceKey) {
+    @Transactional
+    public FridgeItemResponse update(User user, Long id, FridgeItemUpdateRequest request) {
+        FridgeItem item = findFridgeItem(user, id);
+
+        if (request.quantity() != null) {
+            if (request.quantity() <= 0) {
+                throw new BusinessException(400, "Số lượng phải lớn hơn 0");
+            }
+            item.setQuantity(request.quantity());
+        }
+
+        if (request.unit() != null && !request.unit().isBlank()) {
+            item.setUnit(request.unit().trim());
+        }
+
+        if (request.expiresAt() != null) {
+            item.setExpiresAt(request.expiresAt());
+        }
+
+        if (request.note() != null) {
+            item.setNote(request.note().trim());
+        }
+
+        // Cập nhật thông tin chi tiết của món nếu có thay đổi
+        Food food = item.getFood();
+        boolean foodUpdated = false;
+
+        if (request.name() != null && !request.name().isBlank()) {
+            String updatedName = request.name().trim();
+            if (!updatedName.matches("^[\\p{L}\\s]+$")) {
+                throw new BusinessException(400, "Tên thực phẩm chỉ được chứa chữ cái");
+            }
+            if (updatedName.length() > 100) {
+                throw new BusinessException(400, "Tên thực phẩm không được vượt quá 100 ký tự");
+            }
+            food.setName(updatedName);
+            foodUpdated = true;
+        }
+        if (request.type() != null && !request.type().isBlank()) {
+            food.setType(request.type().trim());
+            foodUpdated = true;
+        }
+        if (request.kcal() != null) {
+            food.setKcal(request.kcal());
+            foodUpdated = true;
+        }
+        if (request.protein() != null) {
+            food.setProtein(request.protein());
+            foodUpdated = true;
+        }
+        if (request.carb() != null) {
+            food.setCarb(request.carb());
+            foodUpdated = true;
+        }
+        if (request.fat() != null) {
+            food.setFat(request.fat());
+            foodUpdated = true;
+        }
+        if (request.benefit() != null) {
+            food.setBenefit(request.benefit().trim());
+            foodUpdated = true;
+        }
+        if (request.components() != null) {
+            food.setComponents(request.components().trim());
+            foodUpdated = true;
+        }
+        if (request.imageUrl() != null && !request.imageUrl().isBlank()) {
+            food.setImageUrl(request.imageUrl().trim());
+            foodUpdated = true;
+        }
+
+        if (foodUpdated) {
+            foodRepository.save(food);
+        }
+
+        return toResponse(fridgeItemRepository.save(item));
+    }
+
+    @Transactional
+    public List<FridgeItemResponse> mergeDuplicates(User user) {
+        List<FridgeItem> allItems = fridgeItemRepository.findByUser_IdOrderByIdAsc(user.getId());
+        var groups = allItems.stream()
+                .collect(Collectors.groupingBy(item -> {
+                    String nameKey = item.getFood().getName().trim().toLowerCase();
+                    String expiryKey = item.getExpiresAt() == null ? "none" : item.getExpiresAt().toString();
+                    return nameKey + "___" + expiryKey;
+                }));
+
+        for (List<FridgeItem> group : groups.values()) {
+            if (group.size() > 1) {
+                FridgeItem primary = group.get(0);
+                double totalQty = 0.0;
+                for (FridgeItem item : group) {
+                    totalQty += (item.getQuantity() == null ? 0.0 : item.getQuantity());
+                }
+                primary.setQuantity(totalQty);
+                fridgeItemRepository.save(primary);
+
+                for (int i = 1; i < group.size(); i++) {
+                    fridgeItemRepository.delete(group.get(i));
+                }
+            }
+        }
+
+        return getAll(user);
+    }
+
+    private Food createFood(FridgeItemRequest request, String sourceKey, Double reqKcal, Double reqProtein, Double reqCarb, Double reqFat, String reqComponents, String reqBenefit) {
         String img = request.imageUrl();
         if (img == null || img.isBlank() || img.contains("unsplash.com/photo-1542838132") || img.contains("photo-1540420773420")) {
             img = foodImageSearchService.findOrDownloadImage(request.name());
         }
         return foodRepository.save(Food.builder()
                 .sourceKey(sourceKey)
-                .name(request.name())
+                .name(request.name().trim())
                 .type(request.type() == null || request.type().isBlank() ? "Nguyên liệu" : request.type())
-                .kcal(valueOrZero(request.kcal()))
-                .protein(valueOrZero(request.protein()))
-                .carb(valueOrZero(request.carb()))
-                .fat(valueOrZero(request.fat()))
-                .components(request.components())
-                .benefit(request.benefit())
+                .kcal(valueOrZero(reqKcal))
+                .protein(valueOrZero(reqProtein))
+                .carb(valueOrZero(reqCarb))
+                .fat(valueOrZero(reqFat))
+                .components(reqComponents != null && !reqComponents.isBlank() ? reqComponents : request.components())
+                .benefit(reqBenefit != null && !reqBenefit.isBlank() ? reqBenefit : request.benefit())
                 .imageUrl(img)
                 .defaultQuantity(request.quantity() == null ? 1.0 : request.quantity())
                 .unit(request.unit())
@@ -121,6 +308,21 @@ public class FridgeService {
             return Optional.empty();
         }
         item.setQuantity(newQuantity);
+
+        Food food = item.getFood();
+        if (food != null) {
+            try {
+                var est = nutritionEstimateService.estimate(food.getName(), newQuantity, item.getUnit());
+                if (est != null && est.kcal() != null && est.kcal() > 0) {
+                    food.setKcal(est.kcal());
+                    food.setProtein(est.protein());
+                    food.setCarb(est.carb());
+                    food.setFat(est.fat());
+                    foodRepository.save(food);
+                }
+            } catch (Exception ignored) {}
+        }
+
         return Optional.of(toResponse(fridgeItemRepository.save(item)));
     }
 
@@ -182,16 +384,23 @@ public class FridgeService {
 
         final String finalUnit = unit;
 
+        // Ước tính dinh dưỡng cho món mua
+        var est = nutritionEstimateService.estimate(cleanName, qty, finalUnit);
+        Double k = est != null ? est.kcal() : 80.0;
+        Double p = est != null ? est.protein() : 4.0;
+        Double c = est != null ? est.carb() : 8.0;
+        Double f = est != null ? est.fat() : 2.0;
+
         // Tìm hoặc tạo mới Food
         Food food = foodRepository.findFirstByNameIgnoreCase(cleanName)
                 .orElseGet(() -> foodRepository.save(Food.builder()
                         .sourceKey("bought-" + UUID.randomUUID())
                         .name(cleanName)
                         .type("Nguyên liệu")
-                        .kcal(80.0)
-                        .protein(4.0)
-                        .carb(8.0)
-                        .fat(2.0)
+                        .kcal(k)
+                        .protein(p)
+                        .carb(c)
+                        .fat(f)
                         .components(cleanName)
                         .benefit("Tươi ngon")
                         .imageUrl(foodImageSearchService.findOrDownloadImage(cleanName))
@@ -223,6 +432,24 @@ public class FridgeService {
         if (img == null || img.isBlank() || img.contains("unsplash.com/photo-1542838132") || img.contains("photo-1540420773420")) {
             img = foodImageSearchService.findOrDownloadImage(food.getName());
         }
+
+        Double kcal = food.getKcal();
+        Double protein = food.getProtein();
+        Double carb = food.getCarb();
+        Double fat = food.getFat();
+
+        if (kcal == null || kcal <= 0) {
+            try {
+                var est = nutritionEstimateService.estimate(food.getName(), item.getQuantity(), item.getUnit());
+                if (est != null && est.kcal() != null && est.kcal() > 0) {
+                    kcal = est.kcal();
+                    protein = est.protein();
+                    carb = est.carb();
+                    fat = est.fat();
+                }
+            } catch (Exception ignored) {}
+        }
+
         return new FridgeItemResponse(
                 item.getId(),
                 food.getId(),
@@ -231,10 +458,10 @@ public class FridgeService {
                 food.getType(),
                 item.getQuantity(),
                 item.getUnit(),
-                food.getKcal(),
-                food.getProtein(),
-                food.getCarb(),
-                food.getFat(),
+                kcal != null ? kcal : 0.0,
+                protein != null ? protein : 0.0,
+                carb != null ? carb : 0.0,
+                fat != null ? fat : 0.0,
                 food.getComponents(),
                 food.getBenefit(),
                 img,

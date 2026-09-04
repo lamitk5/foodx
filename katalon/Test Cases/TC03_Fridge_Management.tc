@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description>Kiểm thử quản lý tủ lạnh: Thêm nguyên liệu tùy chỉnh, tra cứu calo tự động, tìm kiếm, lọc và AI Cứu Tủ Lạnh</description>
+   <name>TC03_Fridge_Management</name>
+   <tag>Fridge,CRUD,AI</tag>
+   <comment></comment>
+   <testCaseGuid>c01a0003-foodx-4001-8001-000000000003</testCaseGuid>
+</TestCaseEntity>

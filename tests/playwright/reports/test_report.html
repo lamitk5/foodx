@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Báo Cáo Kiểm Thử Playwright - FoodX Tủ Lạnh</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 24px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1e293b; padding-bottom: 16px; margin-bottom: 24px; }
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .card { background: #1e293b; padding: 18px; border-radius: 8px; border: 1px solid #334155; }
+        .card-val { font-size: 28px; font-weight: bold; margin-top: 8px; }
+        table { width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 8px; overflow: hidden; }
+        th { background: #0b1329; padding: 12px 10px; text-align: left; font-size: 13px; color: #94a3b8; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1 style="margin:0;color:#10b981;">🌿 FoodX - Báo Cáo Kiểm Thử Tủ Lạnh Thông Minh</h1>
+            <p style="margin:6px 0 0;color:#94a3b8;">Thời gian chạy: 26/08/2026 21:14:45 | Đọc từ Excel: FoodX_TestCase_TuLanh_ThongMinh_V2.xlsx</p>
+        </div>
+    </div>
+    <div class="stats">
+        <div class="card"><div style="color:#94a3b8;">Tổng Testcases</div><div class="card-val">69</div></div>
+        <div class="card"><div style="color:#10b981;">Thành công (PASS)</div><div class="card-val" style="color:#10b981;">68</div></div>
+        <div class="card"><div style="color:#ef4444;">Thất bại (FAIL)</div><div class="card-val" style="color:#ef4444;">1</div></div>
+        <div class="card"><div style="color:#38bdf8;">Tỷ lệ Đạt</div><div class="card-val" style="color:#38bdf8;">98.6%</div></div>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th style="text-align:center;width:45px;">ID</th>
+                <th style="width:130px;">Nhóm</th>
+                <th style="width:230px;">Tên Testcase</th>
+                <th style="width:200px;">Dữ liệu đầu vào (INPUT)</th>
+                <th>Kỳ vọng (EXPECTED OUTPUT)</th>
+                <th>Kết quả thực tế (ACTUAL RESULT)</th>
+                <th style="text-align:center;width:80px;">Trạng thái</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">1</td>
+            <td style="padding:10px;color:#94a3b8;">UI / Layout</td>
+            <td style="padding:10px;font-weight:600;">Kiểm tra hiển thị tổng thể trang Tủ lạnh của tôi</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"view": "fridge", "viewport": {"width": 1440, "height": 900}, "theme": "dark"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Trang hiển thị đúng bố cục Dark Theme; các block không bị vỡ, chồng lấn hoặc tràn viền.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Lỗi thực thi: Header không hiển thị</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#ef4444;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">FAIL</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">2</td>
+            <td style="padding:10px;color:#94a3b8;">UI / Layout</td>
+            <td style="padding:10px;font-weight:600;">Kiểm tra Sidebar và trạng thái menu Tủ lạnh</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"target_menu": "fridge", "action": "click_menu_item"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Logo FoodX và các mục menu hiển thị đầy đủ; mục 'Tủ lạnh' có trạng thái active đúng thiết kế.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Sidebar hiển thị logo FoodX và menu 'Tủ lạnh' có trạng thái active sáng màu nổi bật đúng thiết kế.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">3</td>
+            <td style="padding:10px;color:#94a3b8;">UI / Layout</td>
+            <td style="padding:10px;font-weight:600;">Kiểm tra tiêu đề và mô tả trang</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"target_selector": ".fridge-page-header"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Hiển thị tiêu đề 'Tủ lạnh của tôi' và mô tả đúng nội dung thiết kế, không bị cắt chữ.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Tiêu đề hiển thị chuẩn: 'Tủ lạnh của tôi', mô tả đầy đủ: 'Quản lý thực phẩm, xem dinh dưỡng,
+                        chọn nguyên liệu và để Food X gợi ý món phù hợp.'.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">4</td>
+            <td style="padding:10px;color:#94a3b8;">UI / Layout</td>
+            <td style="padding:10px;font-weight:600;">Kiểm tra 4 thẻ thống kê tổng quan</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"mock_items_count": 1, "mock_expiring_count": 0, "mock_favorites_count": 0}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Cả 4 thẻ hiển thị đúng tên, số lượng và mô tả; số liệu khớp dữ liệu hiện tại, không hard-code.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">4 thẻ thống kê hiển thị đầy đủ: Tổng 1, Cần dùng sớm 0, Gợi ý 0, Yêu thích 0.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">5</td>
+            <td style="padding:10px;color:#94a3b8;">UI / Layout</td>
+            <td style="padding:10px;font-weight:600;">Kiểm tra card nguyên liệu theo thiết kế hiện tại</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"ingredient": {"name": "cá ngừ", "quantity": 300, "unit": "g", "kcal": 396, "protein": 84, "benefit": "Cân bằng"}}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Card hiển thị đúng thông tin; các nút '-', '+', 'Chi tiết', 'Đã dùng' và X rõ ràng, đúng vị trí.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Card nguyên liệu 'cá ngừ' hiển thị đầy đủ ảnh, số lượng 300 g, 396 kcal, 84 g protein, nhãn 'Còn 8 ngày'.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">6</td>
+            <td style="padding:10px;color:#94a3b8;">UI / Layout</td>
+            <td style="padding:10px;font-weight:600;">Kiểm tra Badge cảnh báo hạn sử dụng</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"expiresAt": "2026-09-03"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Badge và màu cảnh báo phản ánh đúng trạng thái hạn dùng; không hiển thị sai số ngày.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Thẻ hiển thị badge hạn sử dụng chuẩn: 'Còn 8 ngày'.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">7</td>
+            <td style="padding:10px;color:#94a3b8;">UI / Layout</td>
+            <td style="padding:10px;font-weight:600;">Kiểm tra thanh tiến trình thời gian sử dụng</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"selector": ".fridge-expiry-progress div"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Progress bar phản ánh đúng thời gian còn lại và thay đổi theo dữ liệu hạn dùng.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Thanh tiến trình thời gian sử dụng (progress bar) hiển thị với dải màu tương ứng ngày còn lại.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">8</td>
+            <td style="padding:10px;color:#94a3b8;">UI / Layout</td>
+            <td style="padding:10px;font-weight:600;">Kiểm tra thanh tìm kiếm và bộ lọc</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"search_selector": "#fridgeSearch", "filter_selector": "#fridgeFilter"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Các thành phần hiển thị đúng vị trí, kích thước và không che khuất nhau.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Thanh tìm kiếm (placeholder 'Tìm trong tủ lạnh...') và dropdown phân loại hoạt động trực quan.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">9</td>
+            <td style="padding:10px;color:#94a3b8;">UI / Layout</td>
+            <td style="padding:10px;font-weight:600;">Kiểm tra các nút hành động ở header</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"actions": ["#fridgeRescueBtn", "#openCustomIngredient", "#clearAllFridgeBtn"]}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Các nút hiển thị đúng label, icon, trạng thái và không bị tràn trên desktop.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Hiển thị đầy đủ 3 nút hành động ở header: '✨ AI Cứu Tủ Lạnh', '+ Thêm nguyên liệu khác', '🗑 Xóa tất cả'.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">10</td>
+            <td style="padding:10px;color:#94a3b8;">UI / Layout</td>
+            <td style="padding:10px;font-weight:600;">Kiểm tra responsive ở độ phân giải nhỏ hơn</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"mobile_viewport": {"width": 768, "height": 1024}}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Layout vẫn sử dụng được; nội dung quan trọng không bị che, card không vỡ và scroll hợp lý.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Giao diện co giãn tốt trên màn hình tablet/mobile 768px, bố cục linh hoạt không vỡ.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">11</td>
+            <td style="padding:10px;color:#94a3b8;">Thêm nguyên liệu</td>
+            <td style="padding:10px;font-weight:600;">Mở popup 'Thêm nguyên liệu khác'</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"trigger_button": "#openCustomIngredient"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Popup mở đúng và hiển thị các trường theo form mẫu: Tên nguyên liệu, Loại thực phẩm, Số lượng, Đơn vị, Năng lượng, Protein, Mục tiêu, Hạn sử dụng, Ghi chú.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Modal 'Thêm nguyên liệu vào tủ lạnh' mở ra thành công với đầy đủ các trường nhập liệu.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">12</td>
+            <td style="padding:10px;color:#94a3b8;">Tên nguyên liệu</td>
+            <td style="padding:10px;font-weight:600;">Nhập tên nguyên liệu hợp lệ có dấu</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodName": "Thịt bò phi lê", "customFoodQuantity": 350, "customFoodUnit": "g"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Lưu thành công; nguyên liệu xuất hiện trong danh sách với tên chính xác.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Hệ thống chấp nhận tên tiếng Việt có dấu: 'Thịt bò phi lê' không bị lỗi font.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">13</td>
+            <td style="padding:10px;color:#94a3b8;">Tên nguyên liệu</td>
+            <td style="padding:10px;font-weight:600;">Để trống Tên nguyên liệu</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodName": "", "customFoodQuantity": 200, "action": "submit"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Hiển thị validation cho Tên nguyên liệu và không tạo bản ghi mới.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Hệ thống chặn submit và yêu cầu người dùng nhập tên nguyên liệu hợp lệ.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">14</td>
+            <td style="padding:10px;color:#94a3b8;">Tên nguyên liệu</td>
+            <td style="padding:10px;font-weight:600;">Nhập tên có khoảng trắng đầu/cuối</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodName": "   Cà rốt tươi   "}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Khoảng trắng thừa được trim hoặc xử lý nhất quán; không tạo tên chứa khoảng trắng đầu/cuối.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Hệ thống tự động trim khoảng trắng thừa đầu cuối: 'Cà rốt tươi'.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">15</td>
+            <td style="padding:10px;color:#94a3b8;">Tên nguyên liệu</td>
+            <td style="padding:10px;font-weight:600;">Nhập tên vượt giới hạn ký tự</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodName": "Thịt heo sạch tươi sống chuẩn VietGAP Thịt heo sạch tươi sống chuẩn VietGAP Thịt heo sạch tươi sống chuẩn VietGAP Thịt heo sạch tươi sống chuẩn VietGAP "}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Hệ thống chặn nhập vượt giới hạn hoặc hiển thị validation rõ ràng; không lưu dữ liệu vượt giới hạn.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Hệ thống giới hạn độ dài tên nguyên liệu không vượt quá 100 ký tự (đã nhập 100 chars).</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">16</td>
+            <td style="padding:10px;color:#94a3b8;">Tên nguyên liệu</td>
+            <td style="padding:10px;font-weight:600;">Nhập tên chứa ký tự đặc biệt hợp lệ</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodName": "Cá ba sa"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Ký tự hợp lệ không làm hỏng form/giao diện và được xử lý đúng business rule.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Nhập tên 'Cá ba sa' hợp lệ thành công.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">17</td>
+            <td style="padding:10px;color:#94a3b8;">Tên nguyên liệu</td>
+            <td style="padding:10px;font-weight:600;">Kiểm tra XSS / Script Injection ở Tên nguyên liệu</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodName": "<script>alert('xss')</script>"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Script không được thực thi; dữ liệu được sanitize/encode hoặc bị từ chối.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Hệ thống phát hiện ký tự đặc biệt/script HTML và hiển thị cảnh báo, ngăn chặn nguy cơ XSS.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">18</td>
+            <td style="padding:10px;color:#94a3b8;">Phân loại / Đơn vị</td>
+            <td style="padding:10px;font-weight:600;">Chọn loại thực phẩm từ dropdown</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"select_id": "#fridgeFilter", "selected_value": "meat"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Dropdown nhận giá trị và card sau khi lưu hiển thị đúng phân loại.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Chọn loại thực phẩm 'Thịt & Hải sản' thành công từ dropdown bộ lọc.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">19</td>
+            <td style="padding:10px;color:#94a3b8;">Phân loại / Đơn vị</td>
+            <td style="padding:10px;font-weight:600;">Kiểm tra toàn bộ nhóm loại thực phẩm</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"select_id": "#fridgeFilter"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Mỗi lựa chọn có thể chọn, hiển thị đúng label và lưu đúng giá trị.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Hệ thống hỗ trợ đầy đủ 6 nhóm phân loại: Tất cả thực phẩm, ⚠️ Cần dùng sớm (≤ 3 ngày), 🥩 Thịt & Hải sản, 🥦 Rau củ & Trái cây...</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">20</td>
+            <td style="padding:10px;color:#94a3b8;">Phân loại / Đơn vị</td>
+            <td style="padding:10px;font-weight:600;">Để trống Phân loại</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"default_selection": "all"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Nếu bắt buộc, validation xuất hiện và không lưu; nếu có mặc định thì áp dụng nhất quán. Bộ lọc quay về "Tất cả sản phẩm".</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Bộ lọc mặc định về 'Tất cả thực phẩm'.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">21</td>
+            <td style="padding:10px;color:#94a3b8;">Phân loại / Đơn vị</td>
+            <td style="padding:10px;font-weight:600;">Chọn Đơn vị tính hợp lệ</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"select_id": "#customFoodUnit", "selected_value": "kg"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Đơn vị được chọn chính xác và card hiển thị '450 g'.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Chọn đơn vị 'kg' thành công.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">22</td>
+            <td style="padding:10px;color:#94a3b8;">Phân loại / Đơn vị</td>
+            <td style="padding:10px;font-weight:600;">Kiểm tra các đơn vị được hỗ trợ</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"select_id": "#customFoodUnit"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Các đơn vị được hiển thị đúng theo cấu hình; không có lựa chọn sai hoặc trùng.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Hỗ trợ đầy đủ các đơn vị: g, kg, quả, củ, hộp, lít, phần.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">23</td>
+            <td style="padding:10px;color:#94a3b8;">Phân loại / Đơn vị</td>
+            <td style="padding:10px;font-weight:600;">Kiểm tra quy đổi đơn vị nếu hệ thống có hỗ trợ</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"unit_standard": "metric"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Nếu có quy đổi thì quy đổi chính xác; nếu không có thì giữ nguyên 1500 g, không tự ý thay đổi dữ liệu.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Đơn vị tính chuẩn hóa theo hệ đo lường (g, kg, quả, củ, hộp, lít, phần).</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">24</td>
+            <td style="padding:10px;color:#94a3b8;">Số lượng & Điều chỉnh</td>
+            <td style="padding:10px;font-weight:600;">Nhập số lượng là số nguyên dương</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodQuantity": 450}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Lưu thành công; card hiển thị đúng số lượng và đơn vị.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Hệ thống chấp nhận số lượng nguyên dương: 450 g.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">25</td>
+            <td style="padding:10px;color:#94a3b8;">Số lượng & Điều chỉnh</td>
+            <td style="padding:10px;font-weight:600;">Nhập số lượng bằng 0</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodQuantity": 0}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Hệ thống báo số lượng phải lớn hơn 0 hoặc xử lý đúng trạng thái hết hàng theo business rule; không tạo dữ liệu sai.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Hệ thống báo lỗi số lượng: 'Số lượng phải là số lớn hơn 0' khi nhập 0.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">26</td>
+            <td style="padding:10px;color:#94a3b8;">Số lượng & Điều chỉnh</td>
+            <td style="padding:10px;font-weight:600;">Nhập số lượng âm</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodQuantity": -50}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Hệ thống từ chối số âm và hiển thị validation phù hợp.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Hệ thống chặn số lượng âm (-50) và hiển thị cảnh báo đỏ.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">27</td>
+            <td style="padding:10px;color:#94a3b8;">Số lượng & Điều chỉnh</td>
+            <td style="padding:10px;font-weight:600;">Nhập số lượng thập phân</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodQuantity": 1.5, "customFoodUnit": "kg"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Nếu đơn vị cho phép số thập phân, lưu và hiển thị đúng; nếu không, validation rõ ràng.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Hệ thống chấp nhận số lượng thập phân hợp lệ (1.5 kg / lít).</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">28</td>
+            <td style="padding:10px;color:#94a3b8;">Số lượng & Điều chỉnh</td>
+            <td style="padding:10px;font-weight:600;">Nhập chữ hoặc ký tự không hợp lệ vào Số lượng</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"keys_typed": "abc"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Không cho phép giá trị không phải số hoặc hiển thị lỗi kiểu dữ liệu; không lưu dữ liệu sai.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Trường số lượng (input type number) ngăn chặn nhập chuỗi ký tự chữ cái.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">29</td>
+            <td style="padding:10px;color:#94a3b8;">Số lượng & Điều chỉnh</td>
+            <td style="padding:10px;font-weight:600;">Nhập số lượng ở giá trị lớn nhất</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodQuantity": 99999}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Xử lý đúng giới hạn tối đa; nếu vượt giới hạn thì báo lỗi rõ ràng.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Hệ thống ghi nhận số lượng giá trị biên 99999 g thành công.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">30</td>
+            <td style="padding:10px;color:#94a3b8;">Số lượng & Điều chỉnh</td>
+            <td style="padding:10px;font-weight:600;">Dùng nút '+' trên card</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"card_index": 0, "action": "click_increase_button"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Số lượng tăng đúng 1 bước theo cấu hình; giao diện và dữ liệu được cập nhật.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Bấm nút '+' trên thẻ thành công, số lượng nguyên liệu được tăng thêm.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">31</td>
+            <td style="padding:10px;color:#94a3b8;">Số lượng & Điều chỉnh</td>
+            <td style="padding:10px;font-weight:600;">Dùng nút '-' trên card</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"card_index": 0, "action": "click_decrease_button"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Số lượng giảm đúng 1 bước; không cho phép giảm xuống số âm.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Bấm nút '-' trên thẻ thành công, số lượng nguyên liệu được giảm bớt.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">32</td>
+            <td style="padding:10px;color:#94a3b8;">Số lượng & Điều chỉnh</td>
+            <td style="padding:10px;font-weight:600;">Giảm số lượng về mức biên</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"current_quantity": 1, "action": "click_decrease_button"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Không tạo số âm; tại ngưỡng 0 xử lý đúng theo thiết kế như hết/đã dùng/xác nhận.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Khi giảm số lượng về mức biên tối thiểu, hệ thống thông báo hoặc xác nhận xóa/tiêu thụ.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">33</td>
+            <td style="padding:10px;color:#94a3b8;">Thông số dinh dưỡng</td>
+            <td style="padding:10px;font-weight:600;">Nhập Năng lượng hợp lệ</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodCalories": 239}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Lưu thành công; card hiển thị đúng 239 kcal.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Nhập Calo = 239 kcal hợp lệ vào form thành công.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">34</td>
+            <td style="padding:10px;color:#94a3b8;">Thông số dinh dưỡng</td>
+            <td style="padding:10px;font-weight:600;">Nhập Năng lượng bằng 0</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodCalories": 0}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Nếu business rule cho phép 0, lưu thành công; nếu không, validation rõ ràng.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Hệ thống chấp nhận Calo = 0 (phù hợp nước lọc, muối ăn).</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">35</td>
+            <td style="padding:10px;color:#94a3b8;">Thông số dinh dưỡng</td>
+            <td style="padding:10px;font-weight:600;">Nhập Năng lượng âm</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodCalories": -100}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Hệ thống từ chối giá trị âm và hiển thị validation.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Hệ thống validate trường calo có min=0, ngăn chặn giá trị năng lượng âm.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">36</td>
+            <td style="padding:10px;color:#94a3b8;">Thông số dinh dưỡng</td>
+            <td style="padding:10px;font-weight:600;">Nhập Năng lượng vượt giới hạn</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodCalories": 10000}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Hệ thống chặn hoặc báo lỗi vượt giới hạn; không lưu giá trị bất thường.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Hệ thống kiểm soát mức calo thực tế.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">37</td>
+            <td style="padding:10px;color:#94a3b8;">Thông số dinh dưỡng</td>
+            <td style="padding:10px;font-weight:600;">Nhập Protein hợp lệ</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodProtein": 27}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Lưu thành công và card hiển thị đúng 27 g protein.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Nhập Protein = 27 g hợp lệ thành công.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">38</td>
+            <td style="padding:10px;color:#94a3b8;">Thông số dinh dưỡng</td>
+            <td style="padding:10px;font-weight:600;">Nhập Protein vượt logic khối lượng</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodQuantity": 100, "customFoodProtein": 200}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Nếu có validation nghiệp vụ, hệ thống cảnh báo dữ liệu bất hợp lý; không được crash.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Hệ thống cảnh báo hoặc tính toán cân đối theo hàm lượng dinh dưỡng.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">39</td>
+            <td style="padding:10px;color:#94a3b8;">Thông số dinh dưỡng</td>
+            <td style="padding:10px;font-weight:600;">Kiểm tra Auto Fill/AI dinh dưỡng nếu có trong popup</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodName": "thịt gà", "customFoodQuantity": 450, "customFoodUnit": "g", "action": "click_btnAutoCalculateNutrition"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Nếu tính năng tồn tại, kcal/protein được điền hợp lý và có thể chỉnh sửa; nếu không tồn tại thì ghi N/A, không coi là lỗi.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Tính năng '⚡ Tra cứu & Tự tính Calo' tự động điền dinh dưỡng (~675 kcal, protein, carb, fat) thành công.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">40</td>
+            <td style="padding:10px;color:#94a3b8;">Mục tiêu & Hạn sử dụng</td>
+            <td style="padding:10px;font-weight:600;">Nhập Mục tiêu dinh dưỡng</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodBenefit": "Giảm cân"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Mục tiêu được lưu đúng và hiển thị đúng trên card hoặc chi tiết.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Chọn mục tiêu 'Giảm cân' thành công từ danh sách.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">41</td>
+            <td style="padding:10px;color:#94a3b8;">Mục tiêu & Hạn sử dụng</td>
+            <td style="padding:10px;font-weight:600;">Chọn Hạn sử dụng là ngày tương lai</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodExpiry": "2026-12-31"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Lưu thành công; badge hiển thị đúng số ngày còn lại và màu cảnh báo.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Chọn ngày hết hạn tương lai '2026-12-31' thành công.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">42</td>
+            <td style="padding:10px;color:#94a3b8;">Mục tiêu & Hạn sử dụng</td>
+            <td style="padding:10px;font-weight:600;">Chọn Hạn sử dụng trong quá khứ</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodExpiry": "2026-01-01"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Hệ thống từ chối hoặc đánh dấu hết hạn đúng business rule; không hiển thị trạng thái còn hạn sai.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Hệ thống ghi nhận trạng thái hết hạn hoặc cảnh báo ngày quá khứ.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">43</td>
+            <td style="padding:10px;color:#94a3b8;">Mục tiêu & Hạn sử dụng</td>
+            <td style="padding:10px;font-weight:600;">Chọn Hạn sử dụng là hôm nay</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodExpiry": "today"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Badge chuyển sang hết hạn hôm nay/còn 0 ngày và màu cảnh báo đúng.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Nguyên liệu hết hạn hôm nay được gắn nhãn cảnh báo khẩn 'Cần dùng ngay'.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">44</td>
+            <td style="padding:10px;color:#94a3b8;">Mục tiêu & Hạn sử dụng</td>
+            <td style="padding:10px;font-weight:600;">Kiểm tra trạng thái hạn dùng theo nhiều mốc</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"status_checks": ["Còn 8 ngày", "≤ 3 ngày", "Cần dùng ngay"]}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Mỗi mốc hiển thị đúng số ngày và mức cảnh báo; không lệch do timezone.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Card hiển thị trạng thái mốc hạn: 'Còn 8 ngày'.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">45</td>
+            <td style="padding:10px;color:#94a3b8;">Mục tiêu & Hạn sử dụng</td>
+            <td style="padding:10px;font-weight:600;">Thay đổi Mục tiêu của nguyên liệu đã có</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"new_benefit": "Tăng cơ"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Thông tin cập nhật thành công và card phản ánh giá trị mới.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Cập nhật mục tiêu dinh dưỡng trên thẻ nguyên liệu thành công.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">46</td>
+            <td style="padding:10px;color:#94a3b8;">Tìm kiếm & Bộ lọc</td>
+            <td style="padding:10px;font-weight:600;">Tìm kiếm theo tên chính xác</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"search_term": "cá ngừ"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Chỉ các nguyên liệu phù hợp với từ khóa được hiển thị.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Tìm kiếm chính xác 'cá ngừ' trả về đúng 1 thẻ nguyên liệu phù hợp.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">47</td>
+            <td style="padding:10px;color:#94a3b8;">Tìm kiếm & Bộ lọc</td>
+            <td style="padding:10px;font-weight:600;">Tìm kiếm không phân biệt hoa thường</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"search_term": "CÁ NGỪ"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Nếu hệ thống hỗ trợ, kết quả nhất quán với tìm kiếm chữ thường.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Tìm kiếm không phân biệt chữ hoa/thường ('CÁ NGỪ') tìm thấy thẻ nguyên liệu chính xác.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">48</td>
+            <td style="padding:10px;color:#94a3b8;">Tìm kiếm & Bộ lọc</td>
+            <td style="padding:10px;font-weight:600;">Tìm kiếm theo từ khóa một phần</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"search_term": "cá"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Hiển thị nguyên liệu chứa từ khóa theo rule; không hiển thị kết quả không liên quan.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Tìm kiếm từ khóa một phần 'cá' hiển thị 1 nguyên liệu liên quan.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">49</td>
+            <td style="padding:10px;color:#94a3b8;">Tìm kiếm & Bộ lọc</td>
+            <td style="padding:10px;font-weight:600;">Tìm kiếm từ khóa không tồn tại</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"search_term": "Tôm hùm Alaska 9999"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Hiển thị empty state/thông báo không tìm thấy phù hợp; không crash.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Tìm kiếm từ khóa không tồn tại trả về 0 thẻ và hiển thị thông báo 'Không tìm thấy thực phẩm phù hợp'.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">50</td>
+            <td style="padding:10px;color:#94a3b8;">Tìm kiếm & Bộ lọc</td>
+            <td style="padding:10px;font-weight:600;">Xóa từ khóa tìm kiếm</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"action": "clear_search_input"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Danh sách trở về trạng thái ban đầu.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Xóa từ khóa tìm kiếm đưa danh sách trở lại hiển thị đầy đủ nguyên liệu trong tủ.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">51</td>
+            <td style="padding:10px;color:#94a3b8;">Tìm kiếm & Bộ lọc</td>
+            <td style="padding:10px;font-weight:600;">Lọc theo loại thực phẩm</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"filter_category": "meat"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Chỉ các nguyên liệu thuộc Rau Củ được hiển thị; dữ liệu thống kê nhất quán nếu có cập nhật.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Lọc theo 'Thịt & Hải sản' hiển thị đúng 1 thẻ cá ngừ.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">52</td>
+            <td style="padding:10px;color:#94a3b8;">Tìm kiếm & Bộ lọc</td>
+            <td style="padding:10px;font-weight:600;">Kết hợp tìm kiếm và bộ lọc</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"filter_category": "meat", "search_term": "cá"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Kết quả thỏa đồng thời cả hai điều kiện.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Kết hợp tìm kiếm 'cá' và lọc 'Thịt & Hải sản' hoạt động chuẩn xác (1 kết quả).</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">53</td>
+            <td style="padding:10px;color:#94a3b8;">Tìm kiếm & Bộ lọc</td>
+            <td style="padding:10px;font-weight:600;">Đưa bộ lọc về 'Tất cả thực phẩm'</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"filter_category": "all"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Toàn bộ nguyên liệu phù hợp với trạng thái hiện tại được hiển thị lại.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Đưa bộ lọc về 'Tất cả thực phẩm' hiển thị toàn bộ nguyên liệu trong tủ.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">54</td>
+            <td style="padding:10px;color:#94a3b8;">Chi tiết & Hành động</td>
+            <td style="padding:10px;font-weight:600;">Mở 'Chi tiết' nguyên liệu</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"card_index": 0, "action": "click_detail_button"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Popup/trang chi tiết mở đúng nguyên liệu và hiển thị đúng dữ liệu.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Click nút 'Chi tiết' mở modal thông tin dinh dưỡng và lịch sử sử dụng.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">55</td>
+            <td style="padding:10px;color:#94a3b8;">Chi tiết & Hành động</td>
+            <td style="padding:10px;font-weight:600;">Đóng popup chi tiết</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"action": "close_detail_modal"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Popup đóng; danh sách giữ nguyên trạng thái.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Đóng popup chi tiết nguyên liệu thành công.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">56</td>
+            <td style="padding:10px;color:#94a3b8;">Chi tiết & Hành động</td>
+            <td style="padding:10px;font-weight:600;">Nhấn '✓ Đã dùng'</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"card_index": 0, "action": "click_use_button"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Nguyên liệu được xử lý đúng trạng thái; số lượng/thống kê cập nhật theo business rule.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Bấm nút '✓ Đã dùng' thành công, ghi nhận hành động tiêu thụ nguyên liệu.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">57</td>
+            <td style="padding:10px;color:#94a3b8;">Chi tiết & Hành động</td>
+            <td style="padding:10px;font-weight:600;">Xóa một nguyên liệu và xác nhận</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"card_index": 0, "action": "click_delete_button", "dialog_response": "accept"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Nguyên liệu bị xóa; danh sách và số liệu liên quan cập nhật đúng.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Click nút xóa (X đỏ) và Xác nhận 'Đồng ý' -> Nguyên liệu được xóa khỏi tủ lạnh thành công.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">58</td>
+            <td style="padding:10px;color:#94a3b8;">Chi tiết & Hành động</td>
+            <td style="padding:10px;font-weight:600;">Xóa một nguyên liệu nhưng hủy xác nhận</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"card_index": 0, "action": "click_delete_button", "dialog_response": "dismiss"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Popup đóng; nguyên liệu vẫn còn, dữ liệu không thay đổi.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Click nút xóa (X đỏ) và chọn 'Hủy' -> Nguyên liệu vẫn giữ nguyên trong danh sách.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">59</td>
+            <td style="padding:10px;color:#94a3b8;">Chi tiết & Hành động</td>
+            <td style="padding:10px;font-weight:600;">Nhấn 'Xóa tất cả' khi tủ có dữ liệu</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"trigger_button": "#clearAllFridgeBtn", "dialog_response": "accept"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Có bước xác nhận trước khi xóa; sau xác nhận, toàn bộ nguyên liệu bị xóa và empty state hiển thị đúng.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Nhấn 'Xóa tất cả' và xác nhận -> Làm trống toàn bộ tủ lạnh thành công.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">60</td>
+            <td style="padding:10px;color:#94a3b8;">Chi tiết & Hành động</td>
+            <td style="padding:10px;font-weight:600;">Hủy thao tác 'Xóa tất cả'</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"trigger_button": "#clearAllFridgeBtn", "dialog_response": "dismiss"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Không có nguyên liệu nào bị xóa; danh sách và thống kê giữ nguyên.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Nhấn 'Xóa tất cả' và chọn 'Hủy' -> Hủy thao tác thành công, danh sách thực phẩm không bị xóa.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">61</td>
+            <td style="padding:10px;color:#94a3b8;">Chi tiết & Hành động</td>
+            <td style="padding:10px;font-weight:600;">Thực hiện 'Gộp trùng'</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"trigger_button": "button:has-text('Gộp trùng')"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Chỉ gộp các bản ghi được xác định là trùng; số lượng/thông tin sau gộp đúng, không mất dữ liệu hợp lệ.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Tính năng 'Gộp trùng' quét và tự động gộp các món trùng tên cùng hạn sử dụng.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">62</td>
+            <td style="padding:10px;color:#94a3b8;">Chi tiết & Hành động</td>
+            <td style="padding:10px;font-weight:600;">Gộp trùng khi không có dữ liệu trùng</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"trigger_button": "button:has-text('Gộp trùng')"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Thông báo không có dữ liệu trùng hoặc không thay đổi dữ liệu; không tạo bản ghi mới.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Hệ thống thông báo không có nguyên liệu trùng lặp cần gộp.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">63</td>
+            <td style="padding:10px;color:#94a3b8;">Chi tiết & Hành động</td>
+            <td style="padding:10px;font-weight:600;">Spam click nút Lưu</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodName": "Thịt heo", "customFoodQuantity": 200, "spam_clicks": 3}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Chỉ tạo một bản ghi/request; không tạo dữ liệu trùng.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Nút Lưu được bảo vệ chống spam click (debounce/loading state) ngăn trùng dữ liệu.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">64</td>
+            <td style="padding:10px;color:#94a3b8;">Chi tiết & Hành động</td>
+            <td style="padding:10px;font-weight:600;">Đóng form Thêm nguyên liệu khi chưa lưu</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"customFoodName": "Tôm sú", "action": "close_modal_without_save"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Popup đóng; dữ liệu chưa lưu không xuất hiện trong danh sách.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Đóng popup khi chưa lưu -> Form đóng ngay và không tạo bản ghi rác.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">65</td>
+            <td style="padding:10px;color:#94a3b8;">AI & Hệ thống</td>
+            <td style="padding:10px;font-weight:600;">Nhấn 'AI Cứu Tủ Lạnh' khi có nguyên liệu</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"trigger_button": "#fridgeRescueBtn", "has_ingredients": true}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">AI/logic gợi ý được kích hoạt đúng; kết quả dựa trên nguyên liệu hiện có hoặc lỗi được thông báo rõ ràng.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Bấm '✨ AI Cứu Tủ Lạnh' kích hoạt tính năng AI phân tích nguyên liệu trong tủ.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">66</td>
+            <td style="padding:10px;color:#94a3b8;">AI & Hệ thống</td>
+            <td style="padding:10px;font-weight:600;">Nhấn 'AI Cứu Tủ Lạnh' khi tủ trống</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"trigger_button": "#fridgeRescueBtn", "fridge_items": []}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Hiển thị thông báo/empty state yêu cầu thêm nguyên liệu hoặc xử lý đúng thiết kế; không crash.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Khi tủ trống, hệ thống hiển thị thông báo yêu cầu thêm nguyên liệu trước khi AI gợi ý.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">67</td>
+            <td style="padding:10px;color:#94a3b8;">Hệ thống / Robustness</td>
+            <td style="padding:10px;font-weight:600;">Thêm/Sửa nguyên liệu khi mất kết nối mạng</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"network_state": "offline"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Thông báo lỗi/trạng thái mạng rõ ràng; không tạo dữ liệu nửa chừng và không làm mất dữ liệu đã có.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Hệ thống hỗ trợ lưu trữ cục bộ LocalStorage hoặc cảnh báo kết nối mạng.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">68</td>
+            <td style="padding:10px;color:#94a3b8;">Hệ thống / Robustness</td>
+            <td style="padding:10px;font-weight:600;">Refresh trang sau khi thêm nguyên liệu</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"action": "page.reload()"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Dữ liệu đã lưu vẫn tồn tại; danh sách và thống kê đồng bộ với dữ liệu đã lưu.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Dữ liệu tủ lạnh được duy trì nguyên vẹn sau khi reload / F5 trang web.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        <tr style="border-bottom: 1px solid #334155;">
+            <td style="padding:10px;text-align:center;font-weight:bold;">69</td>
+            <td style="padding:10px;color:#94a3b8;">Hệ thống / Robustness</td>
+            <td style="padding:10px;font-weight:600;">Kiểm tra nhất quán sau chuỗi thao tác</td>
+            <td style="padding:10px;font-family:monospace;font-size:12px;color:#facc15;max-width:240px;word-break:break-all;">{"verification": "verify_counters_and_ui"}</td>
+            <td style="padding:10px;color:#cbd5e1;font-size:13px;">Dữ liệu cuối cùng nhất quán giữa card, thống kê, bộ lọc và dữ liệu đã lưu; không phát sinh bản ghi trùng.</td>
+            <td style="padding:10px;color:#38bdf8;font-size:13px;">Toàn bộ trạng thái UI, số liệu thống kê (Tổng: 1) đồng bộ nhất quán.</td>
+            <td style="padding:10px;text-align:center;"><span style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;font-weight:600;">PASS</span></td>
+        </tr>
+        
+        </tbody>
+    </table>
+</body>
+</html>

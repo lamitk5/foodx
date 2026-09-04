@@ -29,6 +29,13 @@ public class RecipeController {
     private final RecipeService recipeService;
     private final ImportRecipeService importRecipeService;
     private final SecurityUtils securityUtils;
+    private final com.nhom6.foodx.food.service.FoodImageSearchService foodImageSearchService;
+
+    @GetMapping("/search-image")
+    public ApiResponse<java.util.Map<String, String>> searchImage(@RequestParam String query) {
+        String img = foodImageSearchService.findOrDownloadImage(query);
+        return ApiResponse.success(java.util.Map.of("imageUrl", img), "Tìm ảnh công thức thành công");
+    }
 
     @GetMapping
     public ApiResponse<List<RecipeResponse>> search(

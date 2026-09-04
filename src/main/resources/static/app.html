@@ -5,19 +5,65 @@
     <link
             rel="icon"
             href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
-    <link rel="icon" href="data:image/svg+xml,
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
-<text y='.9em' font-size='90'>🌿</text>
-</svg>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="FoodX — Smart Kitchen & Meal Planner: quản lý tủ lạnh, kế hoạch bữa ăn, công thức và trợ lý AI nấu ăn.">
 
-    <title>Food X - Ăn ngon, sống khỏe</title>
+    <title>FoodX — Smart Kitchen & Meal Planner</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body>
+
+<!-- =====================================================
+     ICON SPRITE (Lucide-style, offline)
+====================================================== -->
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <defs>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></symbol>
+    <symbol id="i-refrigerator" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="9" y1="6.5" x2="9" y2="8"/><line x1="9" y1="14" x2="9" y2="17"/></symbol>
+    <symbol id="i-chef-hat" viewBox="0 0 24 24"><path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z"/><path d="M6 17h12"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></symbol>
+    <symbol id="i-stats" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></symbol>
+    <symbol id="i-cart" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></symbol>
+    <symbol id="i-chev-l" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></symbol>
+    <symbol id="i-chev-r" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></symbol>
+    <symbol id="i-msg" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+    <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M12 3l1.9 5.7L19.6 10l-5.7 1.9L12 17.6l-1.9-5.7L4.4 10l5.7-1.9z"/><path d="M19 15l.6 1.8L21.4 17.4l-1.8.6L19 19.8l-.6-1.8-1.8-.6 1.8-.6z"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></symbol>
+    <symbol id="i-utensils" viewBox="0 0 24 24"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></symbol>
+  </defs>
+</svg>
+
+
+
+
 
 <div class="app">
 
@@ -29,7 +75,7 @@
 
         <div class="logo">
             <div class="logo-icon">🌿</div>
-            <span>Food X</span>
+            <span>FoodX</span>
         </div>
 
         <nav class="menu">
@@ -39,7 +85,7 @@
                     class="menu-item active"
                     data-view="home">
 
-                <span class="menu-icon">⌂</span>
+                <svg class="icon"><use href="#i-home"/></svg>
                 <b>Trang chủ</b>
 
             </button>
@@ -49,7 +95,7 @@
                     class="menu-item"
                     data-view="fridge">
 
-                <span class="menu-icon">❄</span>
+                <svg class="icon"><use href="#i-refrigerator"/></svg>
                 <b>Tủ lạnh</b>
 
             </button>
@@ -57,9 +103,30 @@
             <button
                     type="button"
                     class="menu-item"
+                    data-view="recipes">
+
+                <svg class="icon"><use href="#i-chef-hat"/></svg>
+                <b>Công thức</b>
+
+            </button>
+
+            <button
+                    type="button"
+                    class="menu-item"
+                    data-view="plan">
+
+                <svg class="icon"><use href="#i-calendar"/></svg>
+                <b>Kế hoạch</b>
+
+            </button>
+
+
+            <button
+                    type="button"
+                    class="menu-item"
                     data-view="favorites">
 
-                <span class="menu-icon">♡</span>
+                <svg class="icon"><use href="#i-heart"/></svg>
                 <b>Yêu thích</b>
 
             </button>
@@ -69,8 +136,18 @@
                     class="menu-item"
                     data-view="shopping">
 
-                <span class="menu-icon">🛒</span>
+                <svg class="icon"><use href="#i-cart"/></svg>
                 <b>Danh sách mua</b>
+
+            </button>
+
+            <button
+                    type="button"
+                    class="menu-item"
+                    data-view="social">
+
+                <svg class="icon"><use href="#i-share"/></svg>
+                <b>Chia sẻ công thức</b>
 
             </button>
 
@@ -83,7 +160,7 @@
             <h3>Ăn thông minh mỗi ngày</h3>
 
             <p>
-                Food X đồng hành cùng bạn để ăn ngon,
+                FoodX đồng hành cùng bạn để ăn ngon,
                 giảm lãng phí và đạt mục tiêu sức khỏe.
             </p>
 
@@ -104,22 +181,41 @@
 
             <button
                     type="button"
-                    class="round-button"
-                    id="settingsButton"
-                    title="Cài đặt">
+                    class="round-button mobile-menu-btn"
+                    id="mobileMenuButton"
+                    aria-label="Mở menu">
 
-                ⚙
+                <svg class="icon"><use href="#i-menu"/></svg>
 
             </button>
 
             <button
                     type="button"
                     class="round-button"
+                    id="settingsButton"
+                    title="Cài đặt"
+                    aria-label="Cài đặt">
+
+                <svg class="icon"><use href="#i-settings"/></svg>
+
+            </button>
+
+            <button
+                    type="button"
+                    class="round-button"
+                    id="themeToggleBtn"
+                    title="Chuyển chế độ Sáng / Tối"
+                    aria-label="Chuyển chế độ Sáng / Tối">
+                <span id="themeIcon" style="font-size:15px;line-height:1;">🌙</span>
+            </button>
+
+            <button
+                    type="button"
+                    class="round-button"
                     id="notificationButton"
-                    title="Thông báo">
-
-                🔔
-
+                    title="Thông báo"
+                    aria-label="Thông báo">
+                <svg class="icon"><use href="#i-bell"/></svg>
             </button>
 
             <button
@@ -384,24 +480,71 @@
                 class="view active"
                 id="view-home">
 
-            <!-- ===================== SLOGAN HERO (CLEAN DESIGN MATCHING USER IMAGE) ===================== -->
-            <div class="slogan-hero-clean">
-                <div class="shc-content">
-                    <span class="shc-badge">Tận dụng nguyên liệu đang có</span>
-                    <h1 class="shc-title">
-                        Có gì nấu nấy<br>
-                        <span class="shc-green">Giảm lãng phí thực phẩm</span>
-                    </h1>
-                    <p class="shc-subtitle">
-                        Theo dõi tủ lạnh và ưu tiên những thực phẩm cần sử dụng sớm.
-                    </p>
-                    <button type="button" class="shc-btn" onclick="handleHeroCtaClick()">
-                        Xem món phù hợp &rarr;
+            <!-- ===================== HOME DASHBOARD ===================== -->
+
+            <div class="home-dash">
+
+                <div class="home-hello">
+                    <div>
+                        <span class="page-eyebrow">FOODX</span>
+                        <h1 class="hello-name" id="homeGreeting">Chào bạn 👋</h1>
+                        <p class="date-line" id="homeDate"></p>
+                    </div>
+                    <button type="button" class="primary-button" id="homeSuggestBtn">
+                        <svg class="icon"><use href="#i-sparkles"/></svg> Gợi ý thông minh
                     </button>
                 </div>
-                <div class="shc-image-wrap">
-                    <img src="https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1200&q=80" alt="Thực phẩm tươi ngon" class="shc-img">
+
+                <!-- ===================== SLOGAN HERO (CLEAN DESIGN MATCHING USER IMAGE) ===================== -->
+                <div class="slogan-hero-clean">
+                    <div class="shc-content">
+                        <span class="shc-badge">Tận dụng nguyên liệu đang có</span>
+                        <h1 class="shc-title">
+                            Có gì nấu nấy<br>
+                            <span class="shc-green">Giảm lãng phí thực phẩm</span>
+                        </h1>
+                        <p class="shc-subtitle">
+                            Theo dõi tủ lạnh và ưu tiên những thực phẩm cần sử dụng sớm.
+                        </p>
+                        <button type="button" class="shc-btn" onclick="handleHeroCtaClick()">
+                            Xem món phù hợp &rarr;
+                        </button>
+                    </div>
+                    <div class="shc-image-wrap">
+                        <img src="https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1200&q=80" alt="Thực phẩm tươi ngon" class="shc-img">
+                    </div>
                 </div>
+
+                <div class="home-fridge card" id="homeFridgeCard">
+                    <div class="hf-icon"><svg class="icon"><use href="#i-refrigerator"/></svg></div>
+                    <div class="hf-body">
+                        <strong id="homeFridgeTitle">Đang tải tủ lạnh…</strong>
+                        <span id="homeFridgeSub"></span>
+                    </div>
+                    <button type="button" class="secondary-button hf-cta" onclick="openView('fridge')">Xem tủ lạnh</button>
+                </div>
+
+                <div class="home-expiring card" id="homeExpiringCard" hidden>
+                    <div class="he-head">
+                        <strong>⏳ Sắp hết hạn</strong>
+                        <button type="button" class="text-button" onclick="openView('fridge')">Xem tất cả</button>
+                    </div>
+                    <div class="he-list" id="homeExpiring"></div>
+                </div>
+
+                <div class="home-suggest card" id="homeSuggestCard" hidden>
+                    <div class="hs-head"><strong>✨ Gợi ý cho hôm nay</strong></div>
+                    <div class="hs-list" id="homeSuggest"></div>
+                </div>
+
+                <div class="home-today card" id="homeTodayCard" hidden>
+                    <div class="ht-head">
+                        <strong>📅 Bữa ăn hôm nay</strong>
+                        <button type="button" class="text-button" onclick="openView('plan')">Lên kế hoạch</button>
+                    </div>
+                    <div class="ht-list" id="homeToday"></div>
+                </div>
+
             </div>
 
 
@@ -594,6 +737,78 @@
 
             </section>
 
+            <!-- ===================== BLOG RECIPE SHARING SECTION ===================== -->
+            <section class="home-blog-section card" id="homeBlogSection">
+                <div class="blog-header-wrap">
+                    <div class="blog-title-block">
+                        <span class="section-eyebrow">
+                            <svg class="icon" style="width:14px;height:14px"><use href="#i-share"/></svg>
+                            CỘNG ĐỒNG BẾP & BLOG NẤU ĂN
+                        </span>
+                        <h2>📖 Nhật Ký Bếp & Chia Sẻ Công Thức</h2>
+                        <p>Khám phá bí quyết ẩm thực, mẹo làm bếp và công thức truyền cảm hứng từ cộng đồng FoodX</p>
+                    </div>
+                    <button type="button" class="primary-button" onclick="openRecipeCreateModal()">
+                        <svg class="icon"><use href="#i-plus"/></svg> Chia sẻ công thức
+                    </button>
+                </div>
+
+                <!-- Blog Category Filter Pills -->
+                <div class="blog-pills" id="homeBlogPills">
+                    <button type="button" class="blog-pill active" data-blog-cat="all">✨ Tất cả bài viết</button>
+                    <button type="button" class="blog-pill" data-blog-cat="hot">🔥 Món nổi bật</button>
+                    <button type="button" class="blog-pill" data-blog-cat="eatclean">🥗 Eat Clean & Healthy</button>
+                    <button type="button" class="blog-pill" data-blog-cat="family">🍜 Món ăn gia đình</button>
+                    <button type="button" class="blog-pill" data-blog-cat="quick">⚡ Nấu nhanh 15 phút</button>
+                    <button type="button" class="blog-pill" data-blog-cat="dessert">🍰 Bánh & Tráng miệng</button>
+                </div>
+
+                <!-- Featured Blog Post Banner -->
+                <div class="blog-featured-card" id="blogFeaturedCard">
+                    <div class="blog-featured-img-wrap">
+                        <img class="blog-featured-img" src="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=1200&q=80" alt="Bí quyết nấu ăn">
+                        <span class="blog-category-tag">⭐ Tiêu điểm tuần</span>
+                    </div>
+                    <div class="blog-featured-content">
+                        <div class="blog-author-meta">
+                            <div class="blog-avatar">👨‍🍳</div>
+                            <div class="blog-author-info">
+                                <span class="blog-author-name">Chef Minh An</span>
+                                <span class="blog-time-ago">Đăng 2 giờ trước • 5 phút đọc</span>
+                            </div>
+                        </div>
+                        <h3 class="blog-featured-title" onclick="openView('recipe')">5 Cách biến tấu thực phẩm thừa trong tủ lạnh thành bữa tối 5 sao</h3>
+                        <p class="blog-featured-desc">
+                            Đừng vội bỏ đi những nguyên liệu thừa! Chỉ với vài mẹo nhỏ và trợ lý FoodX, bạn có thể biến trứng, rau củ và thịt nguội thành món ăn cực kỳ hấp dẫn mà không lãng phí...
+                        </p>
+                        <div class="blog-metrics-row">
+                            <span class="blog-metric-item">⏱️ 15 phút</span>
+                            <span class="blog-metric-item">🔥 320 kcal</span>
+                            <span class="blog-metric-item">❤️ 245 thích</span>
+                            <span class="blog-metric-item">💬 38 bình luận</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Blog Recipe Grid -->
+                <div class="blog-grid" id="homeBlogGrid">
+                    <!-- Rendered dynamically by app.js -->
+                </div>
+
+                <!-- Blog Community CTA Banner -->
+                <div class="blog-cta-banner">
+                    <div class="blog-cta-info">
+                        <div class="blog-cta-icon">👨‍🍳</div>
+                        <div class="blog-cta-text">
+                            <h4>Bạn có công thức ngon hay mẹo làm bếp hay?</h4>
+                            <p>Hãy chia sẻ công thức của bạn để cùng xây dựng cộng đồng ăn ngon & sống khỏe mỗi ngày!</p>
+                        </div>
+                    </div>
+                    <button type="button" class="secondary-button" onclick="openRecipeCreateModal()">
+                        ✏️ Viết bài / Chia sẻ ngay
+                    </button>
+                </div>
+            </section>
 
             <!-- BOTTOM -->
 
@@ -651,7 +866,7 @@
 
                     <div
                             class="expiring-list"
-                            id="homeExpiring">
+                            id="homeBottomExpiring">
 
                     </div>
 
@@ -877,23 +1092,12 @@
 
 
                 <select id="fridgeFilter">
-
-                    <option value="all">
-                        Tất cả thực phẩm
-                    </option>
-
-                    <option value="soon">
-                        Cần dùng sớm
-                    </option>
-
-                    <option value="ingredient">
-                        Nguyên liệu
-                    </option>
-
-                    <option value="dish">
-                        Món ăn
-                    </option>
-
+                    <option value="all">Tất cả thực phẩm</option>
+                    <option value="soon">⚠️ Cần dùng sớm (≤ 3 ngày)</option>
+                    <option value="meat">🥩 Thịt & Hải sản</option>
+                    <option value="veggie">🥦 Rau củ & Trái cây</option>
+                    <option value="dairy">🥚 Trứng & Sữa</option>
+                    <option value="grain">🌾 Tinh bột & Ngũ cốc</option>
                 </select>
 
             </div>
@@ -1055,6 +1259,199 @@
 
 
         <!-- =====================================================
+             SHOPPING
+        ====================================================== -->
+
+        <section
+                class="view"
+                id="view-shopping">
+
+            <div class="page-title">
+                <span class="page-eyebrow">MUA SẮM & ĐI CHỢ</span>
+                <h1>Danh sách mua sắm</h1>
+                <p>Theo dõi và quản lý những nguyên liệu bạn cần mua thêm cho bữa ăn gia đình.</p>
+            </div>
+
+            <!-- SUMMARY & PROGRESS CARD -->
+            <div class="card shopping-progress-card">
+                <div class="sp-header">
+                    <div class="sp-stat-info">
+                        <div class="sp-stat-icon">🛒</div>
+                        <div>
+                            <h3 id="shoppingProgressTitle">Tiến độ mua sắm</h3>
+                            <div class="sp-stat-sub" id="shoppingSummary">Đã mua: <b>0/0 món (0%)</b></div>
+                        </div>
+                    </div>
+                    <div class="sp-actions">
+                        <button type="button" class="secondary-button sp-btn" id="shopClearDone" title="Dọn dẹp các món đã mua xong">
+                            🧹 Dọn món đã mua
+                        </button>
+                        <button type="button" class="text-button sp-btn-danger" id="shopClearAll" title="Xóa toàn bộ danh sách">
+                            🗑 Xóa tất cả
+                        </button>
+                    </div>
+                </div>
+
+                <div class="sp-progress-track">
+                    <div class="sp-progress-fill" id="shoppingBar" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <!-- ADD & QUICK SUGGESTIONS -->
+            <div class="card shopping-input-card">
+                <div class="shopping-form">
+                    <div class="shopping-input-wrapper">
+                        <span class="shopping-input-icon">➕</span>
+                        <input
+                                type="text"
+                                id="shoppingInput"
+                                autocomplete="off"
+                                placeholder="Nhập nguyên liệu cần mua (vd: 500g Thịt bò, 1 bó Rau muống, Trứng gà...)...">
+                    </div>
+                    <button
+                            type="button"
+                            class="primary-button"
+                            id="shoppingAdd">
+                        + Thêm vào danh sách
+                    </button>
+                    <button
+                            type="button"
+                            class="secondary-button"
+                            id="shopImportRecipeBtn"
+                            style="border-color:var(--green);color:var(--green);font-weight:700;display:inline-flex;align-items:center;gap:6px;">
+                        🍲 + Thêm từ Công thức
+                    </button>
+                </div>
+
+                <!-- QUICK CHIPS -->
+                <div class="shopping-quick-chips">
+                    <span class="sqc-label">Gợi ý nhanh:</span>
+                    <button type="button" class="sqc-chip" data-quick-add="1 Vỉ Trứng gà">+ 🥚 Trứng gà</button>
+                    <button type="button" class="sqc-chip" data-quick-add="1 Hộp Sữa tươi">+ 🥛 Sữa tươi</button>
+                    <button type="button" class="sqc-chip" data-quick-add="1 Bó Rau xanh">+ 🥬 Rau xanh</button>
+                    <button type="button" class="sqc-chip" data-quick-add="500g Thịt heo">+ 🥩 Thịt heo</button>
+                    <button type="button" class="sqc-chip" data-quick-add="500g Cà chua">+ 🍅 Cà chua</button>
+                    <button type="button" class="sqc-chip" data-quick-add="3 Củ Hành tây">+ 🧅 Hành tây</button>
+                    <button type="button" class="sqc-chip" data-quick-add="1 Túi Tỏi khô">+ 🧄 Tỏi khô</button>
+                </div>
+            </div>
+
+            <!-- FILTER & SEARCH BAR -->
+            <div class="shopping-filter-card">
+                <div class="shopping-filter-tabs">
+                    <button type="button" class="tab active" data-shop-filter="all">Tất cả <span id="shopCntAll">(0)</span></button>
+                    <button type="button" class="tab" data-shop-filter="pending">⏳ Cần mua <span id="shopCntPending">(0)</span></button>
+                    <button type="button" class="tab" data-shop-filter="done">✅ Đã mua <span id="shopCntDone">(0)</span></button>
+                </div>
+                <div class="shopping-search-box">
+                    <input type="text" id="shopSearchInput" placeholder="🔍 Tìm nguyên liệu..." />
+                </div>
+            </div>
+
+            <!-- SHOPPING LIST CONTAINER -->
+            <div class="shopping-list-container">
+                <div
+                        class="shopping-list"
+                        id="shoppingList">
+                </div>
+            </div>
+
+        </section>
+
+        <!-- =====================================================
+             RECIPES - CÔNG THỨC
+        ====================================================== -->
+
+        <section
+                class="view"
+                id="view-recipes">
+
+            <div class="page-title">
+
+                <span class="page-eyebrow">
+                    THỰC ĐƠN & GỢI Ý MÓN
+                </span>
+
+                <h1>
+                    Công thức nấu ăn
+                </h1>
+
+                <p>
+                    Tìm món theo nguyên liệu, lọc theo bữa sáng / trưa / tối, tốc độ nấu nhanh / ăn chậm.
+                </p>
+
+            </div>
+
+            <!-- QUICK FILTER CHIPS -->
+            <div class="recipe-quick-chips">
+                <button type="button" class="rc-chip active" data-chip="all">✨ Tất cả</button>
+                <button type="button" class="rc-chip" data-chip="morning">🌅 Bữa sáng</button>
+                <button type="button" class="rc-chip" data-chip="lunch">☀️ Bữa trưa</button>
+                <button type="button" class="rc-chip" data-chip="dinner">🌙 Bữa tối</button>
+                <button type="button" class="rc-chip" data-chip="quick">⚡ Ăn nhanh (≤ 15-20p)</button>
+                <button type="button" class="rc-chip" data-chip="slow">🥘 Nấu kỹ / Ăn chậm (> 35p)</button>
+                <button type="button" class="rc-chip" data-chip="eatclean">🥗 Eat Clean</button>
+                <button type="button" class="rc-chip" data-chip="soup">🍲 Món canh / Nước</button>
+            </div>
+
+            <div class="card fridge-toolbar" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+
+                <div class="fridge-search" style="flex: 1; min-width: 180px;">
+
+                    <span>
+                        ⌕
+                    </span>
+
+                    <input
+                            type="text"
+                            id="recipeSearch"
+                            placeholder="Tìm món ăn, nguyên liệu...">
+
+                </div>
+
+                <select id="recipeMealSlot" title="Lọc theo bữa ăn">
+                    <option value="">🕒 Mọi bữa ăn</option>
+                    <option value="morning">🌅 Bữa sáng</option>
+                    <option value="lunch">☀️ Bữa trưa</option>
+                    <option value="dinner">🌙 Bữa tối</option>
+                    <option value="snack">🥪 Ăn nhẹ / Phụ</option>
+                </select>
+
+                <select id="recipeSpeed" title="Lọc theo tốc độ / thời gian">
+                    <option value="">⏱ Tốc độ / Thời gian</option>
+                    <option value="quick">⚡ Ăn nhanh (≤ 20 phút)</option>
+                    <option value="medium">🍲 Vừa phải (20 - 35 phút)</option>
+                    <option value="slow">🥘 Nấu kỹ / Ăn chậm (> 35 phút)</option>
+                </select>
+
+                <select id="recipeCategory" title="Lọc theo danh mục">
+                    <option value="">📂 Danh mục</option>
+                    <option value="Bữa sáng">Bữa sáng</option>
+                    <option value="Món chính">Món chính / Cơm nhà</option>
+                    <option value="Canh">Món canh / Nước</option>
+                    <option value="Eat Clean">Eat Clean / Healthy</option>
+                </select>
+
+                <select id="recipeDifficulty" title="Lọc theo độ khó">
+                    <option value="">📊 Độ khó</option>
+                    <option value="Dễ">Dễ nấu</option>
+                    <option value="Trung bình">Trung bình</option>
+                    <option value="Khó">Nâng cao / Khó</option>
+                </select>
+
+            </div>
+
+
+            <div
+                    class="recipe-grid"
+                    id="recipeBrowseGrid">
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
              RECIPE DETAIL - CHI TIẾT MÓN
         ====================================================== -->
 
@@ -1147,60 +1544,172 @@
 
 
         <!-- =====================================================
-             SHOPPING
+             PLAN - KẾ HOẠCH TUẦN
         ====================================================== -->
 
         <section
                 class="view"
-                id="view-shopping">
+                id="view-plan">
 
-            <div class="page-title">
+            <div class="plan-page-header page-header">
 
-                <span class="page-eyebrow">
-                    MUA SẮM
-                </span>
+                <div>
 
-                <h1>
-                    Danh sách mua
-                </h1>
+                    <span class="page-eyebrow">
+                        KẾ HOẠCH TUẦN
+                    </span>
 
-                <p>
-                    Theo dõi những nguyên liệu
-                    bạn cần mua thêm.
-                </p>
+                    <h1>
+                        Kế hoạch bữa ăn
+                    </h1>
 
-            </div>
+                    <p id="weekLabel">
+                        Tuần này
+                    </p>
 
-
-            <div class="card shopping-card">
-
-                <div class="shopping-form">
-
-                    <input
-                            type="text"
-                            id="shoppingInput"
-                            autocomplete="off"
-                            placeholder="Nhập nguyên liệu cần mua...">
+                </div>
 
 
-                    <button
-                            type="button"
-                            class="primary-button"
-                            id="shoppingAdd">
+                <div class="fridge-header-actions">
 
-                        + Thêm
+                    <button type="button" class="secondary-button" id="exportPlanShoppingBtn" title="Gom tất cả nguyên liệu của tuần vào danh sách đi chợ và trừ nguyên liệu có sẵn trong tủ">
+                        🛒 Xuất Đi Chợ
+                    </button>
 
+                    <button type="button" class="secondary-button" id="planPrev">
+                        ‹ Tuần trước
+                    </button>
+
+                    <button type="button" class="secondary-button" id="planNext">
+                        Tuần sau ›
+                    </button>
+
+                    <button type="button" class="primary-button" id="planAuto">
+                        ✨ AI lên kế hoạch
                     </button>
 
                 </div>
 
+            </div>
 
-                <div
-                        class="shopping-list"
-                        id="shoppingList">
 
+            <div
+                    class="plan-summary"
+                    id="planSummary">
+
+            </div>
+
+
+            <div
+                    class="plan-days"
+                    id="planDays">
+
+            </div>
+
+
+            <div class="card plan-add-card" id="planAddCard" hidden>
+
+                <select id="paDate"></select>
+
+                <select id="paSlot">
+
+                    <option value="morning">🌅 Sáng</option>
+
+                    <option value="lunch">☀️ Trưa</option>
+
+                    <option value="dinner">🌙 Tối</option>
+
+                </select>
+
+                <select id="paRecipe"></select>
+
+                <button type="button" class="primary-button" id="paSubmit">
+                    Thêm
+                </button>
+
+                <button type="button" class="text-button" id="paCancel">
+                    Huỷ
+                </button>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             SOCIAL - CHIA SẺ CÔNG THỨC
+        ====================================================== -->
+
+        <section
+                class="view"
+                id="view-social">
+
+            <div class="page-title social-page-header">
+                <div>
+                    <span class="page-eyebrow">CỘNG ĐỒNG FOODX</span>
+                    <h1>Chia sẻ & Khám phá công thức</h1>
+                    <p>Hàng ngàn bài viết công thức, mẹo nhà bếp và món ngon từ cộng đồng ẩm thực Việt</p>
+                </div>
+                <button type="button" class="primary-button" id="toggleComposerBtn">
+                    <svg class="icon"><use href="#i-plus"/></svg> Đăng công thức mới
+                </button>
+            </div>
+
+            <!-- COMPOSER CARD (COLLAPSIBLE) -->
+            <div class="card social-composer" id="socialComposerCard" hidden>
+                <div class="social-composer-head">
+                    <strong>✍️ Chia sẻ công thức / Mẹo làm bếp của bạn</strong>
+                    <button type="button" class="text-button" id="closeComposerBtn">✕ Đóng</button>
                 </div>
 
+                <div class="social-form-grid">
+                    <input type="text" id="postTitle" class="social-input" placeholder="Tên món ăn hoặc tiêu đề bài viết (vd: Phở bò Hà Nội chuẩn vị)">
+                    <div class="social-row">
+                        <select id="postCategory" class="social-input">
+                            <option value="family">🍜 Món ăn gia đình</option>
+                            <option value="eatclean">🥗 Eat Clean & Healthy</option>
+                            <option value="quick">⚡ Nấu nhanh (dưới 15 phút)</option>
+                            <option value="dessert">🍰 Bánh & Tráng miệng</option>
+                        </select>
+                        <input type="number" id="postTime" class="social-input" placeholder="Thời gian (phút, vd: 30)" min="1">
+                        <input type="number" id="postKcal" class="social-input" placeholder="Calo (kcal, vd: 350)" min="0">
+                    </div>
+                    <textarea id="postDescription" class="social-textarea" rows="2" placeholder="Mô tả ngắn cảm hứng hoặc bí quyết của món ăn..."></textarea>
+                    <textarea id="postIngredients" class="social-textarea" rows="3" placeholder="Nguyên liệu (mỗi dòng 1 nguyên liệu, vd: 500g Thịt bò)"></textarea>
+                    <textarea id="postInstructions" class="social-textarea" rows="4" placeholder="Các bước thực hiện chi tiết..."></textarea>
+                    <input type="text" id="postImage" class="social-input" placeholder="Dán link hình ảnh món ăn (tùy chọn)">
+                </div>
+
+                <div class="social-composer-actions">
+                    <button type="button" class="secondary-button" id="cancelComposerBtn">Hủy</button>
+                    <button type="button" class="primary-button social-submit" id="postSubmit">📤 Đăng bài ngay</button>
+                </div>
+            </div>
+
+            <!-- SEARCH & FILTER TOOLBAR -->
+            <div class="social-toolbar card">
+                <div class="social-search-box">
+                    <svg class="icon"><use href="#i-search"/></svg>
+                    <input type="text" id="socialSearchInput" placeholder="Tìm bài viết, công thức, nguyên liệu...">
+                </div>
+
+                <div class="social-pills" id="socialCategoryPills">
+                    <button type="button" class="social-pill active" data-social-cat="all">✨ Tất cả bài viết</button>
+                    <button type="button" class="social-pill" data-social-cat="my">📝 Lịch sử bài đăng của tôi</button>
+                    <button type="button" class="social-pill" data-social-cat="hot">🔥 Nổi bật nhất</button>
+                    <button type="button" class="social-pill" data-social-cat="eatclean">🥗 Eat Clean & Healthy</button>
+                    <button type="button" class="social-pill" data-social-cat="family">🍜 Món ăn gia đình</button>
+                    <button type="button" class="social-pill" data-social-cat="quick">⚡ Nấu nhanh</button>
+                    <button type="button" class="social-pill" data-social-cat="dessert">🍰 Bánh & Tráng miệng</button>
+                    <button type="button" class="social-pill" data-social-cat="liked">❤️ Đã thích</button>
+                    <button type="button" class="social-pill" data-social-cat="saved">🔖 Đã lưu</button>
+                </div>
+            </div>
+
+            <!-- FEED CONTAINER -->
+            <div class="social-feed" id="socialFeed">
+                <!-- Rendered dynamically -->
             </div>
 
         </section>
@@ -1208,6 +1717,149 @@
     </main>
 
 </div>
+
+
+<!-- =====================================================
+     BOTTOM NAV + QUICK ACTION (mobile)
+====================================================== -->
+
+<nav class="bottom-nav" id="bottomNav" aria-label="Điều hướng chính">
+
+    <button type="button" class="bn-item active" data-bottom-nav="home" aria-label="Trang chủ">
+        <svg class="icon"><use href="#i-home"/></svg>
+        <span>Trang chủ</span>
+    </button>
+
+    <button type="button" class="bn-item" data-bottom-nav="fridge" aria-label="Tủ lạnh">
+        <svg class="icon"><use href="#i-refrigerator"/></svg>
+        <span>Tủ lạnh</span>
+    </button>
+
+    <button type="button" class="bn-fab" id="qaFab" aria-label="Thêm nhanh">
+        <svg class="icon" id="qaFabIcon"><use href="#i-plus"/></svg>
+    </button>
+
+    <button type="button" class="bn-item" data-bottom-nav="plan" aria-label="Kế hoạch">
+        <svg class="icon"><use href="#i-calendar"/></svg>
+        <span>Kế hoạch</span>
+    </button>
+
+    <button type="button" class="bn-item" data-bottom-nav="shopping" aria-label="Đi chợ">
+        <svg class="icon"><use href="#i-cart"/></svg>
+        <span>Đi chợ</span>
+    </button>
+
+</nav>
+
+<div class="qa-menu" id="qaMenu" hidden>
+
+    <button type="button" class="qa-item" data-qa="ingredient">
+        <svg class="icon"><use href="#i-refrigerator"/></svg>
+        <span>Thêm nguyên liệu</span>
+    </button>
+
+    <button type="button" class="qa-item" data-qa="recipe">
+        <svg class="icon"><use href="#i-chef-hat"/></svg>
+        <span>Thêm công thức</span>
+    </button>
+
+    <button type="button" class="qa-item" data-qa="plan">
+        <svg class="icon"><use href="#i-calendar"/></svg>
+        <span>Tạo kế hoạch bữa ăn</span>
+    </button>
+
+    <button type="button" class="qa-item" data-qa="scan">
+        <svg class="icon"><use href="#i-camera"/></svg>
+        <span>Quét thực phẩm</span>
+    </button>
+
+</div>
+
+
+<div class="toast" id="toast"></div>
+
+
+<!-- =====================================================
+     CHAT AI
+====================================================== -->
+
+<button class="chat-fab" id="chatFab" onclick="toggleChat()" aria-label="Mở chat AI">
+    🤖
+    <span class="fab-label">Trợ lý AI nấu ăn</span>
+</button>
+
+<div class="chat-panel" id="chatPanel">
+    <!-- Resize Handles -->
+    <div class="chat-resize-handle chat-resize-top" id="chatResizeTop" title="Kéo để chỉnh chiều cao"></div>
+    <div class="chat-resize-handle chat-resize-left" id="chatResizeLeft" title="Kéo để chỉnh chiều rộng"></div>
+    <div class="chat-resize-handle chat-resize-top-left" id="chatResizeTopLeft" title="Kéo góc để co giãn khung chat">
+        <svg viewBox="0 0 10 10" width="10" height="10" fill="currentColor"><path d="M0 10 L10 0 L8 0 L0 8 Z M0 5 L5 0 L3 0 L0 3 Z"/></svg>
+    </div>
+
+    <div class="chat-head">
+        <div class="chat-avatar">🤖<span class="on-dot" id="chatDot"></span></div>
+        <div class="chat-head-info">
+            <b>Trợ lý AI FoodX</b>
+            <small id="chatStatusText">Đang kết nối…</small>
+        </div>
+        <div class="chat-head-actions">
+            <button class="chat-head-btn chat-maximize-btn" id="chatMaximizeBtn" onclick="toggleChatMaximize()" title="Phóng to / Thu nhỏ" aria-label="Phóng to / Thu nhỏ">⛶</button>
+            <button class="chat-head-btn chat-close" onclick="closeChat()" aria-label="Đóng">✕</button>
+        </div>
+    </div>
+    <div class="chat-toolbar">
+        <div class="ct-info" onclick="toggleChatSessions()" title="Xem tất cả phiên trò chuyện">
+            <span class="ct-icon">💬</span>
+            <span class="ct-title" id="chatSessionTitle">Cuộc trò chuyện mới</span>
+        </div>
+        <div class="ct-actions">
+            <button class="ct-btn" id="chatRenameBtn" onclick="renameCurrentChatSession()" title="Đổi tên phiên" aria-label="Đổi tên phiên">✏️</button>
+            <button class="ct-btn" id="chatNewSession" onclick="createChatSession()" title="Tạo phiên mới" aria-label="Tạo phiên mới">➕ Mới</button>
+            <button class="ct-btn" id="chatToggleHistory" onclick="toggleChatSessions()" title="Lịch sử phiên" aria-label="Lịch sử phiên">
+                🕒 <span class="ct-count-badge" id="chatSessionCount">0</span>
+            </button>
+        </div>
+    </div>
+    <div class="chat-sessions-overlay" id="chatSessionsOverlay" style="display: none;">
+        <div class="chat-sessions-header">
+            <div class="csh-title">
+                <span>📚 Lịch sử phiên chat</span>
+            </div>
+            <div class="csh-actions">
+                <button class="csh-new-btn" onclick="createChatSession()">➕ Phiên mới</button>
+                <button class="csh-close-btn" onclick="toggleChatSessions(false)" aria-label="Đóng danh sách">✕</button>
+            </div>
+        </div>
+        <div class="chat-sessions-list" id="chatSessionsList">
+            <!-- Rendered by JS -->
+        </div>
+    </div>
+    <div class="chat-body" id="chatBody"></div>
+    <div class="chat-chips">
+        <button onclick="askFromTag('Gợi ý món ngon cho bữa tối?')">🔥 Món ngon tối nay</button>
+        <button onclick="askFromTag('Cách nấu phở bò?')">🍜 Cách nấu phở bò</button>
+        <button onclick="askFromTag('Gợi ý món ăn bổ dưỡng cho bà bầu?')">🤰 Món cho bà bầu</button>
+        <button onclick="askFromTag('Cách làm cá kho tiêu thơm ngon?')">🐟 Cá kho tiêu</button>
+    </div>
+    <div class="chat-modes">
+        <button id="modeChatBtn" class="active" onclick="setMode('chat')">💬 Hỏi đáp</button>
+        <button id="modeStepBtn" onclick="setMode('step')">👨‍🍳 Nấu từng bước</button>
+    </div>
+    <div class="chat-input">
+        <input id="chatInputFx" placeholder="Nhập câu hỏi của bạn..." autocomplete="off"
+               onkeydown="if(event.key==='Enter'){event.preventDefault();sendMessage();}">
+        <button class="chat-send" id="chatSendBtn" onclick="sendMessage()" aria-label="Gửi">➤</button>
+    </div>
+</div>
+
+
+<!-- =====================================================
+     FOOTER
+====================================================== -->
+
+<footer class="app-footer">
+    <p>FoodX — Ăn ngon, sống khỏe. Made with 🧡 &amp; AI</p>
+</footer>
 
 
 <!-- =====================================================
@@ -2001,7 +2653,9 @@
                             type="text"
                             id="customFoodName"
                             required
+                            maxlength="100"
                             placeholder="Ví dụ: cá hồi">
+                    <span id="customFoodNameError" style="display:none; color: #ef4444; font-size: 12px; margin-top: 5px; font-weight: 600;">⚠️ Tên nguyên liệu không được vượt quá 100 ký tự</span>
 
                 </label>
 
@@ -2018,7 +2672,8 @@
                             required
                             step="0.1"
                             min="0.1"
-                            placeholder="500">
+                            placeholder="Nhập số lượng...">
+                    <span id="customFoodQuantityError" style="display:none; color: #ef4444; font-size: 12px; margin-top: 5px; font-weight: 600;">⚠️ Số lượng phải lớn hơn 0</span>
 
                 </label>
 
@@ -2315,6 +2970,157 @@
     </div>
 
 </div>
+
+<!-- =====================================================
+     PLAN MEAL MODAL - THÊM / ĐỔI BỮA ĂN VỚI AI
+====================================================== -->
+<div class="modal-overlay" id="planMealModal" hidden>
+    <div class="modal plan-meal-modal" style="max-width: 600px; width: 92%;">
+        <div class="modal-header">
+            <div>
+                <span class="page-eyebrow">KẾ HOẠCH BỮA ĂN</span>
+                <h2 id="pmmTitle">Thêm bữa ăn</h2>
+                <p id="pmmSubtitle">Chọn cách thêm món hoặc để AI gợi ý thông minh</p>
+            </div>
+            <button type="button" class="modal-close" data-close="planMealModal">×</button>
+        </div>
+
+        <div class="modal-tabs" style="display:flex;gap:8px;border-bottom:1px solid var(--border);padding:0 20px;margin-bottom:16px;">
+            <button type="button" class="modal-tab active" id="pmmTabAi" style="padding:10px 14px;background:none;border:none;border-bottom:2px solid var(--green);color:var(--text);font-weight:600;cursor:pointer;">
+                🤖 AI Gợi ý món
+            </button>
+            <button type="button" class="modal-tab" id="pmmTabCustom" style="padding:10px 14px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-soft);font-weight:600;cursor:pointer;">
+                ✍️ Tự thêm & AI Chấm Calo
+            </button>
+            <button type="button" class="modal-tab" id="pmmTabRecipe" style="padding:10px 14px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-soft);font-weight:600;cursor:pointer;">
+                📖 Kho công thức
+            </button>
+        </div>
+
+        <div style="padding: 0 20px 20px 20px;">
+            <!-- PANE 1: AI SUGGESTION -->
+            <div id="pmmPaneAi" class="pmm-pane">
+                <p style="font-size:13px;color:var(--text-soft);margin-bottom:10px;">
+                    AI sẽ dựa vào nguyên liệu trong tủ lạnh, chế độ ăn và mục tiêu calo để đề xuất món tối ưu nhất.
+                </p>
+
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">Phong cách món ăn:</label>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;" id="pmmTags">
+                        <button type="button" class="filter-chip" data-tag="🥗 Thanh đạm, ít dầu mỡ">🥗 Thanh đạm</button>
+                        <button type="button" class="filter-chip" data-tag="🥩 Giàu đạm / Protein cao">🥩 Giàu đạm</button>
+                        <button type="button" class="filter-chip" data-tag="🍲 Món nước, dễ ăn">🍲 Món nước</button>
+                        <button type="button" class="filter-chip" data-tag="⚡ Nhanh gọn dưới 20 phút">⚡ Nhanh gọn</button>
+                        <button type="button" class="filter-chip" data-tag="📉 Eat Clean / Giảm mỡ">📉 Eat Clean</button>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">Yêu cầu riêng (tuỳ chọn):</label>
+                    <input type="text" id="pmmAiPrompt" placeholder="Ví dụ: Dùng thịt bò, nhiều rau xanh, không cay..." style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);" />
+                </div>
+
+                <div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+                    <label style="font-size:12px;font-weight:600;white-space:nowrap;">Mục tiêu Calo:</label>
+                    <input type="number" id="pmmAiTargetKcal" placeholder="450" style="width:100px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);" />
+                    <span style="font-size:13px;color:var(--text-soft);">kcal</span>
+                </div>
+
+                <button type="button" class="primary-button" id="pmmAiSubmit" style="width:100%;justify-content:center;padding:12px;font-size:14px;">
+                    ✨ AI Gợi ý & Thêm vào kế hoạch
+                </button>
+            </div>
+
+            <!-- PANE 2: CUSTOM DISH & AI ESTIMATE -->
+            <div id="pmmPaneCustom" class="pmm-pane" hidden>
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">Tên món ăn bạn muốn ăn:</label>
+                    <div style="display:flex;gap:8px;">
+                        <input type="text" id="pmmCustomTitle" placeholder="Ví dụ: Bún chả giò, Canh chua cá bớp..." style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);" />
+                        <button type="button" class="secondary-button" id="pmmEstimateBtn" style="white-space:nowrap;border-color:var(--green);color:var(--green);font-weight:600;">
+                            ⚡ AI Chấm Calo
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:11px;font-weight:600;color:var(--text-soft);display:block;margin-bottom:4px;">Kcal:</label>
+                        <input type="number" id="pmmCustomKcal" placeholder="450" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);" />
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:600;color:var(--text-soft);display:block;margin-bottom:4px;">Protein (g):</label>
+                        <input type="number" id="pmmCustomProtein" placeholder="25" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);" />
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:600;color:var(--text-soft);display:block;margin-bottom:4px;">Carb (g):</label>
+                        <input type="number" id="pmmCustomCarb" placeholder="50" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);" />
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:600;color:var(--text-soft);display:block;margin-bottom:4px;">Fat (g):</label>
+                        <input type="number" id="pmmCustomFat" placeholder="12" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);" />
+                    </div>
+                </div>
+
+                <div style="margin-bottom:16px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;">Mô tả / Ghi chú món (tuỳ chọn):</label>
+                    <input type="text" id="pmmCustomDesc" placeholder="Mô tả hương vị hoặc lưu ý chế biến..." style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);" />
+                </div>
+
+                <button type="button" class="primary-button" id="pmmCustomSubmit" style="width:100%;justify-content:center;padding:12px;font-size:14px;">
+                    💾 Thêm món này vào kế hoạch
+                </button>
+            </div>
+
+            <!-- PANE 3: CHOOSE FROM RECIPES -->
+            <div id="pmmPaneRecipe" class="pmm-pane" hidden>
+                <div style="margin-bottom:12px;">
+                    <input type="text" id="pmmRecipeSearch" placeholder="Tìm kiếm món trong kho công thức..." style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);" />
+                </div>
+                <div id="pmmRecipeList" style="max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =====================================================
+     SHOPPING RECIPE IMPORT MODAL (THÊM NGUYÊN LIỆU TỪ CÔNG THỨC)
+====================================================== -->
+<div class="modal-overlay" id="shoppingRecipeModal" hidden>
+    <div class="modal shopping-recipe-modal" style="max-width: 620px; width: 92%;">
+        <div class="modal-header">
+            <h3 style="display:flex;align-items:center;gap:8px;margin:0;">🍲 Thêm nguyên liệu từ Công thức</h3>
+            <button type="button" class="modal-close" data-close="shoppingRecipeModal">×</button>
+        </div>
+        <div class="modal-body" style="padding: 16px 20px;">
+            <p style="font-size:13px;color:var(--text-soft);margin-top:0;margin-bottom:12px;">
+                Chọn món ăn để tự động kiểm tra nguyên liệu còn thiếu trong tủ lạnh và thêm trực tiếp vào danh sách đi chợ.
+            </p>
+
+            <div style="margin-bottom: 12px;">
+                <input type="text" id="srmSearch" placeholder="🔍 Tìm công thức (vd: Phở bò, Salad, Bún chả...)..." style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13.5px;" />
+            </div>
+
+            <!-- RECIPE SELECTION LIST -->
+            <div id="srmRecipeList" style="max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; border: 1px solid var(--border); border-radius: 12px; padding: 8px;">
+            </div>
+
+            <!-- SELECTED RECIPE INGREDIENTS PREVIEW -->
+            <div id="srmIngredientsBox" style="display:none; border-top: 1px dashed var(--border); padding-top: 14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <strong id="srmRecipeTitle" style="color:var(--green-dark); font-size:14.5px;"></strong>
+                    <span style="font-size:12px; color:var(--text-soft);">Tích chọn nguyên liệu cần mua:</span>
+                </div>
+                <div id="srmIngredientsList" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;">
+                </div>
+                <button type="button" class="primary-button" id="srmSubmitBtn" style="width:100%; justify-content:center; padding:12px; font-size:14px;">
+                    🛒 Thêm các nguyên liệu đã chọn vào Danh sách mua
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- =====================================================
      COOKING MODE
 ====================================================== -->
@@ -2479,6 +3285,30 @@
 
                 </p>
 
+                <!-- TOOLBAR: VOICE & TIMER -->
+                <div class="cooking-tools-row" style="display:flex;align-items:center;gap:8px;margin:12px 0 16px 0;flex-wrap:wrap;">
+                    <button type="button" class="secondary-button" id="readStepVoiceBtn" style="display:flex;align-items:center;gap:5px;font-size:12px;padding:6px 12px;border-radius:8px;">
+                        <span id="voiceIcon">🔊</span> <span id="voiceText">Đọc to bước này</span>
+                    </button>
+                    <button type="button" class="secondary-button" id="toggleStepTimerBtn" style="display:flex;align-items:center;gap:5px;font-size:12px;padding:6px 12px;border-radius:8px;">
+                        ⏱️ Hẹn giờ nấu
+                    </button>
+                </div>
+
+                <!-- TIMER WIDGET -->
+                <div class="cooking-timer-card" id="stepTimerCard" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:16px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                        <span style="font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px;">⏱️ Đồng hồ hẹn giờ nấu</span>
+                        <div id="stepTimerDisplay" style="font-size:24px;font-weight:800;font-family:monospace;color:var(--green);">05:00</div>
+                    </div>
+                    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                        <button type="button" class="filter-chip" data-add-sec="60">+1 phút</button>
+                        <button type="button" class="filter-chip" data-add-sec="300">+5 phút</button>
+                        <button type="button" class="filter-chip" data-add-sec="600">+10 phút</button>
+                        <button type="button" class="primary-button" id="stepTimerToggle" style="padding:6px 14px;font-size:12px;margin-left:auto;">▶ Bắt đầu</button>
+                        <button type="button" class="text-button" id="stepTimerReset" style="font-size:12px;padding:6px 8px;">Đặt lại</button>
+                    </div>
+                </div>
 
                 <!-- AI ASK CURRENT STEP -->
 
@@ -2546,68 +3376,6 @@
     </div>
 
 </div>
-<!-- =====================================================
-     CHAT AI (đa phiên, lịch sử theo tài khoản)
-====================================================== -->
-
-<button class="chat-fab" id="chatFab" onclick="toggleChat()" aria-label="Mở chat AI">
-    🤖
-    <span class="fab-label">Trợ lý AI nấu ăn</span>
-</button>
-
-<div class="chat-panel" id="chatPanel">
-    <div class="chat-head">
-        <div class="chat-avatar">🤖<span class="on-dot" id="chatDot"></span></div>
-        <div class="chat-head-info">
-            <b>Trợ lý AI FoodX</b>
-            <small id="chatStatusText">Đang kết nối…</small>
-        </div>
-        <button class="chat-close" onclick="closeChat()" aria-label="Đóng">✕</button>
-    </div>
-    <div class="chat-toolbar">
-        <div class="ct-info" onclick="toggleChatSessions()" title="Xem tất cả phiên trò chuyện">
-            <span class="ct-icon">💬</span>
-            <span class="ct-title" id="chatSessionTitle">Cuộc trò chuyện mới</span>
-        </div>
-        <div class="ct-actions">
-            <button class="ct-btn" id="chatRenameBtn" onclick="renameCurrentChatSession()" title="Đổi tên phiên" aria-label="Đổi tên phiên">✏️</button>
-            <button class="ct-btn" id="chatNewSession" onclick="createChatSession()" title="Tạo phiên mới" aria-label="Tạo phiên mới">➕ Mới</button>
-            <button class="ct-btn" id="chatToggleHistory" onclick="toggleChatSessions()" title="Lịch sử phiên" aria-label="Lịch sử phiên">
-                🕒 <span class="ct-count-badge" id="chatSessionCount">0</span>
-            </button>
-        </div>
-    </div>
-    <div class="chat-sessions-overlay" id="chatSessionsOverlay" style="display: none;">
-        <div class="chat-sessions-header">
-            <div class="csh-title">
-                <span>📚 Lịch sử phiên chat</span>
-            </div>
-            <div class="csh-actions">
-                <button class="csh-new-btn" onclick="createChatSession()">➕ Phiên mới</button>
-                <button class="csh-close-btn" onclick="toggleChatSessions(false)" aria-label="Đóng danh sách">✕</button>
-            </div>
-        </div>
-        <div class="chat-sessions-list" id="chatSessionsList">
-            <!-- Rendered by JS -->
-        </div>
-    </div>
-    <div class="chat-body" id="chatBody"></div>
-    <div class="chat-chips">
-        <button onclick="askFromTag('Gợi ý món ngon cho bữa tối?')">🔥 Món ngon tối nay</button>
-        <button onclick="askFromTag('Cách nấu phở bò?')">🍜 Cách nấu phở bò</button>
-        <button onclick="askFromTag('Gợi ý món ăn bổ dưỡng cho bà bầu?')">🤰 Món cho bà bầu</button>
-        <button onclick="askFromTag('Cách làm cá kho tiêu thơm ngon?')">🐟 Cá kho tiêu</button>
-    </div>
-    <div class="chat-modes">
-        <button id="modeChatBtn" class="active" onclick="setMode('chat')">💬 Hỏi đáp</button>
-        <button id="modeStepBtn" onclick="setMode('step')">👨‍🍳 Nấu từng bước</button>
-    </div>
-    <div class="chat-input">
-        <input id="chatInputFx" placeholder="Nhập câu hỏi của bạn..." autocomplete="off"
-               onkeydown="if(event.key==='Enter'){event.preventDefault();sendMessage();}">
-        <button class="chat-send" id="chatSendBtn" onclick="sendMessage()" aria-label="Gửi">➤</button>
-    </div>
-</div>
 
 <!-- =====================================================
      LOGIN MODAL
@@ -2663,20 +3431,20 @@
             <div class="auth-field">
 
                 <label for="loginEmail">
-                    Email
+                    Tên đăng nhập hoặc Email
                 </label>
 
                 <div class="auth-input-wrap">
 
                     <span>
-                        ✉
+                        👤
                     </span>
 
                     <input
-                            type="email"
+                            type="text"
                             id="loginEmail"
-                            autocomplete="email"
-                            placeholder="vidu@gmail.com"
+                            autocomplete="username email"
+                            placeholder="Nhập tên đăng nhập hoặc email"
                             required>
 
                 </div>
@@ -2807,8 +3575,36 @@
                             type="text"
                             id="registerFullName"
                             autocomplete="name"
-                            placeholder="Nhập họ và tên"
+                            placeholder="Nhập họ và tên (Ví dụ: Nguyễn Văn A)"
                             minlength="2"
+                            required>
+
+                </div>
+
+            </div>
+
+
+            <div class="auth-field">
+
+                <label for="registerUsername">
+                    Tên đăng nhập (Username)
+                </label>
+
+                <div class="auth-input-wrap">
+
+                    <span>
+                        🏷️
+                    </span>
+
+                    <input
+                            type="text"
+                            id="registerUsername"
+                            autocomplete="username"
+                            placeholder="Nhập tên đăng nhập (Ví dụ: nguyenvana)"
+                            minlength="3"
+                            maxlength="50"
+                            pattern="^[a-zA-Z0-9_.-]+$"
+                            title="Tên đăng nhập từ 3-50 ký tự gồm chữ, số hoặc gạch dưới"
                             required>
 
                 </div>
@@ -2920,6 +3716,7 @@
     </div>
 
 </div>
+
 
 <!-- =====================================================
      ONBOARDING WIZARD (3 bước)
@@ -3372,6 +4169,7 @@
 
                 </div>
 
+
                 <div class="onb-q-block">
 
                     <h4>
@@ -3414,17 +4212,8 @@
 
 </div>
 
-<!-- TOAST -->
 
-<div
-        class="toast"
-        id="toast">
+<script src="/js/app.js?v=20260825_1959"></script>
 
-</div>
-
-
-
-
-<script src="/js/app.js?v=20260823_10"></script>
 </body>
 </html>

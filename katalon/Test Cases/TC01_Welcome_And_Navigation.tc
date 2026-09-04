@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description>Kiểm thử màn hình chào mừng, chuyển đổi giao diện Sáng/Tối và điều hướng toàn bộ Sidebar/TopBar</description>
+   <name>TC01_Welcome_And_Navigation</name>
+   <tag>Navigation,UI,Theme</tag>
+   <comment></comment>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>c01a0001-foodx-4001-8001-000000000001</testCaseGuid>
+</TestCaseEntity>

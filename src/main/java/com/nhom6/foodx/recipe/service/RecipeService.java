@@ -28,6 +28,7 @@ public class RecipeService {
     private final RecipeIngredientRepository recipeIngredientRepository;
     private final IngredientRepository ingredientRepository;
     private final com.nhom6.foodx.recipe.repository.SavedRecipeRepository savedRecipeRepository;
+    private final com.nhom6.foodx.food.service.FoodImageSearchService foodImageSearchService;
 
     @Transactional(readOnly = true)
     public List<RecipeResponse> search(String keyword, String category, String cuisine) {
@@ -53,6 +54,18 @@ public class RecipeService {
     public RecipeResponse create(RecipeRequest request, User author) {
         Recipe recipe = new Recipe();
         applyRequest(recipe, request);
+
+        // Tự động tìm kiếm ảnh nếu người dùng không tự cung cấp ảnh
+        if (recipe.getImageUrl() == null || recipe.getImageUrl().isBlank()
+                || recipe.getImageUrl().contains("unsplash.com/photo-1542838132")
+                || recipe.getImageUrl().contains("default-recipe")
+                || recipe.getImageUrl().contains("placeholder")) {
+            String autoImg = foodImageSearchService.findOrDownloadImage(recipe.getTitle());
+            if (autoImg != null && !autoImg.isBlank()) {
+                recipe.setImageUrl(autoImg);
+            }
+        }
+
         recipe.setAuthor(author);
         recipe.setCreatedAt(LocalDateTime.now());
         recipe.setUpdatedAt(LocalDateTime.now());
@@ -69,6 +82,17 @@ public class RecipeService {
     public RecipeResponse update(Long id, RecipeRequest request) {
         Recipe recipe = findEntity(id);
         applyRequest(recipe, request);
+
+        if (recipe.getImageUrl() == null || recipe.getImageUrl().isBlank()
+                || recipe.getImageUrl().contains("unsplash.com/photo-1542838132")
+                || recipe.getImageUrl().contains("default-recipe")
+                || recipe.getImageUrl().contains("placeholder")) {
+            String autoImg = foodImageSearchService.findOrDownloadImage(recipe.getTitle());
+            if (autoImg != null && !autoImg.isBlank()) {
+                recipe.setImageUrl(autoImg);
+            }
+        }
+
         recipe.setUpdatedAt(LocalDateTime.now());
 
         // Xoá nguyên liệu cũ và lưu lại
@@ -128,10 +152,24 @@ public class RecipeService {
         recipe.setServings(request.getServings());
         recipe.setCuisine(request.getCuisine());
         recipe.setCategory(request.getCategory());
-        recipe.setKcal(request.getKcal());
-        recipe.setProtein(request.getProtein());
-        recipe.setCarb(request.getCarb());
-        recipe.setFat(request.getFat());
+
+        int kcal = (request.getKcal() != null && request.getKcal() > 0) ? request.getKcal() : 380;
+        recipe.setKcal(kcal);
+
+        double protein = (request.getProtein() != null && request.getProtein() > 0)
+                ? request.getProtein()
+                : Math.round(kcal * 0.22 / 4.0 * 10.0) / 10.0;
+        double carb = (request.getCarb() != null && request.getCarb() > 0)
+                ? request.getCarb()
+                : Math.round(kcal * 0.52 / 4.0 * 10.0) / 10.0;
+        double fat = (request.getFat() != null && request.getFat() > 0)
+                ? request.getFat()
+                : Math.round(kcal * 0.26 / 9.0 * 10.0) / 10.0;
+
+        recipe.setProtein(protein);
+        recipe.setCarb(carb);
+        recipe.setFat(fat);
+
         recipe.setDifficulty(request.getDifficulty());
         recipe.setMealSlots(request.getMealSlots());
         recipe.setImageUrl(request.getImageUrl());
@@ -165,14 +203,14 @@ public class RecipeService {
     }
 
     @Transactional(readOnly = true)
-    public java.util.List<RecipeResponse> getSaved(com.nhom6.foodx.auth.entity.User user) {
+    public List<RecipeResponse> getSaved(User user) {
         return savedRecipeRepository.findByUserId(user.getId()).stream()
                 .map(sr -> toResponse(sr.getRecipe()))
                 .toList();
     }
 
     @Transactional
-    public boolean toggleSave(com.nhom6.foodx.auth.entity.User user, Long recipeId) {
+    public boolean toggleSave(User user, Long recipeId) {
         Recipe recipe = findEntity(recipeId);
         if (savedRecipeRepository.existsByUserIdAndRecipeId(user.getId(), recipeId)) {
             savedRecipeRepository.findByUserIdAndRecipeId(user.getId(), recipeId)
@@ -203,6 +241,25 @@ public class RecipeService {
                         .build())
                 .toList();
 
+        String img = recipe.getImageUrl();
+        if (img == null || img.isBlank()
+                || img.contains("unsplash.com/photo-1542838132")
+                || img.contains("default-recipe")
+                || img.contains("placeholder")) {
+            img = foodImageSearchService.findOrDownloadImage(recipe.getTitle());
+        }
+
+        int kcal = (recipe.getKcal() != null && recipe.getKcal() > 0) ? recipe.getKcal() : 380;
+        double protein = (recipe.getProtein() != null && recipe.getProtein() > 0)
+                ? recipe.getProtein()
+                : Math.round(kcal * 0.22 / 4.0 * 10.0) / 10.0;
+        double carb = (recipe.getCarb() != null && recipe.getCarb() > 0)
+                ? recipe.getCarb()
+                : Math.round(kcal * 0.52 / 4.0 * 10.0) / 10.0;
+        double fat = (recipe.getFat() != null && recipe.getFat() > 0)
+                ? recipe.getFat()
+                : Math.round(kcal * 0.26 / 9.0 * 10.0) / 10.0;
+
         return RecipeResponse.builder()
                 .id(recipe.getId())
                 .title(recipe.getTitle())
@@ -213,13 +270,13 @@ public class RecipeService {
                 .servings(recipe.getServings())
                 .cuisine(recipe.getCuisine())
                 .category(recipe.getCategory())
-                .kcal(recipe.getKcal())
-                .protein(recipe.getProtein())
-                .carb(recipe.getCarb())
-                .fat(recipe.getFat())
+                .kcal(kcal)
+                .protein(protein)
+                .carb(carb)
+                .fat(fat)
                 .difficulty(recipe.getDifficulty())
                 .mealSlots(recipe.getMealSlots())
-                .imageUrl(recipe.getImageUrl())
+                .imageUrl(img)
                 .sourceUrl(recipe.getSourceUrl())
                 .authorId(recipe.getAuthor() != null ? recipe.getAuthor().getId() : null)
                 .authorName(recipe.getAuthor() != null ? recipe.getAuthor().getFullName() : null)
