@@ -1,0 +1,21 @@
+/* ==========================================================
+   STATS
+========================================================== */
+.kpi-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:16px; }
+.kpi{ text-align:center; padding:16px; border:1px solid var(--border); border-radius:16px; background:var(--card); }
+.kpi .k-ic{ font-size:22px; display:block; margin-bottom:6px; }
+.kpi b{ display:block; font-size:24px; color:var(--green); }
+.kpi span{ color:var(--text-soft); font-size:11px; }
+.stats-card{ padding:18px; margin-bottom:16px; }
+.stats-card h3{ font-size:14.5px; margin-bottom:12px; }
+.stats-svg{ width:100%; height:auto; }
+.stats-line{ fill:none; stroke:#2E9E5B; stroke-width:2.5; stroke-linejoin:round; stroke-linecap:round; }
+.stats-dot{ fill:#19aa55; }
+.stats-empty-text{ fill:var(--text-soft); font-size:12px; }
+.stats-labels{ display:flex; justify-content:space-between; margin-top:6px; }
+.stats-labels span{ color:var(--text-soft); font-size:9.5px; }
+.top-row{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:var(--bg); margin-bottom:8px; font-size:13px; }
+.top-emoji{ font-size:20px; }
+.top-name{ flex:1; font-weight:600; }
+.top-cnt{ color:var(--text-soft); font-size:11px; }
+

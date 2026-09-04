@@ -759,39 +759,33 @@
                     </button>
                 </div>
 
-                <!-- Blog Category Filter Pills -->
+                <!-- Blog Category Filter Pills (render động theo category thật của kho công thức) -->
                 <div class="blog-pills" id="homeBlogPills">
-                    <button type="button" class="blog-pill active" data-blog-cat="all">✨ Tất cả bài viết</button>
-                    <button type="button" class="blog-pill" data-blog-cat="hot">🔥 Món nổi bật</button>
-                    <button type="button" class="blog-pill" data-blog-cat="eatclean">🥗 Eat Clean & Healthy</button>
-                    <button type="button" class="blog-pill" data-blog-cat="family">🍜 Món ăn gia đình</button>
-                    <button type="button" class="blog-pill" data-blog-cat="quick">⚡ Nấu nhanh 15 phút</button>
-                    <button type="button" class="blog-pill" data-blog-cat="dessert">🍰 Bánh & Tráng miệng</button>
+                    <button type="button" class="blog-pill active" data-blog-cat="all">✨ Tất cả món</button>
                 </div>
 
-                <!-- Featured Blog Post Banner -->
-                <div class="blog-featured-card" id="blogFeaturedCard">
+                <!-- Featured Banner (nội dung thật của FoodX, không dùng số liệu demo giả) -->
+                <div class="blog-featured-card" id="blogFeaturedCard" style="cursor:pointer;" onclick="openView('recipes')">
                     <div class="blog-featured-img-wrap">
-                        <img class="blog-featured-img" src="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=1200&q=80" alt="Bí quyết nấu ăn">
-                        <span class="blog-category-tag">⭐ Tiêu điểm tuần</span>
+                        <img class="blog-featured-img" src="/images/recipes/pho-bo.jpg" alt="Món ăn từ kho công thức FoodX" onerror="this.src='/images/recipes/default-recipe.jpg'">
+                        <span class="blog-category-tag">⭐ Kho công thức FoodX</span>
                     </div>
                     <div class="blog-featured-content">
                         <div class="blog-author-meta">
-                            <div class="blog-avatar">👨‍🍳</div>
+                            <div class="blog-avatar">🍳</div>
                             <div class="blog-author-info">
-                                <span class="blog-author-name">Chef Minh An</span>
-                                <span class="blog-time-ago">Đăng 2 giờ trước • 5 phút đọc</span>
+                                <span class="blog-author-name">FoodX</span>
+                                <span class="blog-time-ago">Cộng đồng nấu ăn • cập nhật liên tục</span>
                             </div>
                         </div>
-                        <h3 class="blog-featured-title" onclick="openView('recipe')">5 Cách biến tấu thực phẩm thừa trong tủ lạnh thành bữa tối 5 sao</h3>
+                        <h3 class="blog-featured-title">Khám phá công thức nấu cùng thực phẩm đang có trong tủ lạnh của bạn</h3>
                         <p class="blog-featured-desc">
-                            Đừng vội bỏ đi những nguyên liệu thừa! Chỉ với vài mẹo nhỏ và trợ lý FoodX, bạn có thể biến trứng, rau củ và thịt nguội thành món ăn cực kỳ hấp dẫn mà không lãng phí...
+                            Thêm nguyên liệu vào Tủ lạnh FoodX, mở mục Công thức để xem món nào "khớp tủ" nhất — hoặc hỏi Trợ lý AI gợi ý thực đơn chống lãng phí thực phẩm.
                         </p>
                         <div class="blog-metrics-row">
-                            <span class="blog-metric-item">⏱️ 15 phút</span>
-                            <span class="blog-metric-item">🔥 320 kcal</span>
-                            <span class="blog-metric-item">❤️ 245 thích</span>
-                            <span class="blog-metric-item">💬 38 bình luận</span>
+                            <span class="blog-metric-item">⏱️ Lọc theo thời gian nấu</span>
+                            <span class="blog-metric-item">🔥 Kèm dinh dưỡng mỗi món</span>
+                            <span class="blog-metric-item">🤖 Gợi ý món bằng AI</span>
                         </div>
                     </div>
                 </div>
@@ -1806,9 +1800,9 @@
         <span>Tạo kế hoạch bữa ăn</span>
     </button>
 
-    <button type="button" class="qa-item" data-qa="scan">
-        <svg class="icon"><use href="#i-camera"/></svg>
-        <span>Quét thực phẩm</span>
+    <button type="button" class="qa-item" data-qa="notify">
+        <svg class="icon"><use href="#i-bell"/></svg>
+        <span>Bật nhắc hết hạn</span>
     </button>
 
 </div>
@@ -4359,7 +4353,8 @@
 </div>
 
 
-<script src="/js/app.js?v=20260825_1959"></script>
+<script type="module" src="/js/main.js?v=20260906_2"></script>
+<script nomodule src="/js/app.js?v=20260906_2"></script>
 
 </body>
 </html>
