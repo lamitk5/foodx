@@ -938,8 +938,17 @@
                     <button
                             type="button"
                             class="primary-button"
-                            id="fridgeRescueBtn"
+                            id="openFoodCatalogBtn"
                             style="background:linear-gradient(135deg, #10b981, #059669);font-weight:700;"
+                            title="Mở kho thực phẩm có sẵn để chọn tự động vào tủ lạnh">
+                        📦 + Chọn từ Kho thực phẩm
+                    </button>
+
+                    <button
+                            type="button"
+                            class="secondary-button"
+                            id="fridgeRescueBtn"
+                            style="font-weight:600;"
                             title="AI tự động phân tích các nguyên liệu trong tủ để gợi ý món nấu ngay">
                         ✨ AI Cứu Tủ Lạnh
                     </button>
@@ -947,12 +956,10 @@
                     <button
                             type="button"
                             class="secondary-button custom-food-button"
-                            id="openCustomIngredient">
-
-                        + Thêm nguyên liệu khác
-
+                            id="openCustomIngredient"
+                            title="Tự gõ nguyên liệu nếu không tìm thấy trong kho">
+                        ✏️ Nhập tay
                     </button>
-
 
                     <button
                             type="button"
@@ -1194,14 +1201,20 @@
                     bắt đầu phân tích và gợi ý món ăn.
                 </p>
 
-                <button
-                        type="button"
-                        class="primary-button"
-                        id="emptyCustomIngredient">
-
-                    + Thêm nguyên liệu
-
-                </button>
+                <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px;">
+                    <button
+                            type="button"
+                            class="primary-button"
+                            id="emptyFoodCatalogBtn">
+                        📦 Chọn từ Kho thực phẩm có sẵn
+                    </button>
+                    <button
+                            type="button"
+                            class="secondary-button"
+                            id="emptyCustomIngredient">
+                        ✏️ Tự nhập tay
+                    </button>
+                </div>
 
             </div>
 
@@ -1289,6 +1302,9 @@
                         </div>
                     </div>
                     <div class="sp-actions">
+                        <button type="button" class="secondary-button sp-btn" id="shopShareList" title="Chia sẻ danh sách mua sắm qua Zalo, tin nhắn hoặc sao chép" style="border-color:#0284c7;color:#0284c7;font-weight:700;">
+                            📤 Chia sẻ giỏ hàng
+                        </button>
                         <button type="button" class="secondary-button sp-btn" id="shopClearDone" title="Dọn dẹp các món đã mua xong">
                             🧹 Dọn món đã mua
                         </button>
@@ -1589,6 +1605,10 @@
 
 
                 <div class="fridge-header-actions">
+
+                    <button type="button" class="primary-button" id="planZeroWasteBtn" style="background:linear-gradient(135deg, #10b981, #059669);font-weight:700;" title="Tự động quét các món trong tủ sắp hết hạn và gợi ý điền vào các bữa trống trong tuần">
+                        🌱 Ưu tiên vét tủ
+                    </button>
 
                     <button type="button" class="secondary-button" id="exportPlanShoppingBtn" title="Gom tất cả nguyên liệu của tuần vào danh sách đi chợ và trừ nguyên liệu có sẵn trong tủ">
                         🛒 Xuất Đi Chợ
@@ -2616,6 +2636,50 @@
 
 
 <!-- =====================================================
+     FOOD CATALOG MODAL (KHO THỰC PHẨM CÓ SẴN)
+====================================================== -->
+
+<div class="modal-overlay" id="foodCatalogModal">
+    <div class="modal food-catalog-modal">
+        <div class="modal-header">
+            <div>
+                <span class="page-eyebrow">KHO THỰC PHẨM CÓ SẴN</span>
+                <h2>Chọn nhanh vào tủ lạnh</h2>
+                <p>Chọn thực phẩm từ kho chuẩn để tự động nạp định lượng, dinh dưỡng & hạn dùng.</p>
+            </div>
+            <button type="button" class="modal-close" data-close="foodCatalogModal" aria-label="Đóng">×</button>
+        </div>
+
+        <div class="catalog-toolbar">
+            <div class="catalog-search-wrap">
+                <span class="catalog-search-icon">🔍</span>
+                <input type="text" id="catalogSearchInput" placeholder="Tìm kiếm thực phẩm (trứng, bò, cá, rau muống, sữa...)..." autocomplete="off">
+            </div>
+            <div class="catalog-tabs" id="catalogCategoryTabs">
+                <button type="button" class="catalog-tab active" data-cat="all">Tất cả</button>
+                <button type="button" class="catalog-tab" data-cat="meat">🥩 Thịt & Cá</button>
+                <button type="button" class="catalog-tab" data-cat="veggie">🥬 Rau củ</button>
+                <button type="button" class="catalog-tab" data-cat="egg_tofu">🥚 Trứng & Đậu</button>
+                <button type="button" class="catalog-tab" data-cat="dairy">🥛 Sữa & Bơ</button>
+                <button type="button" class="catalog-tab" data-cat="carb">🌾 Tinh bột</button>
+                <button type="button" class="catalog-tab" data-cat="spice">🧅 Gia vị</button>
+            </div>
+        </div>
+
+        <div class="catalog-grid" id="catalogGrid">
+            <!-- Rendered by JS -->
+        </div>
+
+        <div class="catalog-footer">
+            <span>Không tìm thấy món bạn cần?</span>
+            <button type="button" class="secondary-button" id="catalogGoCustomBtn">
+                ✏️ Tự nhập tay nguyên liệu khác
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- =====================================================
      CUSTOM INGREDIENT MODAL
 ====================================================== -->
 
@@ -2655,6 +2719,18 @@
 
         </div>
 
+        <div class="quick-food-presets">
+            <span class="quick-food-label">⚡ Gợi ý nhanh 1 chạm:</span>
+            <div class="quick-food-chips">
+                <button type="button" class="quick-chip" onclick="fillQuickFood('Trứng gà', '10', 'quả', 14, 'Đạm')">🥚 Trứng gà (10 quả)</button>
+                <button type="button" class="quick-chip" onclick="fillQuickFood('Thịt ba chỉ', '500', 'g', 4, 'Thịt')">🥩 Thịt ba chỉ (500g)</button>
+                <button type="button" class="quick-chip" onclick="fillQuickFood('Thịt bò', '300', 'g', 4, 'Thịt')">🥩 Thịt bò (300g)</button>
+                <button type="button" class="quick-chip" onclick="fillQuickFood('Rau muống', '1', 'bó', 3, 'Rau củ')">🥬 Rau muống (1 bó)</button>
+                <button type="button" class="quick-chip" onclick="fillQuickFood('Cà chua', '5', 'quả', 7, 'Rau củ')">🍅 Cà chua (5 quả)</button>
+                <button type="button" class="quick-chip" onclick="fillQuickFood('Đậu phụ', '2', 'bìa', 3, 'Đậu hạt')">🧈 Đậu phụ (2 bìa)</button>
+                <button type="button" class="quick-chip" onclick="fillQuickFood('Sữa tươi', '1', 'hộp', 7, 'Sữa')">🥛 Sữa tươi (1 hộp)</button>
+            </div>
+        </div>
 
         <form id="customIngredientForm">
 
@@ -2929,7 +3005,59 @@
 
 </div>
 
+<!-- =====================================================
+     COOKING MODE MODAL (NẤU ĂN RẢNH TAY)
+====================================================== -->
+<div class="modal-overlay" id="cookingModeModal">
+    <div class="modal cooking-mode-modal">
+        <div class="cooking-mode-header">
+            <div class="cm-meta">
+                <span class="cm-tag">👨‍🍳 CHẾ ĐỘ NẤU ĂN TẬP TRUNG</span>
+                <h2 id="cmRecipeTitle">Tên món ăn</h2>
+            </div>
+            <button type="button" class="modal-close" data-close="cookingModeModal" aria-label="Đóng">×</button>
+        </div>
 
+        <div class="cooking-mode-body">
+            <div class="cm-step-indicator" id="cmStepIndicator">Bước 1 / 4</div>
+            <div class="cm-step-content" id="cmStepContent">Nội dung hướng dẫn chi tiết từng bước nấu...</div>
+
+            <!-- KITCHEN TIMER -->
+            <div class="cm-timer-box">
+                <div class="cm-timer-label">⏱ HẸN GIỜ NẤU ĂN</div>
+                <div class="cm-timer-display" id="cmTimerDisplay">00:00</div>
+                <div class="cm-timer-controls">
+                    <button type="button" class="timer-quick-btn" onclick="setCookingTimer(3)">3p</button>
+                    <button type="button" class="timer-quick-btn" onclick="setCookingTimer(5)">5p</button>
+                    <button type="button" class="timer-quick-btn" onclick="setCookingTimer(10)">10p</button>
+                    <button type="button" class="timer-quick-btn" onclick="setCookingTimer(15)">15p</button>
+                    <button type="button" class="primary-button timer-action-btn" id="cmTimerToggleBtn" onclick="toggleCookingTimer()">▶ Bắt đầu hẹn giờ</button>
+                    <button type="button" class="secondary-button timer-reset-btn" onclick="resetCookingTimer()">↺ Đặt lại</button>
+                </div>
+            </div>
+
+            <!-- VOICE ASSISTANT INDICATOR -->
+            <div class="cm-voice-banner">
+                <button type="button" class="cm-voice-btn" id="cmVoiceBtn" onclick="toggleSpeechRecognition()" title="Bật/Tắt điều khiển bằng giọng nói">
+                    🎙 <span id="cmVoiceLabel">Bật giọng nói rảnh tay</span>
+                </button>
+                <small class="cm-voice-tip">Khẩu lệnh tiếng Việt: Nói <b>"tiếp"</b> (bước sau), <b>"trước"</b> (bước trước), <b>"xong"</b> (hoàn thành).</small>
+            </div>
+        </div>
+
+        <div class="cooking-mode-footer">
+            <button type="button" class="secondary-button cm-nav-btn" id="cmPrevBtn" onclick="prevCookingStep()">
+                ← Bước trước
+            </button>
+            <button type="button" class="primary-button cm-nav-btn" id="cmNextBtn" onclick="nextCookingStep()">
+                Bước tiếp theo →
+            </button>
+            <button type="button" class="primary-button cm-done-btn" id="cmDoneBtn" onclick="finishCookingMode()" style="display:none;background:#059669;">
+                🎉 Hoàn thành món nấu!
+            </button>
+        </div>
+    </div>
+</div>
 
 <!-- =====================================================
      AI SELECTED INGREDIENT MODAL

@@ -290,151 +290,54 @@ async function apiRequest(
 ========================================================= */
 
 const catalog = [
+    // --- Meat & Seafood ---
+    { id: "beef", name: "Thịt bò", type: "Thịt", category: "meat", ingredients: ["Thịt bò"], kcal: 250, quantity: 300, unit: "g", expiryDays: 3, image: "/images/foods/beef.jpg" },
+    { id: "pork_belly", name: "Thịt ba chỉ heo", type: "Thịt", category: "meat", ingredients: ["Thịt heo"], kcal: 260, quantity: 400, unit: "g", expiryDays: 4, image: "/images/foods/beef.jpg" },
+    { id: "pork_lean", name: "Thịt nạc thăn", type: "Thịt", category: "meat", ingredients: ["Thịt heo"], kcal: 145, quantity: 400, unit: "g", expiryDays: 4, image: "/images/foods/beef.jpg" },
+    { id: "chicken", name: "Ức gà", type: "Thịt", category: "meat", ingredients: ["Ức gà"], kcal: 165, quantity: 450, unit: "g", expiryDays: 3, image: "/images/foods/chicken.jpg" },
+    { id: "chicken_thigh", name: "Đùi gà", type: "Thịt", category: "meat", ingredients: ["Gà"], kcal: 210, quantity: 500, unit: "g", expiryDays: 3, image: "/images/foods/chicken.jpg" },
+    { id: "salmon", name: "Cá hồi", type: "Hải sản", category: "meat", ingredients: ["Cá hồi"], kcal: 208, quantity: 300, unit: "g", expiryDays: 3, image: "/images/foods/salmon.jpg" },
+    { id: "shrimp", name: "Tôm tươi", type: "Hải sản", category: "meat", ingredients: ["Tôm"], kcal: 99, quantity: 300, unit: "g", expiryDays: 3, image: "/images/foods/shrimp.jpg" },
+    { id: "fish_mackerel", name: "Cá thu / Cá nục", type: "Hải sản", category: "meat", ingredients: ["Cá"], kcal: 180, quantity: 400, unit: "g", expiryDays: 3, image: "/images/foods/placeholder.jpg" },
+    { id: "squid", name: "Mực ống", type: "Hải sản", category: "meat", ingredients: ["Mực"], kcal: 92, quantity: 300, unit: "g", expiryDays: 2, image: "/images/foods/placeholder.jpg" },
 
-    {
-        id: "egg",
-        name: "Trứng gà",
-        type: "Nguyên liệu",
-        ingredients: ["Trứng"],
-        kcal: 70,
-        quantity: 6,
-        unit: "quả",
-        expiryDays: 10,
-        image: "/images/foods/egg.jpg"
-    },
+    // --- Veggies ---
+    { id: "water_spinach", name: "Rau muống", type: "Rau", category: "veggie", ingredients: ["Rau muống"], kcal: 25, quantity: 1, unit: "bó", expiryDays: 3, image: "/images/foods/placeholder.jpg" },
+    { id: "cabbage_sweet", name: "Rau cải ngọt", type: "Rau", category: "veggie", ingredients: ["Rau cải"], kcal: 22, quantity: 1, unit: "bó", expiryDays: 4, image: "/images/foods/placeholder.jpg" },
+    { id: "cabbage", name: "Bắp cải", type: "Rau", category: "veggie", ingredients: ["Bắp cải"], kcal: 25, quantity: 500, unit: "g", expiryDays: 7, image: "/images/foods/placeholder.jpg" },
+    { id: "tomato", name: "Cà chua", type: "Rau Củ", category: "veggie", ingredients: ["Cà chua"], kcal: 22, quantity: 4, unit: "quả", expiryDays: 6, image: "/images/foods/tomato.jpg" },
+    { id: "broccoli", name: "Bông cải xanh", type: "Rau Củ", category: "veggie", ingredients: ["Bông cải"], kcal: 34, quantity: 250, unit: "g", expiryDays: 5, image: "/images/foods/broccoli.jpg" },
+    { id: "carrot", name: "Cà rốt", type: "Củ", category: "veggie", ingredients: ["Cà rốt"], kcal: 41, quantity: 3, unit: "củ", expiryDays: 9, image: "/images/foods/carrot.jpg" },
+    { id: "cucumber", name: "Dưa leo", type: "Rau Củ", category: "veggie", ingredients: ["Dưa leo"], kcal: 15, quantity: 3, unit: "quả", expiryDays: 5, image: "/images/foods/placeholder.jpg" },
+    { id: "pumpkin", name: "Bí đỏ", type: "Củ", category: "veggie", ingredients: ["Bí đỏ"], kcal: 26, quantity: 400, unit: "g", expiryDays: 14, image: "/images/foods/placeholder.jpg" },
+    { id: "mushroom", name: "Nấm đùi gà / Nấm rơm", type: "Nấm", category: "veggie", ingredients: ["Nấm"], kcal: 35, quantity: 200, unit: "g", expiryDays: 4, image: "/images/foods/placeholder.jpg" },
 
-    {
-        id: "chicken",
-        name: "Ức gà",
-        type: "Nguyên liệu",
-        ingredients: ["Ức gà"],
-        kcal: 165,
-        quantity: 450,
-        unit: "g",
-        expiryDays: 3,
-        image: "/images/foods/chicken.jpg"
-    },
+    // --- Egg & Tofu ---
+    { id: "egg", name: "Trứng gà", type: "Trứng", category: "egg_tofu", ingredients: ["Trứng"], kcal: 70, quantity: 6, unit: "quả", expiryDays: 14, image: "/images/foods/egg.jpg" },
+    { id: "duck_egg", name: "Trứng vịt", type: "Trứng", category: "egg_tofu", ingredients: ["Trứng vịt"], kcal: 130, quantity: 6, unit: "quả", expiryDays: 14, image: "/images/foods/egg.jpg" },
+    { id: "tofu", name: "Đậu phụ (đậu hũ)", type: "Đậu", category: "egg_tofu", ingredients: ["Đậu hũ"], kcal: 76, quantity: 2, unit: "bìa", expiryDays: 3, image: "/images/foods/placeholder.jpg" },
+    { id: "sausage", name: "Giò lụa / Xúc xích", type: "Chế biến", category: "egg_tofu", ingredients: ["Giò"], kcal: 220, quantity: 250, unit: "g", expiryDays: 7, image: "/images/foods/placeholder.jpg" },
 
-    {
-        id: "tomato",
-        name: "Cà chua",
-        type: "Nguyên liệu",
-        ingredients: ["Cà chua"],
-        kcal: 22,
-        quantity: 4,
-        unit: "quả",
-        expiryDays: 6,
-        image: "/images/foods/tomato.jpg"
-    },
+    // --- Dairy ---
+    { id: "milk", name: "Sữa tươi", type: "Sữa", category: "dairy", ingredients: ["Sữa"], kcal: 120, quantity: 1, unit: "hộp", expiryDays: 7, image: "/images/foods/milk.jpg" },
+    { id: "yogurt", name: "Sữa chua", type: "Sữa", category: "dairy", ingredients: ["Sữa chua"], kcal: 95, quantity: 4, unit: "hộp", expiryDays: 10, image: "/images/foods/yogurt.jpg" },
+    { id: "cheese", name: "Phô mai", type: "Bơ sữa", category: "dairy", ingredients: ["Phô mai"], kcal: 402, quantity: 150, unit: "g", expiryDays: 30, image: "/images/foods/placeholder.jpg" },
+    { id: "butter", name: "Bơ thực vật / Bơ lạt", type: "Bơ sữa", category: "dairy", ingredients: ["Bơ"], kcal: 717, quantity: 100, unit: "g", expiryDays: 30, image: "/images/foods/placeholder.jpg" },
 
-    {
-        id: "broccoli",
-        name: "Bông cải xanh",
-        type: "Nguyên liệu",
-        ingredients: ["Bông cải"],
-        kcal: 34,
-        quantity: 250,
-        unit: "g",
-        expiryDays: 5,
-        image: "/images/foods/broccoli.jpg"
-    },
+    // --- Carb & Fruits ---
+    { id: "rice", name: "Cơm trắng", type: "Tinh bột", category: "carb", ingredients: ["Cơm"], kcal: 130, quantity: 500, unit: "g", expiryDays: 2, image: "/images/foods/rice.jpg" },
+    { id: "potato", name: "Khoai tây", type: "Củ", category: "carb", ingredients: ["Khoai tây"], kcal: 77, quantity: 4, unit: "củ", expiryDays: 14, image: "/images/foods/potato.jpg" },
+    { id: "sweet_potato", name: "Khoai lang", type: "Củ", category: "carb", ingredients: ["Khoai lang"], kcal: 86, quantity: 3, unit: "củ", expiryDays: 14, image: "/images/foods/placeholder.jpg" },
+    { id: "noodles", name: "Bún tươi / Phở", type: "Tinh bột", category: "carb", ingredients: ["Bún"], kcal: 110, quantity: 500, unit: "g", expiryDays: 2, image: "/images/foods/placeholder.jpg" },
+    { id: "bread", name: "Bánh mì", type: "Tinh bột", category: "carb", ingredients: ["Bánh mì"], kcal: 265, quantity: 2, unit: "ổ", expiryDays: 3, image: "/images/foods/placeholder.jpg" },
+    { id: "banana", name: "Chuối", type: "Trái Cây", category: "carb", ingredients: ["Chuối"], kcal: 89, quantity: 5, unit: "quả", expiryDays: 5, image: "/images/foods/banana.jpg" },
+    { id: "avocado", name: "Quả bơ", type: "Trái Cây", category: "carb", ingredients: ["Bơ"], kcal: 160, quantity: 2, unit: "quả", expiryDays: 4, image: "/images/foods/avocado.jpg" },
 
-    {
-        id: "milk",
-        name: "Sữa tươi",
-        type: "Nguyên liệu",
-        ingredients: ["Sữa"],
-        kcal: 120,
-        quantity: 1,
-        unit: "lít",
-        expiryDays: 2,
-        image: "/images/foods/milk.jpg"
-    },
-
-    {
-        id: "avocado",
-        name: "Quả bơ",
-        type: "Nguyên liệu",
-        ingredients: ["Bơ"],
-        kcal: 160,
-        quantity: 2,
-        unit: "quả",
-        expiryDays: 4,
-        image: "/images/foods/avocado.jpg"
-    },
-
-    {
-        id: "beef",
-        name: "Thịt bò",
-        type: "Nguyên liệu",
-        ingredients: ["Thịt bò"],
-        kcal: 250,
-        quantity: 300,
-        unit: "g",
-        expiryDays: 3,
-        image: "/images/foods/beef.jpg"
-    },
-
-    {
-        id: "potato",
-        name: "Khoai tây",
-        type: "Nguyên liệu",
-        ingredients: ["Khoai tây"],
-        kcal: 77,
-        quantity: 4,
-        unit: "củ",
-        expiryDays: 14,
-        image: "/images/foods/potato.jpg"
-    },
-
-    {
-        id: "carrot",
-        name: "Cà rốt",
-        type: "Nguyên liệu",
-        ingredients: ["Cà rốt"],
-        kcal: 41,
-        quantity: 3,
-        unit: "củ",
-        expiryDays: 9,
-        image: "/images/foods/carrot.jpg"
-    },
-
-    {
-        id: "yogurt",
-        name: "Sữa chua",
-        type: "Nguyên liệu",
-        ingredients: ["Sữa chua"],
-        kcal: 95,
-        quantity: 4,
-        unit: "hộp",
-        expiryDays: 6,
-        image: "/images/foods/yogurt.jpg"
-    },
-
-    {
-        id: "rice",
-        name: "Cơm trắng",
-        type: "Nguyên liệu",
-        ingredients: ["Cơm"],
-        kcal: 130,
-        quantity: 500,
-        unit: "g",
-        expiryDays: 2,
-        image: "/images/foods/rice.jpg"
-    },
-
-    {
-        id: "banana",
-        name: "Chuối",
-        type: "Nguyên liệu",
-        ingredients: ["Chuối"],
-        kcal: 89,
-        quantity: 5,
-        unit: "quả",
-        expiryDays: 5,
-        image: "/images/foods/banana.jpg"
-    }
-
+    // --- Spices ---
+    { id: "shallot", name: "Hành tím / Hành khô", type: "Gia vị", category: "spice", ingredients: ["Hành"], kcal: 40, quantity: 5, unit: "củ", expiryDays: 30, image: "/images/foods/placeholder.jpg" },
+    { id: "garlic", name: "Tỏi", type: "Gia vị", category: "spice", ingredients: ["Tỏi"], kcal: 149, quantity: 3, unit: "củ", expiryDays: 45, image: "/images/foods/placeholder.jpg" },
+    { id: "ginger", name: "Gừng tươi", type: "Gia vị", category: "spice", ingredients: ["Gừng"], kcal: 80, quantity: 2, unit: "củ", expiryDays: 30, image: "/images/foods/placeholder.jpg" },
+    { id: "chili", name: "Ớt cay", type: "Gia vị", category: "spice", ingredients: ["Ớt"], kcal: 40, quantity: 50, unit: "g", expiryDays: 15, image: "/images/foods/placeholder.jpg" }
 ];
 
 
@@ -5332,32 +5235,18 @@ function renderFridge() {
                             `Còn ${days} ngày`;
 
 
-                        if (
-                            days <= 3
-                        ) {
-
-                            statusClass =
-                                "soon";
+                        let expiryRingClass = "expiry-safe";
+                        if (days <= 0) {
+                            expiryRingClass = "expiry-danger";
+                            statusClass = "danger";
+                            statusText = "Cần dùng ngay";
+                        } else if (days <= 2) {
+                            expiryRingClass = "expiry-soon";
+                            statusClass = "danger";
+                        } else if (days <= 4) {
+                            expiryRingClass = "expiry-warning";
+                            statusClass = "soon";
                         }
-
-
-                        if (
-                            days <= 1
-                        ) {
-
-                            statusClass =
-                                "danger";
-                        }
-
-
-                        if (
-                            days <= 0
-                        ) {
-
-                            statusText =
-                                "Cần dùng ngay";
-                        }
-
 
                         const progress =
                             Math.max(
@@ -5375,6 +5264,7 @@ function renderFridge() {
                             class="
                                 fridge-food-card
                                 ${selected ? "selected" : ""}
+                                ${expiryRingClass}
                             ">
 
 
@@ -11031,16 +10921,7 @@ async function cookNow() {
         requireAuth('stats');
         return;
     }
-    try {
-        await apiRequest('/api/stats/cooked', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ recipeId: curRecipe.id })
-        });
-        showToast('Đã ghi nhận món đã nấu! 🍳', 'success');
-    } catch (e) {
-        showToast('Cần đăng nhập.', 'error');
-    }
+    openCookingMode();
 }
 
 
@@ -14900,7 +14781,461 @@ onbBindSeg("#onbDiet", null, "diet");
 })();
 
 /* =========================================================
-   5. SERVICE WORKER & PWA REGISTRATION
+   5. BUILT-IN FOOD CATALOG & UX ENHANCEMENTS
+========================================================= */
+
+// --- 5.1 FOOD CATALOG CONTROLLER ---
+let activeCatalogCategory = 'all';
+
+function openFoodCatalogModal() {
+    const modal = document.getElementById('foodCatalogModal');
+    if (!modal) return;
+    activeCatalogCategory = 'all';
+    const tabs = document.querySelectorAll('#catalogCategoryTabs .catalog-tab');
+    tabs.forEach(t => t.classList.toggle('active', t.getAttribute('data-cat') === 'all'));
+    const input = document.getElementById('catalogSearchInput');
+    if (input) input.value = '';
+    
+    renderFoodCatalog('all', '');
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+window.openFoodCatalogModal = openFoodCatalogModal;
+
+function renderFoodCatalog(category = 'all', query = '') {
+    const grid = document.getElementById('catalogGrid');
+    if (!grid) return;
+    const q = (query || '').toLowerCase().trim();
+
+    const filtered = catalog.filter(f => {
+        const matchesCat = (category === 'all') || (f.category === category) || (category === 'meat' && (f.type.includes('Thịt') || f.type.includes('Hải sản')));
+        const matchesQuery = !q || f.name.toLowerCase().includes(q) || (f.type && f.type.toLowerCase().includes(q));
+        return matchesCat && matchesQuery;
+    });
+
+    if (!filtered.length) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px 20px; color:var(--text-soft);">' +
+            '<p style="font-size: 16px; font-weight: 600; margin-bottom: 6px;">🔍 Không tìm thấy thực phẩm phù hợp</p>' +
+            '<span style="font-size: 13px;">Bạn có thể thử tìm từ khóa khác hoặc nhấn "Tự nhập tay nguyên liệu khác" bên dưới.</span></div>';
+        return;
+    }
+
+    grid.innerHTML = filtered.map(f => {
+        const img = f.image || '/images/foods/placeholder.jpg';
+        return `
+        <div class="catalog-card" data-catalog-id="${f.id}">
+            <div class="catalog-card-header">
+                <img src="${img}" class="catalog-card-img" alt="${escapeHtml(f.name)}" onerror="this.src='/images/placeholder.svg'">
+                <div class="catalog-card-info">
+                    <h4>${escapeHtml(f.name)}</h4>
+                    <span>${f.quantity} ${escapeHtml(f.unit || '')} · ${f.kcal || 0} kcal</span>
+                </div>
+            </div>
+            <div class="catalog-card-meta">
+                <span>⏱ Hạn dùng: ~${f.expiryDays || 7} ngày</span>
+                <span>🏷 ${escapeHtml(f.type || 'Thực phẩm')}</span>
+            </div>
+            <button type="button" class="catalog-add-btn" onclick="quickAddCatalogItemToFridge('${f.id}', this)">
+                + Thêm vào tủ
+            </button>
+        </div>`;
+    }).join('');
+}
+window.renderFoodCatalog = renderFoodCatalog;
+
+async function quickAddCatalogItemToFridge(foodId, btn) {
+    if (!isUserLoggedIn()) {
+        requireAuth('fridge');
+        return;
+    }
+    const food = catalog.find(f => f.id === foodId);
+    if (!food) return;
+
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Đang thêm...';
+    }
+
+    try {
+        await addFoodToFridge(foodId, btn);
+        showToast(`✓ Đã thêm "${food.name}" vào tủ lạnh!`, 'success');
+        if (btn) {
+            btn.textContent = '✓ Đã thêm';
+            setTimeout(() => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = '+ Thêm vào tủ';
+                }
+            }, 1200);
+        }
+    } catch (err) {
+        showToast('Lỗi khi thêm thực phẩm: ' + err.message, 'error');
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = '+ Thêm vào tủ';
+        }
+    }
+}
+window.quickAddCatalogItemToFridge = quickAddCatalogItemToFridge;
+
+function fillQuickFood(name, qty, unit, days, cat) {
+    const nameInput = document.getElementById('customFoodName');
+    const qtyInput = document.getElementById('customFoodQuantity');
+    const unitInput = document.getElementById('customFoodUnit');
+    const expiryInput = document.getElementById('customFoodExpiry');
+    if (nameInput) {
+        nameInput.value = name;
+        nameInput.dispatchEvent(new Event('input'));
+    }
+    if (qtyInput) qtyInput.value = qty;
+    if (unitInput) unitInput.value = unit;
+    if (expiryInput && typeof toDateInputValue === 'function' && typeof futureDate === 'function') {
+        expiryInput.value = toDateInputValue(futureDate(days || 7));
+    }
+    showToast(`Đã điền nhanh "${name}" (${qty} ${unit})!`, 'info');
+}
+window.fillQuickFood = fillQuickFood;
+
+// --- 5.2 COOKING MODE CONTROLLER ---
+let currentCookingRecipe = null;
+let currentCookingStepIndex = 0;
+let cookingTimerInterval = null;
+let cookingTimerSeconds = 0;
+let cookingSpeechRecognition = null;
+let isCookingSpeechListening = false;
+
+function openCookingMode() {
+    if (!curRecipe) {
+        showToast('Chưa chọn món ăn để bắt đầu nấu.', 'warning');
+        return;
+    }
+    currentCookingRecipe = curRecipe;
+    currentCookingStepIndex = 0;
+
+    const modal = document.getElementById('cookingModeModal');
+    if (!modal) return;
+
+    const titleEl = document.getElementById('cmRecipeTitle');
+    if (titleEl) titleEl.textContent = currentCookingRecipe.title || currentCookingRecipe.name || 'Món ngon';
+    renderCurrentCookingStep();
+    resetCookingTimer();
+
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+window.openCookingMode = openCookingMode;
+
+function renderCurrentCookingStep() {
+    if (!currentCookingRecipe) return;
+    const steps = String(currentCookingRecipe.instructions || '').split('\n').map(s => s.trim()).filter(Boolean);
+    const totalSteps = steps.length || 1;
+    const currentStepText = steps[currentCookingStepIndex] || (currentCookingRecipe.description || 'Nấu theo khẩu vị và thưởng thức.');
+
+    const indEl = document.getElementById('cmStepIndicator');
+    const contentEl = document.getElementById('cmStepContent');
+    if (indEl) indEl.textContent = `Bước ${currentCookingStepIndex + 1} / ${totalSteps}`;
+    if (contentEl) contentEl.textContent = currentStepText;
+
+    const prevBtn = document.getElementById('cmPrevBtn');
+    const nextBtn = document.getElementById('cmNextBtn');
+    const doneBtn = document.getElementById('cmDoneBtn');
+
+    if (prevBtn) prevBtn.style.display = currentCookingStepIndex > 0 ? 'inline-block' : 'none';
+    if (nextBtn) nextBtn.style.display = currentCookingStepIndex < totalSteps - 1 ? 'inline-block' : 'none';
+    if (doneBtn) doneBtn.style.display = currentCookingStepIndex >= totalSteps - 1 ? 'inline-block' : 'none';
+}
+
+function nextCookingStep() {
+    if (!currentCookingRecipe) return;
+    const steps = String(currentCookingRecipe.instructions || '').split('\n').map(s => s.trim()).filter(Boolean);
+    if (currentCookingStepIndex < steps.length - 1) {
+        currentCookingStepIndex++;
+        renderCurrentCookingStep();
+    }
+}
+window.nextCookingStep = nextCookingStep;
+
+function prevCookingStep() {
+    if (currentCookingStepIndex > 0) {
+        currentCookingStepIndex--;
+        renderCurrentCookingStep();
+    }
+}
+window.prevCookingStep = prevCookingStep;
+
+async function finishCookingMode() {
+    const modal = document.getElementById('cookingModeModal');
+    if (modal) modal.classList.remove('show');
+    document.body.style.overflow = '';
+    resetCookingTimer();
+    stopCookingSpeech();
+
+    if (isUserLoggedIn() && currentCookingRecipe && currentCookingRecipe.id) {
+        try {
+            await apiRequest('/api/stats/cooked', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ recipeId: currentCookingRecipe.id })
+            });
+        } catch (_) {}
+    }
+    showToast('🎉 Tuyệt vời! Bạn đã hoàn thành món ăn thành công! Chúc ngon miệng!', 'success');
+}
+window.finishCookingMode = finishCookingMode;
+
+function setCookingTimer(minutes) {
+    resetCookingTimer();
+    cookingTimerSeconds = minutes * 60;
+    updateTimerDisplay();
+}
+window.setCookingTimer = setCookingTimer;
+
+function updateTimerDisplay() {
+    const el = document.getElementById('cmTimerDisplay');
+    if (!el) return;
+    const m = Math.floor(cookingTimerSeconds / 60);
+    const s = cookingTimerSeconds % 60;
+    el.textContent = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+}
+
+function toggleCookingTimer() {
+    const btn = document.getElementById('cmTimerToggleBtn');
+    if (cookingTimerInterval) {
+        clearInterval(cookingTimerInterval);
+        cookingTimerInterval = null;
+        if (btn) btn.textContent = '▶ Tiếp tục hẹn giờ';
+    } else {
+        if (cookingTimerSeconds <= 0) cookingTimerSeconds = 5 * 60;
+        updateTimerDisplay();
+        if (btn) btn.textContent = '⏸ Tạm dừng';
+        cookingTimerInterval = setInterval(() => {
+            if (cookingTimerSeconds > 0) {
+                cookingTimerSeconds--;
+                updateTimerDisplay();
+            } else {
+                clearInterval(cookingTimerInterval);
+                cookingTimerInterval = null;
+                if (btn) btn.textContent = '▶ Bắt đầu hẹn giờ';
+                showToast('⏰ Hết giờ nấu rồi! Hãy kiểm tra món ăn nhé!', 'warning');
+            }
+        }, 1000);
+    }
+}
+window.toggleCookingTimer = toggleCookingTimer;
+
+function resetCookingTimer() {
+    if (cookingTimerInterval) {
+        clearInterval(cookingTimerInterval);
+        cookingTimerInterval = null;
+    }
+    cookingTimerSeconds = 0;
+    updateTimerDisplay();
+    const btn = document.getElementById('cmTimerToggleBtn');
+    if (btn) btn.textContent = '▶ Bắt đầu hẹn giờ';
+}
+window.resetCookingTimer = resetCookingTimer;
+
+function toggleSpeechRecognition() {
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRec) {
+        showToast('Trình duyệt của bạn chưa hỗ trợ nhận diện giọng nói Web Speech.', 'warning');
+        return;
+    }
+    if (isCookingSpeechListening) {
+        stopCookingSpeech();
+    } else {
+        startCookingSpeech(SpeechRec);
+    }
+}
+window.toggleSpeechRecognition = toggleSpeechRecognition;
+
+function startCookingSpeech(SpeechRec) {
+    try {
+        cookingSpeechRecognition = new SpeechRec();
+        cookingSpeechRecognition.lang = 'vi-VN';
+        cookingSpeechRecognition.continuous = true;
+        cookingSpeechRecognition.interimResults = false;
+
+        cookingSpeechRecognition.onstart = function () {
+            isCookingSpeechListening = true;
+            const btn = document.getElementById('cmVoiceBtn');
+            const label = document.getElementById('cmVoiceLabel');
+            if (btn) btn.classList.add('listening');
+            if (label) label.textContent = 'Đang lắng nghe khẩu lệnh...';
+        };
+
+        cookingSpeechRecognition.onresult = function (event) {
+            const last = event.results.length - 1;
+            const transcript = event.results[last][0].transcript.toLowerCase().trim();
+            console.log('[Voice Command]', transcript);
+            if (transcript.includes('tiếp') || transcript.includes('sau')) {
+                nextCookingStep();
+                showToast('🗣 Khẩu lệnh: "Bước tiếp theo"', 'info');
+            } else if (transcript.includes('trước') || transcript.includes('lùi')) {
+                prevCookingStep();
+                showToast('🗣 Khẩu lệnh: "Bước trước"', 'info');
+            } else if (transcript.includes('xong') || transcript.includes('hoàn thành')) {
+                finishCookingMode();
+            }
+        };
+
+        cookingSpeechRecognition.onerror = function () {
+            stopCookingSpeech();
+        };
+
+        cookingSpeechRecognition.onend = function () {
+            if (isCookingSpeechListening) {
+                try { cookingSpeechRecognition.start(); } catch (_) { stopCookingSpeech(); }
+            } else {
+                stopCookingSpeech();
+            }
+        };
+
+        cookingSpeechRecognition.start();
+    } catch (e) {
+        stopCookingSpeech();
+    }
+}
+
+function stopCookingSpeech() {
+    isCookingSpeechListening = false;
+    if (cookingSpeechRecognition) {
+        try { cookingSpeechRecognition.stop(); } catch (_) {}
+        cookingSpeechRecognition = null;
+    }
+    const btn = document.getElementById('cmVoiceBtn');
+    const label = document.getElementById('cmVoiceLabel');
+    if (btn) btn.classList.remove('listening');
+    if (label) label.textContent = 'Bật giọng nói rảnh tay';
+}
+
+// --- 5.3 ZERO-WASTE MEAL PLANNING ---
+async function planZeroWasteRescue() {
+    if (!isUserLoggedIn()) {
+        requireAuth('plan');
+        return;
+    }
+    let fridgeItems = [];
+    try {
+        fridgeItems = await apiRequest('/api/fridge') || [];
+    } catch (_) {}
+    if (!fridgeItems.length && typeof state !== 'undefined' && Array.isArray(state.fridge)) {
+        fridgeItems = state.fridge;
+    }
+    if (!fridgeItems.length) {
+        showToast('Tủ lạnh chưa có thực phẩm nào. Hãy thêm thực phẩm từ Kho trước nhé!', 'warning');
+        return;
+    }
+    const sorted = [...fridgeItems].sort((a, b) => daysLeft(a.expiresAt) - daysLeft(b.expiresAt));
+    const urgentItems = sorted.slice(0, 3).map(f => f.name || f.foodName).filter(Boolean);
+    const urgentNames = urgentItems.join(', ');
+
+    const allR = (typeof recipesCache !== 'undefined' && recipesCache.length ? recipesCache : (typeof recipes !== 'undefined' ? recipes : []));
+    let matchedRecipe = allR.find(r => {
+        const text = ((r.title || r.name || '') + ' ' + (r.ingredients ? (Array.isArray(r.ingredients) ? r.ingredients.map(i => i.name || i.ingredientName || i).join(' ') : r.ingredients) : '')).toLowerCase();
+        return urgentItems.some(ui => text.includes(ui.toLowerCase()));
+    });
+
+    if (!matchedRecipe && allR.length) {
+        matchedRecipe = allR[0];
+    }
+
+    if (matchedRecipe) {
+        showToast(`🌱 Ưu tiên vét tủ: Đã tìm thấy món "${matchedRecipe.title || matchedRecipe.name}" để dùng ${urgentNames}!`, 'success');
+        if (typeof openRecipeDetail === 'function') {
+            openRecipeDetail(matchedRecipe.id);
+        }
+    } else {
+        showToast(`Thực phẩm cần ưu tiên dùng: ${urgentNames}. Hãy dùng AI Cứu Tủ Lạnh để sáng tạo món mới!`, 'info');
+    }
+}
+window.planZeroWasteRescue = planZeroWasteRescue;
+
+// --- 5.4 SMART SHOPPING LIST SHARING ---
+async function shareShoppingList() {
+    const items = (typeof state !== 'undefined' && Array.isArray(state.shopping)) ? state.shopping : [];
+    if (!items.length) {
+        showToast('Danh sách mua sắm đang trống.', 'warning');
+        return;
+    }
+    const doneCount = items.filter(i => i.done).length;
+    let text = `🛒 DANH SÁCH ĐI CHỢ FOODX:\n`;
+    items.forEach(i => {
+        const check = i.done ? '[x]' : '[ ]';
+        const qty = i.quantity ? ` (${i.quantity})` : '';
+        text += `${check} ${i.name || ''}${qty}\n`;
+    });
+    text += `-----------------------\nTổng cộng: ${items.length} món (Đã mua: ${doneCount}/${items.length})\n🌿 Smart Kitchen & Meal Planner FoodX`;
+
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: 'Danh sách đi chợ FoodX',
+                text: text
+            });
+            showToast('Đã mở hộp thoại chia sẻ!', 'success');
+            return;
+        } catch (_) {}
+    }
+
+    try {
+        await navigator.clipboard.writeText(text);
+        showToast('📋 Đã sao chép danh sách đi chợ! Dán vào Zalo/Tin nhắn để gửi cho người thân.', 'success');
+    } catch (_) {
+        showToast('Không thể sao chép tự động.', 'error');
+    }
+}
+window.shareShoppingList = shareShoppingList;
+
+// --- 5.5 INIT EVENT LISTENERS FOR NEW UX FEATURES ---
+(function initUxEnhancements() {
+    // Food catalog buttons
+    const openCatalogBtn = document.getElementById('openFoodCatalogBtn');
+    if (openCatalogBtn) openCatalogBtn.addEventListener('click', openFoodCatalogModal);
+
+    const emptyCatalogBtn = document.getElementById('emptyFoodCatalogBtn');
+    if (emptyCatalogBtn) emptyCatalogBtn.addEventListener('click', openFoodCatalogModal);
+
+    const catalogGoCustomBtn = document.getElementById('catalogGoCustomBtn');
+    if (catalogGoCustomBtn) {
+        catalogGoCustomBtn.addEventListener('click', function () {
+            const catModal = document.getElementById('foodCatalogModal');
+            if (catModal) catModal.classList.remove('show');
+            if (typeof openCustomIngredientModal === 'function') openCustomIngredientModal();
+        });
+    }
+
+    // Catalog search
+    const catalogSearch = document.getElementById('catalogSearchInput');
+    if (catalogSearch) {
+        catalogSearch.addEventListener('input', debounce(function (e) {
+            renderFoodCatalog(activeCatalogCategory, e.target.value);
+        }, 150));
+    }
+
+    // Catalog tabs
+    const catTabs = document.querySelectorAll('#catalogCategoryTabs .catalog-tab');
+    catTabs.forEach(tab => {
+        tab.addEventListener('click', function () {
+            catTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            activeCatalogCategory = tab.getAttribute('data-cat') || 'all';
+            const q = catalogSearch ? catalogSearch.value : '';
+            renderFoodCatalog(activeCatalogCategory, q);
+        });
+    });
+
+    // Zero-waste plan button
+    const planZeroWasteBtn = document.getElementById('planZeroWasteBtn');
+    if (planZeroWasteBtn) planZeroWasteBtn.addEventListener('click', planZeroWasteRescue);
+
+    // Shopping share button
+    const shopShareBtn = document.getElementById('shopShareList');
+    if (shopShareBtn) shopShareBtn.addEventListener('click', shareShoppingList);
+})();
+
+/* =========================================================
+   6. SERVICE WORKER & PWA REGISTRATION
 ========================================================= */
 if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
     window.addEventListener('load', function () {

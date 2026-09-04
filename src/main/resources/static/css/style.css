@@ -7256,6 +7256,377 @@ body.dark .auth-brand-icon {
 }
 
 /* ==========================================================
+   FOOD CATALOG MODAL (KHO THỰC PHẨM CÓ SẴN)
+========================================================== */
+.food-catalog-modal {
+    max-width: 820px;
+    width: 95%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    border-radius: 20px;
+}
+.catalog-toolbar {
+    margin: 14px 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.catalog-search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.catalog-search-icon {
+    position: absolute;
+    left: 14px;
+    font-size: 14px;
+    pointer-events: none;
+    color: var(--text-soft);
+}
+.catalog-search-wrap input {
+    width: 100%;
+    padding: 11px 16px 11px 40px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13.5px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.catalog-search-wrap input:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+.catalog-tabs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+}
+.catalog-tabs::-webkit-scrollbar {
+    display: none;
+}
+.catalog-tab {
+    white-space: nowrap;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-soft);
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.catalog-tab:hover {
+    color: var(--text);
+    border-color: var(--green);
+}
+.catalog-tab.active {
+    background: var(--green);
+    color: #fff;
+    border-color: var(--green);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+.catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 14px;
+    overflow-y: auto;
+    max-height: 480px;
+    padding: 4px;
+    margin-bottom: 14px;
+}
+.catalog-card {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--card);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.catalog-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+    border-color: var(--green);
+}
+.catalog-card-header {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.catalog-card-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: var(--bg);
+    flex-shrink: 0;
+}
+.catalog-card-info h4 {
+    font-size: 13.5px;
+    margin: 0 0 3px;
+    font-weight: 700;
+    color: var(--text);
+}
+.catalog-card-info span {
+    font-size: 11.5px;
+    color: var(--text-soft);
+}
+.catalog-card-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11.5px;
+    color: var(--text-soft);
+    background: var(--bg);
+    padding: 6px 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+.catalog-add-btn {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 8px;
+    border: none;
+    background: var(--green);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+.catalog-add-btn:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+.catalog-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    font-size: 12.5px;
+    color: var(--text-soft);
+}
+
+/* QUICK FOOD PRESETS IN CUSTOM MODAL */
+.quick-food-presets {
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    background: var(--bg);
+    border-radius: 12px;
+    border: 1px dashed var(--border);
+}
+.quick-food-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-soft);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.quick-food-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.quick-chip {
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.quick-chip:hover {
+    border-color: var(--green);
+    background: rgba(16, 185, 129, 0.08);
+    color: #059669;
+    transform: translateY(-1px);
+}
+
+/* ==========================================================
+   COOKING MODE MODAL (NẤU ĂN RẢNH TAY)
+========================================================== */
+.cooking-mode-modal {
+    max-width: 680px;
+    width: 95%;
+    border-radius: 24px;
+    padding: 24px;
+    background: var(--card);
+}
+.cooking-mode-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+}
+.cm-tag {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--green);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.cm-meta h2 {
+    font-size: 22px;
+    margin: 4px 0 0;
+    color: var(--text);
+}
+.cm-step-indicator {
+    font-size: 13px;
+    font-weight: 700;
+    color: #059669;
+    background: rgba(16, 185, 129, 0.1);
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+}
+.cm-step-content {
+    font-size: 22px;
+    line-height: 1.6;
+    font-weight: 600;
+    color: var(--text);
+    min-height: 120px;
+    padding: 16px;
+    background: var(--bg);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    margin-bottom: 18px;
+}
+.cm-timer-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    text-align: center;
+    margin-bottom: 16px;
+}
+.cm-timer-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-soft);
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+.cm-timer-display {
+    font-size: 44px;
+    font-weight: 900;
+    font-family: monospace;
+    color: #ea580c;
+    margin: 4px 0 10px;
+}
+.cm-timer-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    align-items: center;
+}
+.timer-quick-btn {
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--text);
+    transition: .15s;
+}
+.timer-quick-btn:hover {
+    border-color: #ea580c;
+    color: #ea580c;
+}
+.timer-action-btn {
+    font-size: 12px !important;
+    padding: 6px 14px !important;
+    background: #ea580c !important;
+}
+.timer-reset-btn {
+    font-size: 12px !important;
+    padding: 6px 12px !important;
+}
+.cm-voice-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-bottom: 18px;
+}
+.cm-voice-btn {
+    border: 1px solid var(--green);
+    background: #fff;
+    color: #059669;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.cm-voice-btn.listening {
+    background: #ef4444;
+    color: #fff;
+    border-color: #ef4444;
+    animation: pulse 1.2s infinite;
+}
+.cm-voice-tip {
+    font-size: 11.5px;
+    color: var(--text-soft);
+}
+.cooking-mode-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+.cm-nav-btn {
+    flex: 1;
+    font-size: 15px !important;
+    padding: 12px 16px !important;
+    font-weight: 700 !important;
+}
+
+/* ==========================================================
+   VISUAL EXPIRY RINGS ON FRIDGE CARDS
+========================================================== */
+.fridge-food-card.expiry-safe {
+    border-left: 4px solid #10b981 !important;
+}
+.fridge-food-card.expiry-warning {
+    border-left: 4px solid #eab308 !important;
+}
+.fridge-food-card.expiry-soon {
+    border-left: 4px solid #f97316 !important;
+}
+.fridge-food-card.expiry-danger {
+    border-left: 4px solid #ef4444 !important;
+    background: rgba(239, 68, 68, 0.03);
+}
+
+/* ==========================================================
    PLAN
 ========================================================== */
 .plan-summary{ display:flex; gap:14px; margin-bottom:16px; }
