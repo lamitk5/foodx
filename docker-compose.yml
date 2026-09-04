@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: foodx-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: foodx
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - foodx-network
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: foodx-api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - user-service
+      - inventory-service
+      - recipe-service
+      - plan-shopping-service
+      - ai-service
+      - social-stats-service
+    networks:
+      - foodx-network
+
+  user-service:
+    build:
+      context: .
+      dockerfile: services/user-service/Dockerfile
+    container_name: foodx-user-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mysql
+    networks:
+      - foodx-network
+
+  inventory-service:
+    build:
+      context: .
+      dockerfile: services/inventory-service/Dockerfile
+    container_name: foodx-inventory-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - mysql
+    networks:
+      - foodx-network
+
+  recipe-service:
+    build:
+      context: .
+      dockerfile: services/recipe-service/Dockerfile
+    container_name: foodx-recipe-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      - mysql
+    networks:
+      - foodx-network
+
+  plan-shopping-service:
+    build:
+      context: .
+      dockerfile: services/plan-shopping-service/Dockerfile
+    container_name: foodx-plan-shopping-service
+    ports:
+      - "8084:8084"
+    depends_on:
+      - mysql
+    networks:
+      - foodx-network
+
+  ai-service:
+    build:
+      context: .
+      dockerfile: services/ai-service/Dockerfile
+    container_name: foodx-ai-service
+    ports:
+      - "8085:8085"
+    depends_on:
+      - mysql
+    networks:
+      - foodx-network
+
+  social-stats-service:
+    build:
+      context: .
+      dockerfile: services/social-stats-service/Dockerfile
+    container_name: foodx-social-stats-service
+    ports:
+      - "8086:8086"
+    depends_on:
+      - mysql
+    networks:
+      - foodx-network
+
+networks:
+  foodx-network:
+    driver: bridge
+
+volumes:
+  mysql_data:

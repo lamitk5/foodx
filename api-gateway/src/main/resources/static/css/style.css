@@ -1,0 +1,21 @@
+/* FoodX Modular Stylesheet Entry */
+
+@import './base/variables.css';
+@import './base/reset.css';
+@import './base/layout.css';
+@import './components/buttons.css';
+@import './components/cards.css';
+@import './components/modals.css';
+@import './components/toasts.css';
+@import './components/chat.css';
+@import './views/home.css';
+@import './views/fridge.css';
+@import './views/food-catalog.css';
+@import './views/recipes.css';
+@import './views/cooking-mode.css';
+@import './views/plan.css';
+@import './views/shopping.css';
+@import './views/social.css';
+@import './views/stats.css';
+@import './views/profile.css';
+@import './responsive.css';

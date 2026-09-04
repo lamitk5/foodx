@@ -1,0 +1,307 @@
+/* ==========================================================
+   SOCIAL - CHIA SE CONG THUC
+========================================================== */
+.social-composer{ padding:20px; margin-bottom:20px; display:flex; flex-direction:column; gap:10px; }
+.social-composer-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+.social-input{ width:100%; height:42px; padding:0 13px; border:1px solid var(--border); border-radius:11px; background:var(--bg); color:var(--text); font-family:inherit; transition:.2s; }
+.social-textarea{ width:100%; padding:11px 13px; border:1px solid var(--border); border-radius:11px; background:var(--bg); color:var(--text); font-family:inherit; resize:vertical; transition:.2s; }
+.social-input:focus, .social-textarea:focus{ border-color:#65c98b; box-shadow:0 0 0 4px rgba(21,148,71,.09); outline:none; }
+.social-submit{ align-self:flex-end; }
+.social-feed{ display:flex; flex-direction:column; gap:18px; }
+.social-empty{ padding:40px 20px; text-align:center; color:var(--text-soft); font-size:13px; }
+.post-card{ padding:18px; }
+.post-header{ display:flex; align-items:center; gap:11px; margin-bottom:12px; }
+.post-avatar{ width:42px; height:42px; border-radius:50%; object-fit:cover; background:var(--green-light); }
+.post-author{ flex:1; }
+.post-author strong{ display:block; font-size:13.5px; }
+.post-author span{ color:var(--text-soft); font-size:10.5px; }
+.post-title{ font-size:17px; margin-bottom:8px; }
+.post-image{ width:100%; max-height:340px; object-fit:cover; border-radius:14px; margin:8px 0; }
+.post-desc{ color:var(--text-soft); font-size:12.5px; line-height:1.6; margin:6px 0; }
+.post-ingredients{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:9px 0; font-size:11px; }
+.post-ingredients b{ margin-right:4px; }
+.chip{ background:var(--green-light); color:var(--green-dark); padding:4px 10px; border-radius:99px; font-size:10.5px; font-weight:700; }
+.post-steps{ margin:9px 0; font-size:12.5px; }
+.post-steps summary{ cursor:pointer; font-weight:700; color:var(--green-dark); }
+.post-steps pre{ white-space:pre-wrap; font-family:inherit; background:var(--bg); border-radius:11px; padding:12px; margin-top:8px; font-size:12.5px; line-height:1.65; color:var(--text); }
+.post-actions{ display:flex; gap:10px; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); }
+.like-btn, .comment-toggle{ border:1px solid var(--border); background:#fff; border-radius:99px; padding:7px 14px; font-size:12.5px; font-weight:700; cursor:pointer; color:var(--text); transition:.2s; }
+.like-btn:hover, .comment-toggle:hover{ border-color:var(--green); color:var(--green-dark); }
+.like-btn.active{ background:#ffeef1; border-color:#ffb3c1; color:#e5385b; }
+.post-comments{ margin-top:12px; padding-top:12px; border-top:1px dashed var(--border); }
+.comment-list{ display:flex; flex-direction:column; gap:8px; margin-bottom:10px; }
+.comment-item{ background:var(--bg); border-radius:10px; padding:8px 12px; font-size:12.5px; line-height:1.5; }
+.comment-item strong{ color:var(--green-dark); margin-right:5px; }
+.comment-empty{ color:var(--text-soft); font-size:11.5px; }
+.comment-input-row{ display:flex; gap:8px; }
+.comment-input{ flex:1; height:36px; padding:0 12px; border:1px solid var(--border); border-radius:10px; background:var(--bg); font-family:inherit; font-size:12.5px; }
+.post-delete{ margin-left:auto; }
+
+/* FOOTER */
+.app-footer{ margin-top:40px; padding:22px 0 30px; border-top:1px solid var(--border); text-align:center; color:var(--text-soft); font-size:12.5px; }
+
+@media (max-width:768px){
+  .chat-panel{ right:16px; bottom:96px; }
+  .chat-fab{ right:16px; bottom:16px; }
+  .fab-label{ display:none; }
+}
+
+
+
+/* ==========================================================
+   SOCIAL - CHIA SE CONG THUC (COMMUNITY HUB V2)
+========================================================== */
+.social-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.social-composer {
+  padding: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-radius: 18px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--green);
+}
+.social-composer[hidden] {
+  display: none !important;
+}
+
+.social-composer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 15px;
+}
+
+.social-form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.social-row {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 10px;
+}
+
+.social-composer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.social-input { width: 100%; height: 42px; padding: 0 13px; border: 1px solid var(--border); border-radius: 11px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 13px; transition: .2s; }
+.social-textarea { width: 100%; padding: 11px 13px; border: 1px solid var(--border); border-radius: 11px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 13px; resize: vertical; transition: .2s; }
+.social-input:focus, .social-textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15); outline: none; }
+
+.social-toolbar {
+  padding: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-radius: 18px;
+}
+
+.social-search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px 14px;
+}
+.social-search-box .icon { width: 18px; height: 18px; color: var(--text-soft); }
+.social-search-box input { border: none; background: none; outline: none; width: 100%; font-size: 13.5px; color: var(--text); font-family: inherit; }
+
+.social-pills {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.social-pill {
+  white-space: nowrap;
+  padding: 6px 14px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.social-pill:hover { background: var(--green-light); color: var(--green); border-color: var(--green); }
+.social-pill.active { background: var(--green); color: #ffffff; border-color: var(--green); }
+
+/* Post Cards Grid */
+.social-feed {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 18px;
+}
+
+.post-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.post-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.post-avatar-emoji { width: 38px; height: 38px; border-radius: 50%; background: var(--green-light); display: grid; place-items: center; font-size: 18px; }
+.post-author-info strong { display: block; font-size: 13.5px; font-weight: 700; color: var(--text); }
+.post-author-info span { font-size: 11px; color: var(--text-soft); }
+
+.post-badge-tag {
+  margin-left: auto;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: var(--green-light);
+  color: var(--green-dark);
+}
+
+.post-title {
+  font-size: 15.5px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.35;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.post-title:hover {
+  color: var(--green);
+}
+
+.post-meta-pills { display: flex; gap: 10px; font-size: 11.5px; color: var(--text-soft); margin-bottom: 8px; }
+
+.post-img-container {
+  position: relative;
+  height: 180px;
+  border-radius: 14px;
+  overflow: hidden;
+  margin: 6px 0 10px 0;
+  background: var(--green-light);
+  cursor: pointer;
+}
+.post-img-container img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.35s ease; }
+.post-card:hover .post-img-container img { transform: scale(1.04); }
+
+.post-img-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.post-img-overlay span {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.65);
+  padding: 6px 14px;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+}
+.post-img-container:hover .post-img-overlay {
+  opacity: 1;
+}
+
+.post-desc {
+  color: var(--text-soft);
+  font-size: 12.5px;
+  line-height: 1.5;
+  margin: 4px 0 8px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.post-view-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  margin: 2px 0 10px 0;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+.post-view-cta:hover {
+  color: var(--green-dark);
+  transform: translateX(3px);
+}
+
+.post-ingredients { display: none; }
+.post-steps { display: none; }
+
+.post-actions-bar {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.post-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text-soft);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.post-action-btn:hover { background: var(--green-light); color: var(--green); border-color: var(--green); }
+.post-action-btn.active { background: #ffeef1; border-color: #ffb3c1; color: #e5385b; }
+.post-action-btn.saved-active { background: var(--green-light); border-color: var(--green); color: var(--green-dark); }
+
+.post-comments { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+.comment-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.comment-item { background: var(--bg); border-radius: 8px; padding: 6px 10px; font-size: 12px; line-height: 1.45; }
+.comment-item strong { color: var(--green-dark); margin-right: 4px; }
+.comment-empty { color: var(--text-soft); font-size: 11.5px; }
+.comment-input-row { display: flex; gap: 6px; }
+.comment-input { flex: 1; height: 34px; padding: 0 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); font-family: inherit; font-size: 12px; }
+.post-delete { margin-left: auto; }
+

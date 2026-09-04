@@ -1,0 +1,1155 @@
+/* ==========================================================
+   HEALTH PROFILE
+========================================================== */
+
+.health-profile-modal {
+    width:
+            min(
+                    1050px,
+                    calc(100% - 30px)
+            );
+
+    padding: 0;
+
+    overflow: hidden;
+}
+
+
+.health-modal-header {
+    display: flex;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding:
+            25px 28px;
+
+    border-bottom:
+            1px solid var(--border);
+}
+
+
+.health-modal-header h2 {
+    margin-bottom: 4px;
+
+    font-size: 24px;
+}
+
+
+.health-modal-header p {
+    color: var(--text-soft);
+
+    font-size: 11px;
+}
+
+
+.health-editor-layout {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1.25fr)
+        minmax(330px, .75fr);
+
+    min-height: 600px;
+}
+
+
+/* FORM */
+
+.health-form-panel {
+    max-height: 75vh;
+
+    overflow-y: auto;
+
+    padding: 27px;
+}
+
+
+.profile-section-title {
+    display: flex;
+    align-items: center;
+
+    gap: 11px;
+
+    margin-bottom: 17px;
+}
+
+
+.profile-section-title.second {
+    margin-top: 28px;
+}
+
+
+.profile-section-title > span {
+    width: 35px;
+    height: 35px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 11px;
+
+    background: var(--green-light);
+
+    color: var(--green);
+
+    font-size: 10px;
+    font-weight: 800;
+}
+
+
+.profile-section-title h3 {
+    font-size: 14px;
+}
+
+
+.profile-section-title p {
+    margin-top: 3px;
+
+    color: var(--text-soft);
+
+    font-size: 9px;
+}
+
+
+.form-grid {
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 14px;
+}
+
+
+.form-grid label {
+    display: flex;
+    flex-direction: column;
+
+    gap: 7px;
+}
+
+
+.input-label {
+    color: var(--text);
+
+    font-size: 10px;
+    font-weight: 700;
+}
+
+
+.form-grid input,
+.form-grid select {
+    width: 100%;
+    min-height: 43px;
+
+    padding:
+            0 12px;
+
+    border:
+            1px solid var(--border);
+
+    border-radius: 9px;
+
+    background: var(--bg);
+
+    color: var(--text);
+
+    transition: .2s;
+}
+
+
+.form-grid input:focus,
+.form-grid select:focus {
+    border-color: var(--green);
+
+    box-shadow:
+            0 0 0 4px
+            rgba(21, 148, 71, .08);
+}
+
+
+.full-field {
+    grid-column:
+            1 / -1;
+}
+
+
+.input-with-unit {
+    position: relative;
+}
+
+
+.input-with-unit input {
+    padding-right:
+            55px;
+}
+
+
+.input-with-unit > span {
+    position: absolute;
+
+    right: 13px;
+    top: 50%;
+
+    transform:
+            translateY(-50%);
+
+    color: var(--text-soft);
+
+    font-size: 9px;
+}
+
+
+.health-form-footer {
+    display: flex;
+    justify-content: flex-end;
+
+    gap: 9px;
+
+    margin-top: 26px;
+
+    padding-top: 20px;
+
+    border-top:
+            1px solid var(--border);
+}
+
+
+/* HEALTH PREVIEW */
+
+.health-preview {
+    padding: 27px;
+
+    border-left:
+            1px solid var(--border);
+
+    background:
+            linear-gradient(
+                    160deg,
+                    #f0fbf4,
+                    #f8fcf9
+            );
+}
+
+
+body.dark
+.health-preview {
+    background:
+            linear-gradient(
+                    160deg,
+                    #14231a,
+                    #111914
+            );
+}
+
+
+.health-preview-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 25px;
+}
+
+
+.health-preview-label {
+    color: var(--green);
+
+    font-size: 8px;
+    font-weight: 800;
+
+    letter-spacing: 1px;
+}
+
+
+.health-gender-badge {
+    padding:
+            6px 10px;
+
+    border-radius: 20px;
+
+    background: var(--card);
+
+    color: var(--green);
+
+    font-size: 9px;
+    font-weight: 750;
+
+    box-shadow:
+            0 4px 13px
+            rgba(0, 0, 0, .05);
+}
+
+
+/* BMI */
+
+.bmi-display {
+    display: grid;
+
+    grid-template-columns:
+        110px 1fr;
+
+    align-items: center;
+
+    gap: 18px;
+
+    margin-bottom: 25px;
+}
+
+
+.bmi-circle {
+    width: 106px;
+    height: 106px;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    border:
+            6px solid
+            #bfe9cd;
+
+    border-radius: 50%;
+
+    background: var(--card);
+
+    box-shadow:
+            0 10px 30px
+            rgba(17, 100, 49, .10);
+}
+
+
+.bmi-circle span {
+    color: var(--text-soft);
+
+    font-size: 9px;
+}
+
+
+.bmi-circle strong {
+    margin-top: 3px;
+
+    color: var(--green-dark);
+
+    font-size: 27px;
+}
+
+
+body.dark
+.bmi-circle strong {
+    color: #77dd9b;
+}
+
+
+.health-small-label {
+    color: var(--text-soft);
+
+    font-size: 8px;
+}
+
+
+.bmi-display h3 {
+    margin:
+            4px 0
+            6px;
+
+    font-size: 17px;
+}
+
+
+.bmi-display p {
+    color: var(--text-soft);
+
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+
+/* BMI BAR */
+
+.bmi-scale {
+    margin-bottom: 23px;
+}
+
+
+.bmi-track {
+    position: relative;
+
+    height: 8px;
+
+    border-radius: 20px;
+
+    background:
+            linear-gradient(
+                    90deg,
+                    #58aaf5 0 17%,
+                    #39be70 17% 49%,
+                    #f4b544 49% 73%,
+                    #ef6262 73% 100%
+            );
+}
+
+
+.bmi-marker {
+    position: absolute;
+
+    top: 50%;
+    left: 0%;
+
+    width: 15px;
+    height: 15px;
+
+    border:
+            3px solid white;
+
+    border-radius: 50%;
+
+    background: #17251e;
+
+    transform:
+            translate(
+                    -50%,
+                    -50%
+            );
+
+    box-shadow:
+            0 2px 7px
+            rgba(0, 0, 0, .25);
+
+    transition:
+            left .4s ease;
+}
+
+
+.bmi-scale-labels {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    margin-top: 7px;
+
+    color: var(--text-soft);
+
+    font-size: 7px;
+
+    text-align: center;
+}
+
+
+/* RESULTS */
+
+.health-result-grid {
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 9px;
+
+    margin-bottom: 18px;
+}
+
+
+.health-result-card {
+    padding: 12px;
+
+    border:
+            1px solid var(--border);
+
+    border-radius: 12px;
+
+    background:
+            rgba(
+                    255,
+                    255,
+                    255,
+                    .72
+            );
+}
+
+
+body.dark
+.health-result-card {
+    background:
+            rgba(
+                    25,
+                    33,
+                    28,
+                    .8
+            );
+}
+
+
+.health-result-card span {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: var(--text-soft);
+
+    font-size: 8px;
+}
+
+
+.health-result-card strong {
+    font-size: 11px;
+}
+
+
+/* AI */
+
+.health-ai-box {
+    display: flex;
+
+    gap: 11px;
+
+    padding: 14px;
+
+    border-radius: 14px;
+
+    background: #ddf6e6;
+
+    color: #075c2d;
+}
+
+
+body.dark
+.health-ai-box {
+    background: #173923;
+
+    color: #93e8ae;
+}
+
+
+.health-ai-icon {
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 10px;
+
+    background:
+            rgba(
+                    255,
+                    255,
+                    255,
+                    .55
+            );
+}
+
+
+.health-ai-box strong {
+    display: block;
+
+    margin-bottom: 4px;
+
+    font-size: 10px;
+}
+
+
+.health-ai-box p {
+    font-size: 9px;
+    line-height: 1.55;
+}
+
+
+.health-disclaimer {
+    margin-top: 13px;
+
+    color: var(--text-soft);
+
+    font-size: 8px;
+    line-height: 1.5;
+}
+
+
+/* ==========================================================
+   FOOD X USER AVATAR
+========================================================== */
+
+.profile-avatar-editor {
+    display: flex;
+    align-items: center;
+
+    gap: 18px;
+
+    margin-bottom: 22px;
+    padding: 16px;
+
+    border: 1px solid var(--border);
+    border-radius: 16px;
+
+    background: var(--bg);
+}
+
+
+.profile-avatar-large {
+    width: 88px;
+    height: 88px;
+
+    flex-shrink: 0;
+
+    padding: 4px;
+
+    border-radius: 50%;
+
+    background:
+            linear-gradient(
+                    135deg,
+                    #1eb75c,
+                    #9be7b6
+            );
+
+    box-shadow:
+            0 8px 25px
+            rgba(20, 140, 67, .18);
+}
+
+
+.profile-avatar-large img {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+
+    border: 4px solid var(--card);
+    border-radius: 50%;
+
+    background: var(--card);
+}
+
+
+.profile-avatar-info {
+    min-width: 0;
+}
+
+
+.profile-avatar-info strong {
+    display: block;
+
+    margin-bottom: 5px;
+
+    font-size: 13px;
+}
+
+
+.profile-avatar-info p {
+    margin-bottom: 11px;
+
+    color: var(--text-soft);
+
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+
+.profile-avatar-actions {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 8px;
+}
+
+
+.avatar-remove-button {
+    min-height: 38px;
+
+    padding: 0 15px;
+
+    border: 1px solid #ffd4d4;
+    border-radius: 10px;
+
+    color: #d94242;
+    background: #fff3f3;
+
+    cursor: pointer;
+
+    font-weight: 700;
+
+    transition: .2s ease;
+}
+
+
+.avatar-remove-button:hover {
+    color: white;
+    background: #e64a4a;
+}
+
+
+body.dark .avatar-remove-button {
+    background: rgba(230, 74, 74, .12);
+}
+
+
+/* avatar góc phải */
+
+.avatar-button img,
+#headerAvatar {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+
+    border-radius: 50%;
+}
+
+
+/* responsive */
+
+@media (max-width: 600px) {
+
+    .profile-avatar-editor {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+/* ==========================================================
+   FIX AVATAR FOOD X
+========================================================== */
+
+/* Nút avatar góc phải */
+.avatar-button {
+    width: 46px !important;
+    height: 46px !important;
+
+    min-width: 46px !important;
+    min-height: 46px !important;
+
+    max-width: 46px !important;
+    max-height: 46px !important;
+
+    padding: 3px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    flex: 0 0 46px !important;
+
+    overflow: hidden !important;
+
+    border: 1px solid #dfe9e3;
+    border-radius: 50% !important;
+
+    background: #ffffff;
+
+    cursor: pointer;
+
+    box-shadow:
+            0 4px 14px
+            rgba(20, 70, 40, 0.08);
+
+    transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+}
+
+
+.avatar-button:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+            0 8px 20px
+            rgba(20, 120, 60, 0.15);
+}
+
+
+/* Ảnh avatar góc phải */
+.avatar-button img,
+#headerAvatar {
+    width: 38px !important;
+    height: 38px !important;
+
+    min-width: 38px !important;
+    min-height: 38px !important;
+
+    max-width: 38px !important;
+    max-height: 38px !important;
+
+    display: block !important;
+
+    object-fit: cover !important;
+
+    border-radius: 50% !important;
+
+    position: static !important;
+
+    inset: auto !important;
+
+    transform: none !important;
+
+    margin: 0 !important;
+}
+
+
+/* Avatar trong popup hồ sơ */
+.profile-avatar-large {
+    width: 88px !important;
+    height: 88px !important;
+
+    min-width: 88px !important;
+    min-height: 88px !important;
+
+    max-width: 88px !important;
+    max-height: 88px !important;
+
+    flex: 0 0 88px !important;
+
+    padding: 4px;
+
+    overflow: hidden;
+
+    border-radius: 50%;
+
+    background:
+            linear-gradient(
+                    135deg,
+                    #18a957,
+                    #a7ebbf
+            );
+}
+
+
+.profile-avatar-large img,
+#profileAvatarPreview {
+    width: 80px !important;
+    height: 80px !important;
+
+    min-width: 80px !important;
+    min-height: 80px !important;
+
+    max-width: 80px !important;
+    max-height: 80px !important;
+
+    display: block;
+
+    object-fit: cover !important;
+
+    border-radius: 50% !important;
+
+    position: static !important;
+
+    transform: none !important;
+}
+
+
+/* Dark mode */
+body.dark .avatar-button {
+    background: #18231d;
+    border-color: #304039;
+}
+
+
+/* Điện thoại */
+@media (max-width: 768px) {
+
+    .avatar-button {
+        width: 42px !important;
+        height: 42px !important;
+
+        min-width: 42px !important;
+        min-height: 42px !important;
+
+        max-width: 42px !important;
+        max-height: 42px !important;
+
+        flex-basis: 42px !important;
+    }
+
+
+    .avatar-button img,
+    #headerAvatar {
+        width: 34px !important;
+        height: 34px !important;
+
+        min-width: 34px !important;
+        min-height: 34px !important;
+
+        max-width: 34px !important;
+        max-height: 34px !important;
+    }
+}
+/* ==========================================================
+   FINAL FIX - HEADER AVATAR FOOD X
+   PHẢI ĐỂ CUỐI CÙNG FILE CSS
+========================================================== */
+
+.header-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+
+    position: relative !important;
+
+    width: auto !important;
+    height: auto !important;
+
+    overflow: visible !important;
+}
+
+
+/* BUTTON CHỨA AVATAR */
+#avatarButton,
+.header-avatar-button {
+    width: 46px !important;
+    height: 46px !important;
+
+    min-width: 46px !important;
+    min-height: 46px !important;
+
+    max-width: 46px !important;
+    max-height: 46px !important;
+
+    flex: 0 0 46px !important;
+
+    padding: 3px !important;
+    margin: 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    position: relative !important;
+
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+
+    inset: auto !important;
+
+    transform: none !important;
+
+    overflow: hidden !important;
+
+    border: 1px solid #dce8e1 !important;
+    border-radius: 50% !important;
+
+    background: #ffffff !important;
+
+    box-shadow:
+            0 4px 14px
+            rgba(22, 90, 50, 0.10) !important;
+
+    cursor: pointer !important;
+
+    z-index: 10 !important;
+}
+
+
+/* ẢNH AVATAR */
+#headerAvatar {
+    width: 38px !important;
+    height: 38px !important;
+
+    min-width: 38px !important;
+    min-height: 38px !important;
+
+    max-width: 38px !important;
+    max-height: 38px !important;
+
+    aspect-ratio: 1 / 1 !important;
+
+    display: block !important;
+
+    position: static !important;
+
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+
+    inset: auto !important;
+
+    transform: none !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    object-fit: cover !important;
+    object-position: center !important;
+
+    border: 0 !important;
+    border-radius: 50% !important;
+
+    box-shadow: none !important;
+
+    clip-path: none !important;
+
+    z-index: auto !important;
+}
+
+
+/* CHẶN CSS HERO TÁC ĐỘNG VÀO AVATAR */
+#avatarButton img#headerAvatar {
+    width: 38px !important;
+    height: 38px !important;
+
+    position: static !important;
+
+    transform: none !important;
+
+    clip-path: none !important;
+}
+
+
+/* AVATAR TRONG POPUP HỒ SƠ */
+.profile-avatar-large {
+    width: 88px !important;
+    height: 88px !important;
+
+    min-width: 88px !important;
+    min-height: 88px !important;
+
+    max-width: 88px !important;
+    max-height: 88px !important;
+
+    flex: 0 0 88px !important;
+
+    overflow: hidden !important;
+
+    border-radius: 50% !important;
+}
+
+
+#profileAvatarPreview {
+    width: 88px !important;
+    height: 88px !important;
+
+    min-width: 88px !important;
+    min-height: 88px !important;
+
+    max-width: 88px !important;
+    max-height: 88px !important;
+
+    display: block !important;
+
+    position: static !important;
+
+    transform: none !important;
+
+    object-fit: cover !important;
+    object-position: center !important;
+
+    border-radius: 50% !important;
+
+    clip-path: none !important;
+}
+
+
+/* DARK MODE */
+body.dark #avatarButton {
+    background: #18251e !important;
+    border-color: #304238 !important;
+}
+
+
+/* MOBILE */
+@media (max-width: 768px) {
+
+    #avatarButton,
+    .header-avatar-button {
+        width: 42px !important;
+        height: 42px !important;
+
+        min-width: 42px !important;
+        min-height: 42px !important;
+
+        max-width: 42px !important;
+        max-height: 42px !important;
+
+        flex-basis: 42px !important;
+    }
+
+
+    #headerAvatar {
+        width: 34px !important;
+        height: 34px !important;
+
+        min-width: 34px !important;
+        min-height: 34px !important;
+
+        max-width: 34px !important;
+        max-height: 34px !important;
+    }
+}
+/* Avatar trong menu hồ sơ */
+#profileMenuAvatar,
+.profile-panel-avatar {
+    width: 68px !important;
+    height: 68px !important;
+
+    min-width: 68px !important;
+    min-height: 68px !important;
+
+    max-width: 68px !important;
+    max-height: 68px !important;
+
+    flex: 0 0 68px !important;
+
+    object-fit: cover !important;
+    object-position: center !important;
+
+    border-radius: 50% !important;
+
+    border: 3px solid #ffffff;
+
+    background: #e8f7ee;
+
+    box-shadow:
+            0 4px 14px
+            rgba(20, 90, 50, 0.12);
+}
+/* ==========================================================
+   AVATAR ĐỒNG BỘ FOOD X
+========================================================== */
+
+#profileMenuAvatar {
+    width: 68px !important;
+    height: 68px !important;
+
+    min-width: 68px !important;
+    min-height: 68px !important;
+
+    max-width: 68px !important;
+    max-height: 68px !important;
+
+    flex: 0 0 68px !important;
+
+    display: block !important;
+
+    object-fit: cover !important;
+    object-position: center !important;
+
+    border-radius: 50% !important;
+
+    position: static !important;
+    transform: none !important;
+
+    margin: 0 !important;
+
+    background: #e8f7ee;
+
+    border: 3px solid white;
+
+    box-shadow:
+            0 4px 15px
+            rgba(0, 80, 40, 0.12);
+}

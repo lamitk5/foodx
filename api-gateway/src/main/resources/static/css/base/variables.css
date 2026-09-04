@@ -1,0 +1,105 @@
+/* ==========================================================
+   FOOD X
+   MAIN STYLE
+========================================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Brand — xanh lá modern, tươi sáng hơn */
+    --green: #059669;
+    --green-hover: #047857;
+    --green-dark: #065f46;
+    --green-soft: #34d399;
+    --green-light: #ecfdf5;
+    --green-lighter: #f0fdf8;
+
+    /* Accent — nhấn điểm xung quanh */
+    --orange: #F59D37;
+    --orange-light: #FFF7ED;
+    --purple: #7C3AED;
+    --purple-light: #F5F3FF;
+    --pink: #E11D48;
+    --pink-light: #FFF1F2;
+
+    /* Semantic */
+    --danger: #DC2626;
+    --danger-light: #FEF2F2;
+    --warning: #D97706;
+    --warning-light: #FFFBEB;
+    --warning-border: #FDE68A;
+    --info: #2563EB;
+    --info-light: #EFF6FF;
+    --success: #059669;
+    --success-light: #ECFDF5;
+
+    /* Surface — sạch, hơi warm-green tint */
+    --bg: #F7FAF8;
+    --card: #FFFFFF;
+    --text: #14532D;
+    --text-soft: #6B7C72;
+    --text-muted: #9CA8A0;
+    --border: #E2ECE6;
+    --border-light: #F1F7F3;
+
+    /* Shadow — đa tầng, có depth */
+    --shadow-sm: 0 1px 3px rgba(0, 30, 15, .04), 0 1px 2px rgba(0, 30, 15, .06);
+    --shadow: 0 4px 12px rgba(0, 30, 15, .06), 0 2px 4px rgba(0, 30, 15, .04);
+    --shadow-md: 0 10px 30px rgba(0, 30, 15, .08), 0 4px 10px rgba(0, 30, 15, .04);
+    --shadow-hover: 0 14px 40px rgba(0, 30, 15, .12), 0 6px 14px rgba(0, 30, 15, .06);
+    --shadow-glow: 0 0 0 4px rgba(5, 150, 105, .12);
+    --shadow-green: 0 8px 24px rgba(5, 150, 105, .25);
+
+    /* Radius hierarchy */
+    --radius-xl: 24px;
+    --radius-lg: 18px;
+    --radius-md: 14px;
+    --radius-sm: 10px;
+    --radius-xs: 6px;
+    --radius-pill: 999px;
+
+    /* Layout */
+    --sidebar-width: 260px;
+    --bottom-nav-h: 64px;
+
+    /* Typography */
+    --font: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+    /* Gradient brand */
+    --grad-green: linear-gradient(135deg, #059669, #34d399);
+    --grad-green-dark: linear-gradient(135deg, #065f46, #059669);
+    --grad-green-soft: linear-gradient(135deg, #ecfdf5, #d1fae5);
+}
+
+
+/* DARK */
+
+body.dark {
+    --bg: #0C1A14;
+    --card: #162720;
+    --text: #ECFDF5;
+    --text-soft: #A3C4AD;
+    --text-muted: #7A9B8A;
+    --border: #2D4A3A;
+    --border-light: #1F3529;
+    --green: #34d399;
+    --green-hover: #6ee7b7;
+    --green-dark: #6ee7b7;
+    --green-soft: #34d399;
+    --green-light: #0D3321;
+    --green-lighter: #0A2619;
+    --danger-light: #2A1215;
+    --warning-light: #2A1F0D;
+    --info-light: #0F1D33;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, .3), 0 1px 2px rgba(0, 0, 0, .4);
+    --shadow: 0 4px 12px rgba(0, 0, 0, .3), 0 2px 4px rgba(0, 0, 0, .2);
+    --shadow-md: 0 10px 30px rgba(0, 0, 0, .4), 0 4px 10px rgba(0, 0, 0, .2);
+    --shadow-hover: 0 14px 40px rgba(0, 0, 0, .5), 0 6px 14px rgba(0, 0, 0, .3);
+    --shadow-green: 0 8px 24px rgba(52, 211, 153, .15);
+}
+
+

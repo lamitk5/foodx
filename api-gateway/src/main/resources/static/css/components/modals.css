@@ -1,0 +1,1499 @@
+/* ==========================================================
+   MODAL
+========================================================== */
+
+.modal-overlay {
+    position: fixed;
+
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+            rgba(
+                    6,
+                    16,
+                    10,
+                    .58
+            );
+
+    backdrop-filter:
+            blur(7px);
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition: .25s;
+
+    z-index: 1000;
+}
+
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+
+.modal {
+    width:
+            min(
+                    680px,
+                    calc(100% - 20px)
+            );
+
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    padding: 24px;
+
+    border-radius: 22px;
+
+    background: var(--card);
+
+    box-shadow:
+            0 28px 80px
+            rgba(0, 0, 0, .28);
+
+    transform:
+            translateY(20px)
+            scale(.96);
+
+    transition: .28s;
+}
+
+
+.modal-overlay.show
+.modal {
+    transform:
+            translateY(0)
+            scale(1);
+}
+
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-bottom: 20px;
+}
+
+
+.modal-close {
+    width: 36px;
+    height: 36px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 50%;
+
+    background: var(--bg);
+
+    color: var(--text);
+
+    font-size: 20px;
+
+    transition: .2s;
+}
+
+
+.modal-close:hover {
+    color: var(--danger);
+
+    transform: rotate(8deg);
+}
+
+
+/* ==========================================================
+   INGREDIENT DETAIL
+========================================================== */
+
+.ingredient-detail-modal {
+    width:
+            min(
+                    850px,
+                    calc(100% - 30px)
+            );
+}
+
+.ingredient-detail-layout {
+    display: grid;
+
+    grid-template-columns:
+        minmax(260px, .8fr)
+        minmax(0, 1.2fr);
+
+    gap: 24px;
+}
+
+.ingredient-detail-image {
+    width: 100%;
+    height: 300px;
+
+    object-fit: cover;
+
+    border-radius: 18px;
+
+    background: var(--green-light);
+}
+
+.ingredient-expiry-box {
+    margin-top: 12px;
+
+    padding: 14px;
+
+    border: 1px solid var(--border);
+    border-radius: 14px;
+
+    background: var(--bg);
+}
+
+.ingredient-expiry-box label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: var(--text-soft);
+
+    font-size: 10px;
+}
+
+.ingredient-expiry-row {
+    display: flex;
+    gap: 8px;
+}
+
+.ingredient-expiry-row input {
+    flex: 1;
+
+    height: 39px;
+
+    padding: 0 10px;
+
+    border: 1px solid var(--border);
+    border-radius: 9px;
+
+    background: var(--card);
+    color: var(--text);
+}
+
+.ingredient-expiry-row button {
+    min-width: 90px;
+}
+
+.ingredient-detail-header {
+    margin-bottom: 18px;
+}
+
+.ingredient-detail-header h2 {
+    margin-bottom: 5px;
+
+    font-size: 25px;
+}
+
+.ingredient-detail-header p {
+    color: var(--text-soft);
+
+    font-size: 11px;
+}
+
+.ingredient-tags {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 7px;
+
+    margin-top: 11px;
+}
+
+.ingredient-tags span {
+    padding: 6px 9px;
+
+    border-radius: 8px;
+
+    background: var(--green-light);
+    color: var(--green-dark);
+
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.ingredient-nutrition-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 9px;
+
+    margin-bottom: 18px;
+}
+
+.nutrition-card {
+    padding: 13px;
+
+    border: 1px solid var(--border);
+    border-radius: 13px;
+
+    background: var(--bg);
+}
+
+.nutrition-card span {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: var(--text-soft);
+
+    font-size: 8px;
+}
+
+.nutrition-card strong {
+    font-size: 14px;
+}
+
+.ingredient-info-section {
+    margin-top: 17px;
+
+    padding-top: 15px;
+
+    border-top: 1px solid var(--border);
+}
+
+.ingredient-info-section h3 {
+    margin-bottom: 8px;
+
+    font-size: 13px;
+}
+
+.ingredient-info-section p {
+    color: var(--text-soft);
+
+    font-size: 11px;
+    line-height: 1.65;
+}
+
+.ingredient-goal-box {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    margin-top: 15px;
+
+    padding: 13px;
+
+    border-radius: 13px;
+
+    background: var(--green-light);
+
+    color: var(--green-dark);
+}
+
+.ingredient-goal-box strong {
+    font-size: 11px;
+}
+
+.ingredient-goal-box span {
+    font-size: 10px;
+}
+
+
+/* ==========================================================
+   CUSTOM FOOD
+========================================================== */
+
+.custom-ingredient-modal {
+    width:
+            min(
+                    780px,
+                    calc(100% - 30px)
+            );
+}
+
+.custom-ingredient-modal .modal-header p {
+    margin-top: 5px;
+
+    color: var(--text-soft);
+
+    font-size: 10px;
+}
+
+.custom-food-grid {
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 14px;
+}
+
+.custom-food-grid label {
+    display: flex;
+    flex-direction: column;
+
+    gap: 7px;
+}
+
+.custom-food-grid label > span {
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.custom-food-grid input,
+.custom-food-grid select,
+.custom-food-grid textarea {
+    width: 100%;
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    background: var(--bg);
+
+    color: var(--text);
+
+    outline: none;
+}
+
+.custom-food-grid input,
+.custom-food-grid select {
+    height: 43px;
+
+    padding: 0 12px;
+}
+
+.custom-food-grid textarea {
+    padding: 11px 12px;
+
+    resize: vertical;
+}
+
+.custom-food-grid input:focus,
+.custom-food-grid select:focus,
+.custom-food-grid textarea:focus {
+    border-color: var(--green);
+
+    box-shadow:
+            0 0 0 4px rgba(22,155,80,.08);
+}
+
+.custom-full-field {
+    grid-column:
+            1 / -1;
+}
+
+
+/* =========================================================
+   FOOD X AUTH + SETTINGS ACCOUNT
+========================================================= */
+
+.settings-section-label {
+    margin: 14px 0 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #728078;
+}
+
+.settings-divider {
+    width: 100%;
+    height: 1px;
+    margin: 18px 0 14px;
+    background: #e8eee9;
+}
+
+
+/* =========================================================
+   SETTINGS ACCOUNT
+========================================================= */
+
+.settings-auth-box {
+    width: 100%;
+    margin-top: 5px;
+}
+
+.settings-auth-box[hidden] {
+    display: none !important;
+}
+
+.settings-auth-heading {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+
+    padding: 12px;
+
+    border: 1px solid #e5eee8;
+    border-radius: 15px;
+
+    background: #f8fcf9;
+}
+
+.settings-auth-icon {
+    flex: 0 0 auto;
+
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 13px;
+
+    background: #e7f7ed;
+
+    font-size: 19px;
+}
+
+.settings-auth-heading > div:last-child {
+    min-width: 0;
+}
+
+.settings-auth-heading strong {
+    display: block;
+
+    margin-bottom: 3px;
+
+    font-size: 14px;
+    color: #163b27;
+}
+
+.settings-auth-heading span {
+    display: block;
+
+    font-size: 11px;
+    line-height: 1.45;
+
+    color: #758179;
+}
+
+
+.settings-login-button,
+.settings-register-button,
+.settings-logout-button {
+    width: 100%;
+
+    min-height: 42px;
+
+    border-radius: 12px;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+            transform .18s ease,
+            box-shadow .18s ease,
+            background .18s ease;
+}
+
+.settings-login-button {
+    margin-top: 12px;
+
+    border: none;
+
+    color: #ffffff;
+
+    background:
+            linear-gradient(
+                    135deg,
+                    #0ca451,
+                    #17b866
+            );
+
+    box-shadow:
+            0 8px 18px rgba(15, 165, 82, .17);
+}
+
+.settings-login-button:hover {
+    transform: translateY(-1px);
+
+    box-shadow:
+            0 10px 22px rgba(15, 165, 82, .23);
+}
+
+.settings-register-button {
+    margin-top: 8px;
+
+    border: 1px solid #dce9e0;
+
+    color: #087b3b;
+
+    background: #ffffff;
+}
+
+.settings-register-button:hover {
+    background: #f1faf4;
+}
+
+
+/* =========================================================
+   LOGGED USER
+========================================================= */
+
+.settings-user-card {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+
+    padding: 11px;
+
+    border: 1px solid #e4eee7;
+    border-radius: 15px;
+
+    background: #f8fcf9;
+}
+
+.settings-user-avatar {
+    flex: 0 0 auto;
+
+    width: 46px;
+    height: 46px;
+
+    border-radius: 50%;
+
+    object-fit: cover;
+
+    border: 3px solid #ffffff;
+
+    box-shadow:
+            0 5px 14px rgba(0, 0, 0, .08);
+}
+
+.settings-user-info {
+    min-width: 0;
+}
+
+.settings-user-info strong {
+    display: block;
+
+    max-width: 185px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: #153a26;
+    font-size: 14px;
+}
+
+.settings-user-info span {
+    display: block;
+
+    max-width: 185px;
+
+    margin-top: 3px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: #7a867e;
+    font-size: 11px;
+}
+
+.settings-login-status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    margin: 11px 2px;
+
+    color: #27814b;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #18b75e;
+
+    box-shadow:
+            0 0 0 4px rgba(24, 183, 94, .12);
+}
+
+.settings-logout-button {
+    border: 1px solid #f1dede;
+
+    color: #b74747;
+
+    background: #fffafa;
+}
+
+.settings-logout-button:hover {
+    background: #fff1f1;
+}
+
+
+/* =========================================================
+   AUTH MODAL
+========================================================= */
+
+.auth-modal {
+    width: min(440px, calc(100vw - 32px));
+
+    padding: 25px 27px 27px;
+
+    border-radius: 25px;
+}
+
+.auth-modal-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.auth-brand-icon {
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 15px;
+
+    background:
+            linear-gradient(
+                    135deg,
+                    #e9f9ef,
+                    #f4fcf7
+            );
+
+    font-size: 24px;
+}
+
+.auth-close {
+    position: static !important;
+
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+}
+
+.auth-modal-heading {
+    margin-top: 22px;
+}
+
+.auth-modal-heading h2 {
+    margin: 7px 0 7px;
+
+    color: #122f20;
+
+    font-size: 28px;
+    line-height: 1.15;
+}
+
+.auth-modal-heading p {
+    margin: 0;
+
+    color: #738078;
+
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+
+/* =========================================================
+   AUTH FORM
+========================================================= */
+
+.auth-form {
+    margin-top: 23px;
+}
+
+.auth-field {
+    margin-bottom: 15px;
+}
+
+.auth-field label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #30493a;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.auth-input-wrap {
+    min-height: 50px;
+
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    padding: 0 14px;
+
+    border: 1px solid #dfe9e2;
+    border-radius: 14px;
+
+    background: #f9fcfa;
+
+    transition:
+            border-color .18s ease,
+            box-shadow .18s ease,
+            background .18s ease;
+}
+
+.auth-input-wrap:focus-within {
+    border-color: #21ad61;
+
+    background: #ffffff;
+
+    box-shadow:
+            0 0 0 4px rgba(33, 173, 97, .09);
+}
+
+.auth-input-wrap > span {
+    flex: 0 0 auto;
+
+    font-size: 15px;
+}
+
+.auth-input-wrap input {
+    flex: 1;
+
+    min-width: 0;
+
+    height: 47px;
+
+    border: none;
+    outline: none;
+
+    color: #172c20;
+
+    background: transparent;
+
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.auth-input-wrap input::placeholder {
+    color: #9ba59f;
+}
+
+
+/* =========================================================
+   AUTH SUBMIT
+========================================================= */
+
+.auth-submit-button {
+    width: 100%;
+    min-height: 51px;
+
+    margin-top: 5px;
+
+    border: none;
+    border-radius: 14px;
+
+    color: #ffffff;
+
+    background:
+            linear-gradient(
+                    135deg,
+                    #0fa851,
+                    #19bb67
+            );
+
+    box-shadow:
+            0 10px 25px rgba(13, 166, 80, .20);
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+            transform .18s ease,
+            box-shadow .18s ease;
+}
+
+.auth-submit-button:hover {
+    transform: translateY(-1px);
+
+    box-shadow:
+            0 13px 28px rgba(13, 166, 80, .26);
+}
+
+.auth-submit-button:disabled {
+    opacity: .65;
+    cursor: wait;
+    transform: none;
+}
+
+
+/* =========================================================
+   SWITCH LOGIN / REGISTER
+========================================================= */
+
+.auth-switch {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+
+    margin-top: 20px;
+
+    font-size: 12px;
+    color: #77847c;
+}
+
+.auth-switch button {
+    padding: 0;
+
+    border: none;
+
+    color: #0a9c4d;
+
+    background: transparent;
+
+    font-family: inherit;
+    font-weight: 800;
+
+    cursor: pointer;
+}
+
+.auth-switch button:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   DARK MODE AUTH
+========================================================= */
+
+body.dark .settings-divider {
+    background: rgba(255, 255, 255, .09);
+}
+
+body.dark .settings-section-label {
+    color: #9eaaa3;
+}
+
+body.dark .settings-auth-heading,
+body.dark .settings-user-card {
+    border-color: rgba(255, 255, 255, .09);
+
+    background: rgba(255, 255, 255, .045);
+}
+
+body.dark .settings-auth-heading strong,
+body.dark .settings-user-info strong {
+    color: #eef8f1;
+}
+
+body.dark .settings-auth-heading span,
+body.dark .settings-user-info span {
+    color: #9fa9a3;
+}
+
+body.dark .settings-register-button {
+    border-color: rgba(255, 255, 255, .10);
+
+    color: #85e6ad;
+
+    background: rgba(255, 255, 255, .04);
+}
+
+body.dark .settings-logout-button {
+    border-color: rgba(255, 125, 125, .17);
+
+    color: #ffaaaa;
+
+    background: rgba(255, 90, 90, .06);
+}
+
+body.dark .auth-modal-heading h2 {
+    color: #f2faf5;
+}
+
+body.dark .auth-modal-heading p {
+    color: #a0aca5;
+}
+
+body.dark .auth-field label {
+    color: #c9d6ce;
+}
+
+body.dark .auth-input-wrap {
+    border-color: rgba(255, 255, 255, .09);
+
+    background: rgba(255, 255, 255, .04);
+}
+
+body.dark .auth-input-wrap:focus-within {
+    border-color: #27b968;
+
+    background: rgba(255, 255, 255, .065);
+}
+
+body.dark .auth-input-wrap input {
+    color: #f3f8f5;
+}
+
+body.dark .auth-brand-icon {
+    background: rgba(32, 176, 93, .12);
+}
+/* ============================================================
+   ONBOARDING WIZARD
+   ============================================================ */
+
+.onboarding-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  background: var(--bg);
+  overflow-y: auto;
+}
+
+.onboarding-overlay.show {
+  display: block;
+  animation: fadeIn .25s ease;
+}
+
+.onboarding-screen {
+  display: none;
+  min-height: 100vh;
+}
+
+.onboarding-screen.active {
+  display: block;
+  animation: fadeUp .25s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+.onboarding-wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 36px 24px 70px;
+}
+
+/* Stepper */
+.onboarding-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 26px;
+}
+
+.onb-step {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.onb-step i {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-style: normal;
+  background: var(--border);
+  color: var(--text-muted);
+  font-weight: 800;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .2s ease;
+}
+
+.onb-step.active {
+  color: var(--green);
+}
+
+.onb-step.active i {
+  background: var(--green);
+  color: #fff;
+  box-shadow: var(--shadow-green);
+}
+
+.onb-step.done i {
+  background: var(--green-light);
+  color: var(--green);
+}
+
+.onb-step-line {
+  flex: 1;
+  max-width: 120px;
+  height: 2px;
+  background: var(--border);
+  border-radius: 2px;
+}
+
+/* Card */
+.onboarding-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 30px;
+  box-shadow: var(--shadow);
+}
+
+.onb-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.onb-title {
+  font-size: clamp(22px, 2.6vw, 28px);
+  font-weight: 800;
+  color: var(--text);
+}
+
+.onb-sub {
+  color: var(--text-soft);
+  font-size: 14.5px;
+  line-height: 1.55;
+  margin-top: 6px;
+}
+
+.onb-progress {
+  margin: 18px 0 6px;
+}
+
+.onb-badge {
+  background: var(--green-light);
+  color: var(--green);
+  font-weight: 800;
+  font-size: 13px;
+  border-radius: var(--radius-pill);
+  padding: 7px 14px;
+  white-space: nowrap;
+}
+
+/* Bar */
+.bar {
+  height: 6px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.bar i {
+  display: block;
+  height: 100%;
+  background: var(--grad-green);
+  border-radius: 99px;
+  transition: width .4s ease;
+}
+
+/* Grid */
+.onb-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-top: 8px;
+}
+
+.onb-q-block {
+  background: var(--green-lighter);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-top: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.onb-grid .onb-q-block {
+  margin-top: 18px;
+}
+
+.onb-q-block h4 {
+  font-size: 15px;
+  margin-bottom: 14px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.onb-q-block h4 em {
+  font-style: normal;
+  color: var(--text-soft);
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.onb-q-block output {
+  color: var(--green);
+  font-weight: 800;
+}
+
+/* Chips */
+.onb-chip-grid,
+.onb-chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.onb-chip {
+  border: 1.5px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  padding: 9px 15px;
+  border-radius: var(--radius-pill);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .12s ease;
+}
+
+.onb-chip:hover {
+  border-color: var(--green-soft);
+}
+
+.onb-chip.active {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+  box-shadow: var(--shadow-green);
+}
+
+/* Spice slider */
+.onb-spice-slider input[type=range],
+.onb-calo-range {
+  width: 100%;
+  accent-color: var(--green);
+  height: 26px;
+  cursor: pointer;
+}
+
+.onb-spice-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.onb-spice-labels span.active {
+  color: var(--green);
+}
+
+.onb-range-marks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: -4px;
+}
+
+/* Tag input */
+.onb-tag-input-wrap {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  background: var(--card);
+}
+
+.onb-tag-input-wrap input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  padding: 7px;
+  font-size: 14px;
+  outline: none;
+  color: var(--text);
+}
+
+.onb-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.onb-tag {
+  background: var(--green-light);
+  color: var(--green);
+  border-radius: var(--radius-pill);
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.onb-tag button {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-weight: 800;
+  padding: 0;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* Goal grid */
+.onb-goal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.onb-goal-card {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  padding: 18px 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: all .12s ease;
+}
+
+.onb-goal-card:hover {
+  border-color: var(--green-soft);
+  transform: translateY(-2px);
+}
+
+.onb-goal-card.active {
+  border-color: var(--green);
+  background: var(--green-light);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, .15);
+}
+
+.onb-goal-card .g-ic {
+  font-size: 27px;
+}
+
+.onb-goal-card .g-t {
+  font-weight: 700;
+  font-size: 14px;
+  margin-top: 9px;
+  color: var(--text);
+}
+
+.onb-goal-card .g-d {
+  font-size: 12px;
+  color: var(--text-soft);
+  margin-top: 4px;
+  line-height: 1.45;
+}
+
+.onb-goal-other {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.onb-goal-other span {
+  font-size: 13px;
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+
+.onb-goal-other input {
+  flex: 1;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 11px 13px;
+  font-size: 13.5px;
+  background: transparent;
+  color: var(--text);
+}
+
+.onb-goal-other input:focus {
+  outline: none;
+  border-color: var(--green-soft);
+}
+
+/* Segmented control */
+.onb-seg {
+  display: flex;
+  background: var(--green-lighter);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  gap: 4px;
+}
+
+.onb-seg.wrap {
+  flex-wrap: wrap;
+}
+
+.onb-seg button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-xs);
+  padding: 10px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: all .12s ease;
+  white-space: nowrap;
+}
+
+.onb-seg button.active {
+  background: var(--card);
+  color: var(--green);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Footer */
+.onb-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+/* Buttons */
+.onb-btn {
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 12px 22px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .06s ease, box-shadow .15s ease, background .15s ease;
+}
+
+.onb-btn:active {
+  transform: scale(.97);
+}
+
+.onb-btn-primary {
+  background: var(--green);
+  color: #fff;
+  box-shadow: var(--shadow-green);
+}
+
+.onb-btn-primary:hover {
+  background: var(--green-hover);
+}
+
+.onb-btn-ghost {
+  background: transparent;
+  color: var(--text-soft);
+}
+
+.onb-btn-ghost:hover {
+  background: rgba(0, 0, 0, .05);
+}
+
+/* Responsive */
+@media (max-width: 920px) {
+  .onb-goal-grid { grid-template-columns: repeat(2, 1fr); }
+  .onb-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 680px) {
+  .onb-step span { display: none; }
+  .onboarding-card { padding: 20px; }
+}
+
+/* =========================================================
+   NUTRITION AUTO LOOKUP IN ADD FOOD MODAL
+========================================================= */
+.nutrition-lookup-box {
+    grid-column: 1 / -1;
+    background: rgba(34, 197, 94, 0.08);
+    border: 1px dashed rgba(34, 197, 94, 0.35);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin: 6px 0 2px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.nutrition-lookup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.nutrition-lookup-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.nutrition-lookup-desc {
+    font-size: 11px;
+    font-weight: normal;
+    color: var(--text-soft, #888);
+}
+
+.btn-lookup-nutrition {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff !important;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+.btn-lookup-nutrition:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+.btn-lookup-nutrition:active {
+    transform: translateY(0);
+}
+
+.nutrition-status-msg {
+    font-size: 11.5px;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.12);
+    border-radius: 6px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+
