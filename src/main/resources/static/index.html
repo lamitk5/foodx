@@ -20,7 +20,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style.bundle.css">
 </head>
 
 <body>
@@ -233,6 +233,7 @@
                 <img
                         id="headerAvatar"
                         class="user-avatar-sync"
+                        src="/images/avatars/default-avatar.svg"
                         alt="Ảnh đại diện">
 
             </button>
@@ -353,6 +354,7 @@
                         <img
                                 id="authSettingsAvatar"
                                 class="settings-user-avatar"
+                                src="/images/avatars/default-avatar.svg"
                                 alt="Ảnh tài khoản">
 
                         <div class="settings-user-info">
@@ -402,6 +404,7 @@
                     <img
                             id="profileMenuAvatar"
                             class="profile-avatar user-avatar-sync"
+                            src="/images/avatars/default-avatar.svg"
                             alt="Ảnh hồ sơ">
 
                     <div>
@@ -516,8 +519,11 @@
                             Xem món phù hợp &rarr;
                         </button>
                     </div>
-                    <div class="shc-image-wrap">
+                    <div class="shc-image-wrap hero-3d-wrap">
                         <img src="https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1200&q=80" alt="Thực phẩm tươi ngon" class="shc-img">
+                        <span class="floating-3d-badge badge-top-left">🥑 Tươi ngon mỗi ngày</span>
+                        <span class="floating-3d-badge badge-bottom-right">🥗 Cân bằng calo</span>
+                        <span class="floating-3d-badge badge-center-left">⏱️ Nấu nhanh 15p</span>
                     </div>
                 </div>
 
@@ -1182,9 +1188,9 @@
                     class="card empty-state fridge-empty"
                     id="fridgeEmpty">
 
-        <span>
-            ❄
-        </span>
+                <div class="fridge-empty-3d-box">
+                    <div class="fridge-3d-cube" title="Tủ lạnh 3D FoodX">🧊</div>
+                </div>
 
                 <h3>
                     Tủ lạnh đang trống
@@ -1490,7 +1496,7 @@
 
                 <div class="recipe-detail-hero">
 
-                    <img id="rdHeroImg" class="rd-hero-img" alt="" hidden>
+                    <img id="rdHeroImg" class="rd-hero-img" src="/images/recipes/default-recipe.jpg" alt="Món ăn" hidden>
 
                     <span class="rd-emoji" id="rdEmoji">🍜</span>
 
@@ -1975,6 +1981,7 @@
                             <img
                                     id="profileAvatarPreview"
                                     class="user-avatar-sync"
+                                    src="/images/avatars/default-avatar.svg"
                                     alt="Ảnh đại diện">
 
                         </div>
@@ -3328,6 +3335,7 @@
                     <img
                             id="cookingRecipeImage"
                             class="cooking-food-image"
+                            src="/images/recipes/default-recipe.jpg"
                             alt="Món đang nấu">
 
                 </div>

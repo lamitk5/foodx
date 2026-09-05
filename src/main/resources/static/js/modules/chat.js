@@ -1,3 +1,9 @@
+const chatWindow = document.getElementById("chatWindow") || document.getElementById("chatPanel");
+const chatInput = document.getElementById("chatInputFx") || document.getElementById("chatInput");
+const chatMessages = document.getElementById("chatMessages") || document.getElementById("chatBody");
+var previousViewBeforeRecipe = (typeof window !== 'undefined' && window.previousViewBeforeRecipe) ? window.previousViewBeforeRecipe : 'recipes';
+var allSocialPostsCache = (typeof window !== 'undefined' && window.allSocialPostsCache) ? window.allSocialPostsCache : [];
+
 function addChatMessage(text, sender) {
     if (!chatMessages) return;
     const div = document.createElement("div");

@@ -1,3 +1,5 @@
+var DEFAULT_AVATAR = (typeof window !== 'undefined' && window.DEFAULT_AVATAR) ? window.DEFAULT_AVATAR : '/images/avatars/default-avatar.svg';
+
 function calculateBMI(
     weight,
     heightCm

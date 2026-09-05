@@ -1,3 +1,5 @@
+var recipesCache = (typeof window !== 'undefined' && window.recipesCache) ? window.recipesCache : [];
+
 function d2s(d) {
     const p = function (n) { return (n < 10 ? '0' : '') + n; };
     return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());

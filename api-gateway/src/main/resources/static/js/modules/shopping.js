@@ -1,3 +1,5 @@
+var recipesCache = (typeof window !== 'undefined' && window.recipesCache) ? window.recipesCache : [];
+
 async function addShoppingItem() {
     await addShop();
 }
@@ -808,10 +810,14 @@ window.shareShoppingList = shareShoppingList;
 (function initUxEnhancements() {
     // Food catalog buttons
     const openCatalogBtn = document.getElementById('openFoodCatalogBtn');
-    if (openCatalogBtn) openCatalogBtn.addEventListener('click', openFoodCatalogModal);
+    if (openCatalogBtn) openCatalogBtn.addEventListener('click', function () {
+        if (typeof window.openFoodCatalogModal === 'function') window.openFoodCatalogModal();
+    });
 
     const emptyCatalogBtn = document.getElementById('emptyFoodCatalogBtn');
-    if (emptyCatalogBtn) emptyCatalogBtn.addEventListener('click', openFoodCatalogModal);
+    if (emptyCatalogBtn) emptyCatalogBtn.addEventListener('click', function () {
+        if (typeof window.openFoodCatalogModal === 'function') window.openFoodCatalogModal();
+    });
 
     const catalogGoCustomBtn = document.getElementById('catalogGoCustomBtn');
     if (catalogGoCustomBtn) {
@@ -838,13 +844,17 @@ window.shareShoppingList = shareShoppingList;
             tab.classList.add('active');
             activeCatalogCategory = tab.getAttribute('data-cat') || 'all';
             const q = catalogSearch ? catalogSearch.value : '';
-            renderFoodCatalog(activeCatalogCategory, q);
+            if (typeof renderFoodCatalog === 'function') renderFoodCatalog(activeCatalogCategory, q);
+            else if (typeof window.renderFoodCatalog === 'function') window.renderFoodCatalog(activeCatalogCategory, q);
         });
     });
 
     // Zero-waste plan button
     const planZeroWasteBtn = document.getElementById('planZeroWasteBtn');
-    if (planZeroWasteBtn) planZeroWasteBtn.addEventListener('click', planZeroWasteRescue);
+    if (planZeroWasteBtn) planZeroWasteBtn.addEventListener('click', function () {
+        if (typeof planZeroWasteRescue === 'function') planZeroWasteRescue();
+        else if (typeof window.planZeroWasteRescue === 'function') window.planZeroWasteRescue();
+    });
 
     // Shopping share button
     const shopShareBtn = document.getElementById('shopShareList');

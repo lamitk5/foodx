@@ -49,6 +49,9 @@ function openView(name) {
     const targetView = document.getElementById(`view-${name}`);
     if (targetView) {
         targetView.classList.add("active");
+        if (typeof window.trigger3DViewTransition === "function") {
+            window.trigger3DViewTransition(targetView);
+        }
     }
 
     // Sync sidebar active state
@@ -160,8 +163,13 @@ const heroContent =
         "heroContent"
     );
 
+var slides = (typeof window !== 'undefined' && window.slides) ? window.slides : [];
 
 function displaySlide(index) {
+    if (!slides || !slides.length) {
+        slides = (typeof window !== 'undefined' && window.slides) ? window.slides : [];
+    }
+
 
     if (!slides.length) {
         return;

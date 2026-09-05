@@ -1,3 +1,21 @@
+const ONB_KEY = "foodx_onboarding_done";
+
+const onbState = {
+    cuisines: [],
+    spice: 1,
+    favs: [],
+    goals: [],
+    goalOther: "",
+    eaters: "3-4 người",
+    cooktime: "15-30 phút",
+    allergies: [],
+    diet: "Không",
+    calo: 2000,
+    equip: []
+};
+
+if (typeof window !== 'undefined') window.onbState = onbState;
+
 function isOnboardingDone() {
     try {
         return localStorage.getItem(ONB_KEY) === "1";

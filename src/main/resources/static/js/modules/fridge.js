@@ -1,3 +1,7 @@
+const foodSearch = document.getElementById("foodSearch");
+var catalog = (typeof window !== 'undefined' && window.catalog) ? window.catalog : [];
+var NUTRITION_LIBRARY = (typeof window !== 'undefined' && window.NUTRITION_LIBRARY) ? window.NUTRITION_LIBRARY : {};
+
 function renderSearch() {
 
     if (!foodSearch) {

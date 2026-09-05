@@ -1036,6 +1036,15 @@ function loadState() {
 var state =
     loadState();
 window.state = state;
+
+function saveState() {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+        console.warn("Không thể lưu state vào LocalStorage:", e);
+    }
+}
+window.saveState = saveState;
 /* =========================================================
    AUTH STATE
 ========================================================= */

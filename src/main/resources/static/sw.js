@@ -1,9 +1,16 @@
-const CACHE_NAME = 'foodx-v1';
+// FoodX Service Worker — phiên bản v2
+// - Cache key không còn lệch khi URL có query string (?v=...) — khớp bằng path trước khi so cache.
+// - Navigation: network-first, fallback index.html (offline vẫn mở app).
+// - Static (/css /js /icons /images /manifest): cache-first + refresh nền; lưu cả key có query.
+// - API (/api): network-first, fallback cache hoặc JSON báo offline.
+// Bump CACHE_NAME mỗi khi phát hành bản thay đổi shell/app.js để người dùng nhận bản mới.
+const CACHE_NAME = 'foodx-v3';
 const PRECACHE_URLS = [
   '/',
   '/index.html',
-  '/app.html',
   '/css/style.css',
+  '/css/style.bundle.css',
+  '/js/main.js',
   '/js/app.js',
   '/manifest.json',
   '/icons/icon.svg'
@@ -34,6 +41,21 @@ self.addEventListener('activate', event => {
   );
 });
 
+/** Bản sao request không query — dùng làm key cache chuẩn. */
+function cacheKeyRequest(request) {
+  const url = new URL(request.url);
+  url.search = '';
+  return new Request(url.toString(), { method: request.method });
+}
+
+function isStaticAsset(pathname) {
+  return pathname.startsWith('/css/') ||
+    pathname.startsWith('/js/') ||
+    pathname.startsWith('/icons/') ||
+    pathname.startsWith('/images/') ||
+    pathname === '/manifest.json';
+}
+
 // Fetch: smart caching strategy
 self.addEventListener('fetch', event => {
   const req = event.request;
@@ -41,6 +63,7 @@ self.addEventListener('fetch', event => {
 
   // Only handle same-origin GET requests
   if (req.method !== 'GET') return;
+  if (url.origin !== self.location.origin) return;
 
   // Handle SPA navigation: Network first, fallback to cached index.html
   if (req.mode === 'navigate') {
@@ -53,21 +76,19 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Handle static assets: Cache first, fallback to network
-  if (
-    url.pathname.startsWith('/css/') ||
-    url.pathname.startsWith('/js/') ||
-    url.pathname.startsWith('/icons/') ||
-    url.pathname.startsWith('/images/') ||
-    url.pathname === '/manifest.json'
-  ) {
+  // Handle static assets: Cache first (khớp theo path, bỏ query), fallback to network
+  if (isStaticAsset(url.pathname)) {
+    const cleanKey = cacheKeyRequest(req);
     event.respondWith(
-      caches.match(req).then(cachedResp => {
+      caches.match(cleanKey).then(cachedResp => {
         if (cachedResp) {
           // Fetch updated version in background to keep cache fresh
           fetch(req).then(networkResp => {
             if (networkResp && networkResp.status === 200) {
-              caches.open(CACHE_NAME).then(cache => cache.put(req, networkResp));
+              caches.open(CACHE_NAME).then(cache => {
+                cache.put(cleanKey, networkResp.clone());
+                cache.put(req, networkResp);
+              });
             }
           }).catch(() => {});
           return cachedResp;
@@ -75,7 +96,10 @@ self.addEventListener('fetch', event => {
         return fetch(req).then(networkResp => {
           if (networkResp && networkResp.status === 200) {
             const clone = networkResp.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(req, clone));
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(cleanKey, clone);
+              cache.put(req, networkResp);
+            });
           }
           return networkResp;
         });

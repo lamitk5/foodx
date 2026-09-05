@@ -1,3 +1,7 @@
+var recipesCache = (typeof window !== 'undefined' && window.recipesCache) ? window.recipesCache : [];
+var curRecipe = (typeof window !== 'undefined' && window.curRecipe) ? window.curRecipe : null;
+var allSocialPostsCache = (typeof window !== 'undefined' && window.allSocialPostsCache) ? window.allSocialPostsCache : [];
+
 function socialTime(dateStr) {
     if (!dateStr) return '';
     const d = new Date(dateStr);

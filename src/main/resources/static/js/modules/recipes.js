@@ -1,3 +1,8 @@
+var recipesCache = (typeof window !== 'undefined' && window.recipesCache) ? window.recipesCache : [];
+var curRecipe = (typeof window !== 'undefined' && window.curRecipe) ? window.curRecipe : null;
+var previousViewBeforeRecipe = (typeof window !== 'undefined' && window.previousViewBeforeRecipe) ? window.previousViewBeforeRecipe : 'recipes';
+var recipes = (typeof window !== 'undefined' && window.recipes) ? window.recipes : [];
+
 function hasIngredientInFridge(ingredient) {
     if (!state || !Array.isArray(state.fridge) || !state.fridge.length) return false;
     const rawTarget = typeof ingredient === 'string' ? ingredient : ((ingredient && (ingredient.ingredientName || ingredient.name)) || '');
@@ -1899,3 +1904,4 @@ if (typeof window !== 'undefined') window.toggleSaveRecipe = toggleSaveRecipe;
 if (typeof window !== 'undefined') window.addCurToPlan = addCurToPlan;
 if (typeof window !== 'undefined') window.updateRcImagePreview = updateRcImagePreview;
 if (typeof window !== 'undefined') window.submitNewRecipe = submitNewRecipe;
+if (typeof window !== 'undefined') window.openRecipeDetail = openRecipeDetail;

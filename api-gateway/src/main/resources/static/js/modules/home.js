@@ -1,3 +1,16 @@
+var recipesCache = (typeof window !== 'undefined' && window.recipesCache) ? window.recipesCache : [];
+var currentBlogCategory = 'all';
+let homeBlogRecipesCache = null;
+
+const BLOG_CAT_META = [
+    { key: 'sang',     cat: 'Món sáng',        label: '🥣 Món sáng' },
+    { key: 'family',   cat: 'Món chính',       label: '🍚 Món chính' },
+    { key: 'eatclean', cat: 'Món ăn kiêng',    label: '🥗 Món ăn kiêng' },
+    { key: 'quick',    cat: 'Món nhanh',       label: '⚡ Món nhanh' },
+    { key: 'dessert',  cat: 'Món tráng miệng', label: '🍰 Món tráng miệng' }
+];
+if (typeof window !== 'undefined') window.BLOG_CAT_META = BLOG_CAT_META;
+
 function showSkeleton(el, type, n) {
     if (!el) return;
     const unit = type === 'card' ? '<div class="sk sk-card"></div>'

@@ -1,3 +1,6 @@
+var catalog = (typeof window !== 'undefined' && window.catalog) ? window.catalog : [];
+var activeCatalogCategory = 'all';
+
 function openFoodCatalogModal() {
     const modal = document.getElementById('foodCatalogModal');
     if (!modal) return;

@@ -1,6 +1,15 @@
-var state =
-    loadState();
+var state = (typeof loadState === 'function' ? loadState() : (window.loadState ? window.loadState() : (typeof createDefaultState === 'function' ? createDefaultState() : {})));
 window.state = state;
+var saveState = (typeof window !== 'undefined' && window.saveState) ? window.saveState : function() {
+    try {
+        const storageKey = typeof STORAGE_KEY !== 'undefined' ? STORAGE_KEY : (typeof window !== 'undefined' && window.STORAGE_KEY ? window.STORAGE_KEY : 'foodXLocalV8');
+        localStorage.setItem(storageKey, JSON.stringify(window.state || state));
+    } catch (e) {
+        console.warn("Không thể lưu state vào LocalStorage:", e);
+    }
+};
+if (typeof window !== 'undefined') window.saveState = saveState;
+
 /* =========================================================
    AUTH STATE
 ========================================================= */
@@ -50,6 +59,19 @@ var previousViewBeforeRecipe = 'recipes';
 
 var currentSocialCategory = 'all';
 var currentSocialSearch = '';
+
+if (typeof window !== 'undefined') {
+    window.savedPostsState = savedPostsState;
+    window.likedPostsState = likedPostsState;
+    window.localCommentsState = localCommentsState;
+    window.allSocialPostsCache = allSocialPostsCache;
+    window.recipesCache = recipesCache;
+    window.curRecipe = curRecipe;
+    window.previousViewBeforeRecipe = previousViewBeforeRecipe;
+    window.currentSocialCategory = currentSocialCategory;
+    window.currentSocialSearch = currentSocialSearch;
+}
+
 
 // ===== DỮ LIỆU THẬT (thay thế dữ liệu demo giả cứng) =====
 // Hai mảng mẫu cũ (blog + feed cộng đồng với tác giả/like/comment ảo) đã bị gỡ để UI không

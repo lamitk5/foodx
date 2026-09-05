@@ -680,9 +680,10 @@ function loadState() {
 
     try {
 
+        const storageKey = typeof STORAGE_KEY !== 'undefined' ? STORAGE_KEY : (typeof window !== 'undefined' && window.STORAGE_KEY ? window.STORAGE_KEY : 'foodXLocalV8');
         const saved =
             localStorage.getItem(
-                STORAGE_KEY
+                storageKey
             );
 
         if (!saved) {
@@ -741,8 +742,24 @@ function loadState() {
     }
 }
 
-
+function saveState() {
+    try {
+        const storageKey = typeof STORAGE_KEY !== 'undefined' ? STORAGE_KEY : (typeof window !== 'undefined' && window.STORAGE_KEY ? window.STORAGE_KEY : 'foodXLocalV8');
+        const currentState = (typeof window !== 'undefined' && window.state) ? window.state : (typeof state !== 'undefined' ? state : null);
+        if (currentState) {
+            localStorage.setItem(storageKey, JSON.stringify(currentState));
+        }
+    } catch (e) {
+        console.warn("Không thể lưu state vào LocalStorage:", e);
+    }
+}
 
 // Module window exports
 if (typeof window !== 'undefined') window.createDefaultState = createDefaultState;
 if (typeof window !== 'undefined') window.loadState = loadState;
+if (typeof window !== 'undefined') window.saveState = saveState;
+if (typeof window !== 'undefined') window.slides = slides;
+if (typeof window !== 'undefined') window.catalog = catalog;
+if (typeof window !== 'undefined') window.NUTRITION_LIBRARY = NUTRITION_LIBRARY;
+if (typeof window !== 'undefined') window.recipes = recipes;
+

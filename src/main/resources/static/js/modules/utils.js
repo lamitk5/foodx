@@ -301,3 +301,10 @@ if (typeof window !== 'undefined') window.escapeHTML = escapeHTML;
 if (typeof window !== 'undefined') window.setText = setText;
 if (typeof window !== 'undefined') window.toDateInputValue = toDateInputValue;
 if (typeof window !== 'undefined') window.apiRequest = apiRequest;
+if (typeof window !== 'undefined') {
+    window.STORAGE_KEY = STORAGE_KEY;
+    window.FRIDGE_API = FRIDGE_API;
+    window.PROFILE_API = PROFILE_API;
+    window.AUTH_API = AUTH_API;
+    window.DEFAULT_AVATAR = DEFAULT_AVATAR;
+}

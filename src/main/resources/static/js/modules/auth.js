@@ -778,7 +778,57 @@ document
 ========================================================= */
 
 
+function isUserLoggedIn() {
+    return Boolean((typeof getToken === 'function' ? getToken() : (window.getToken ? window.getToken() : '')) && window.authState && window.authState.authenticated);
+}
+
+function requireAuth(actionName, callback) {
+    if (isUserLoggedIn()) {
+        if (typeof callback === 'function') callback();
+        return true;
+    }
+    const modal = document.getElementById('loginModal');
+    if (modal) modal.classList.add('show');
+
+    let msg = 'Vui lòng đăng nhập hoặc đăng ký để sử dụng tính năng này!';
+    switch (actionName) {
+        case 'profile':
+            msg = 'Vui lòng đăng nhập để xem và quản lý hồ sơ dinh dưỡng!';
+            break;
+        case 'chat':
+            msg = 'Vui lòng đăng nhập để trò chuyện cùng Trợ lý AI FoodX!';
+            break;
+        case 'suggest':
+            msg = 'Vui lòng đăng nhập để nhận gợi ý món ăn thông minh từ AI!';
+            break;
+        case 'fridge':
+            msg = 'Vui lòng đăng nhập để theo dõi và quản lý tủ lạnh!';
+            break;
+        case 'plan':
+            msg = 'Vui lòng đăng nhập để lên kế hoạch bữa ăn!';
+            break;
+        case 'shopping':
+            msg = 'Vui lòng đăng nhập để quản lý danh sách đi chợ!';
+            break;
+        case 'recipe':
+        case 'create':
+            msg = 'Vui lòng đăng nhập để thêm / chia sẻ công thức mới!';
+            break;
+        case 'stats':
+            msg = 'Vui lòng đăng nhập để xem thống kê dinh dưỡng & nấu nướng!';
+            break;
+        default:
+            break;
+    }
+    if (typeof showToast === 'function') {
+        showToast(msg, 'warning');
+    }
+    return false;
+}
+
 // Module window exports
+if (typeof window !== 'undefined') window.isUserLoggedIn = isUserLoggedIn;
+if (typeof window !== 'undefined') window.requireAuth = requireAuth;
 if (typeof window !== 'undefined') window.authRequest = authRequest;
 if (typeof window !== 'undefined') window.applyAuthResponse = applyAuthResponse;
 if (typeof window !== 'undefined') window.renderAuthSettings = renderAuthSettings;

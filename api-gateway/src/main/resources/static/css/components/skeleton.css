@@ -1,0 +1,60 @@
+/* FoodX Skeleton Shimmer UI - Perceived Performance Enhancement */
+
+@keyframes skeleton-shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.skeleton-loading {
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.04) 25%,
+        rgba(255, 255, 255, 0.10) 50%,
+        rgba(255, 255, 255, 0.04) 75%
+    ) !important;
+    background-size: 200% 100% !important;
+    animation: skeleton-shimmer 1.6s ease-in-out infinite !important;
+    pointer-events: none !important;
+    user-select: none !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.skeleton-box {
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.skeleton-text {
+    height: 14px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+}
+
+.skeleton-title {
+    height: 20px;
+    width: 60%;
+    margin-bottom: 12px;
+    border-radius: 6px;
+}
+
+.skeleton-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+}
+
+.skeleton-badge {
+    width: 80px;
+    height: 22px;
+    border-radius: 12px;
+}
+
+.skeleton-card {
+    min-height: 180px;
+    border-radius: 12px;
+    padding: 16px;
+}
