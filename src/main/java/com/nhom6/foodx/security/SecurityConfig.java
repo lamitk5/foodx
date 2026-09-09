@@ -29,27 +29,23 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     private static final String[] PUBLIC_WHITELIST = {
-            "/api/auth/**",
+            // Chỉ register/login là công khai; /me, /change-password... yêu cầu JWT
+            "/api/auth/register",
+            "/api/auth/login",
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/swagger-resources/**",
             "/webjars/**",
-            // Trang chủ và trang test giao diện AI chat (tĩnh)
+            // Trang chủ và giao diện SPA (tĩnh)
             "/",
             "/index.html",
-            "/ai-chat-test.html",
             "/app",
             "/app.html",
             "/css/**",
             "/js/**",
             "/images/**",
-            // Tìm kiếm ảnh tự động & tra cứu calo dinh dưỡng
-            "/api/fridge/search-image",
-            "/api/recipes/search-image",
-            "/api/fridge/estimate-nutrition",
-            // Upload ảnh và file tĩnh đã tải lên
-            "/api/upload",
+            // Ảnh tải lên (avatar, ảnh món ăn)
             "/uploads/**"
     };
 
@@ -65,10 +61,15 @@ public class SecurityConfig {
                         // Danh mục nguyên liệu & dữ liệu trang chủ công khai
                         .requestMatchers(HttpMethod.GET, "/api/ingredients/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/home/**").permitAll()
+                        // "Bài của tôi" luôn yêu cầu đăng nhập (phải khai báo trước pattern công khai)
+                        .requestMatchers(HttpMethod.GET, "/api/social/posts/my").authenticated()
+                        // Xem feed & bài viết cộng đồng công khai (khách được đọc, ghi thì cần đăng nhập)
+                        .requestMatchers(HttpMethod.GET, "/api/social/posts", "/api/social/posts/*").permitAll()
                         // Xem bình luận bài viết mạng xã hội công khai
                         .requestMatchers(HttpMethod.GET, "/api/social/posts/*/comments").permitAll()
                         // Các endpoint cá nhân hoá trong công thức yêu cầu đăng nhập
-                        .requestMatchers("/api/recipes/saved", "/api/recipes/*/save", "/api/recipes/import").authenticated()
+                        .requestMatchers("/api/recipes/saved", "/api/recipes/match",
+                                "/api/recipes/*/save", "/api/recipes/import").authenticated()
                         // Xem danh sách và chi tiết công thức công khai
                         .requestMatchers(HttpMethod.GET, "/api/recipes", "/api/recipes/*").permitAll()
                         // Toàn bộ các API còn lại (AI chat/suggest, fridge, plans, shopping, stats, profile, social...) bắt buộc đăng nhập

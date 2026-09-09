@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class WebPageController {
 
-    /** Ứng dụng Food X: tủ lạnh, hồ sơ dinh dưỡng... */
+    /** Ứng dụng Food X: tủ lạnh, hồ sơ dinh dưỡng... (canonical: index.html — app.html chỉ là bộ chuyển hướng cũ) */
     @GetMapping("/app")
     public String app() {
-        return "forward:/app.html";
+        return "forward:/index.html";
     }
 }

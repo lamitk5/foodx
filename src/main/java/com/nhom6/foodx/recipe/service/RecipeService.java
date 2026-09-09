@@ -3,9 +3,12 @@ package com.nhom6.foodx.recipe.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.nhom6.foodx.auth.entity.User;
 import com.nhom6.foodx.common.exception.ResourceNotFoundException;
+import com.nhom6.foodx.common.utils.StringUtils;
+import com.nhom6.foodx.fridge.repository.FridgeItemRepository;
 import com.nhom6.foodx.ingredient.entity.Ingredient;
 import com.nhom6.foodx.ingredient.repository.IngredientRepository;
 import com.nhom6.foodx.recipe.dto.RecipeIngredientItem;
+import com.nhom6.foodx.recipe.dto.RecipeMatchDto;
 import com.nhom6.foodx.recipe.dto.RecipeRequest;
 import com.nhom6.foodx.recipe.dto.RecipeResponse;
 import com.nhom6.foodx.recipe.entity.Recipe;
@@ -13,12 +16,17 @@ import com.nhom6.foodx.recipe.entity.RecipeIngredient;
 import com.nhom6.foodx.recipe.repository.RecipeIngredientRepository;
 import com.nhom6.foodx.recipe.repository.RecipeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +35,7 @@ public class RecipeService {
     private final RecipeRepository recipeRepository;
     private final RecipeIngredientRepository recipeIngredientRepository;
     private final IngredientRepository ingredientRepository;
+    private final FridgeItemRepository fridgeItemRepository;
     private final com.nhom6.foodx.recipe.repository.SavedRecipeRepository savedRecipeRepository;
     private final com.nhom6.foodx.food.service.FoodImageSearchService foodImageSearchService;
 
@@ -55,15 +64,10 @@ public class RecipeService {
         Recipe recipe = new Recipe();
         applyRequest(recipe, request);
 
-        // Tự động tìm kiếm ảnh nếu người dùng không tự cung cấp ảnh
-        if (recipe.getImageUrl() == null || recipe.getImageUrl().isBlank()
-                || recipe.getImageUrl().contains("unsplash.com/photo-1542838132")
-                || recipe.getImageUrl().contains("default-recipe")
-                || recipe.getImageUrl().contains("placeholder")) {
-            String autoImg = foodImageSearchService.findOrDownloadImage(recipe.getTitle());
-            if (autoImg != null && !autoImg.isBlank()) {
-                recipe.setImageUrl(autoImg);
-            }
+        // Ảnh: ưu tiên ảnh người dùng cung cấp; nếu chưa có thì dùng ảnh local theo tên món
+        // (KHÔNG tải mạng trong lúc lưu — tránh chặn request & ghi file vào source lúc runtime)
+        if (!isUsableImage(recipe.getImageUrl())) {
+            recipe.setImageUrl(localImageForTitle(recipe.getTitle()));
         }
 
         recipe.setAuthor(author);
@@ -83,14 +87,8 @@ public class RecipeService {
         Recipe recipe = findEntity(id);
         applyRequest(recipe, request);
 
-        if (recipe.getImageUrl() == null || recipe.getImageUrl().isBlank()
-                || recipe.getImageUrl().contains("unsplash.com/photo-1542838132")
-                || recipe.getImageUrl().contains("default-recipe")
-                || recipe.getImageUrl().contains("placeholder")) {
-            String autoImg = foodImageSearchService.findOrDownloadImage(recipe.getTitle());
-            if (autoImg != null && !autoImg.isBlank()) {
-                recipe.setImageUrl(autoImg);
-            }
+        if (!isUsableImage(recipe.getImageUrl())) {
+            recipe.setImageUrl(localImageForTitle(recipe.getTitle()));
         }
 
         recipe.setUpdatedAt(LocalDateTime.now());
@@ -242,11 +240,9 @@ public class RecipeService {
                 .toList();
 
         String img = recipe.getImageUrl();
-        if (img == null || img.isBlank()
-                || img.contains("unsplash.com/photo-1542838132")
-                || img.contains("default-recipe")
-                || img.contains("placeholder")) {
-            img = foodImageSearchService.findOrDownloadImage(recipe.getTitle());
+        if (!isUsableImage(img)) {
+            // Giải quyết ảnh cục bộ ngay lập tức, không gọi mạng trong vòng đọc dữ liệu
+            img = localImageForTitle(recipe.getTitle());
         }
 
         int kcal = (recipe.getKcal() != null && recipe.getKcal() > 0) ? recipe.getKcal() : 380;
@@ -284,5 +280,109 @@ public class RecipeService {
                 .createdAt(recipe.getCreatedAt())
                 .updatedAt(recipe.getUpdatedAt())
                 .build();
+    }
+
+    // =========================================================================
+    // Ảnh local (không tải mạng trong vòng đọc/ghi dữ liệu)
+    // =========================================================================
+
+    /** Ảnh người dùng cung cấp hợp lệ (không phải placeholder/default seed). */
+    private boolean isUsableImage(String img) {
+        if (img == null || img.isBlank()) {
+            return false;
+        }
+        String lower = img.toLowerCase();
+        if (lower.contains("default-recipe") || lower.contains("placeholder")) {
+            return false;
+        }
+        // Ảnh "mặc định" cũ của seed Unsplash (2-3 tấm dùng chung cho mọi món)
+        if (lower.contains("unsplash.com/photo-1542838132")) {
+            return false;
+        }
+        return true;
+    }
+
+    /** Ảnh local có sẵn theo slug tên món; nếu không có thì dùng ảnh mặc định. */
+    private String localImageForTitle(String title) {
+        String slug = com.nhom6.foodx.food.service.FoodImageSearchService.toSlug(title);
+        String rel = "/images/foods/" + slug + ".jpg";
+        try {
+            if (new ClassPathResource("static" + rel).exists()) {
+                return rel;
+            }
+        } catch (Exception ignored) {
+            // kiểm tra tiếp đường dẫn source (khi chạy từ IDE chưa copy resources)
+        }
+        if (Files.exists(Paths.get("src/main/resources/static" + rel))) {
+            return rel;
+        }
+        return "/images/recipes/default-recipe.jpg";
+    }
+
+    /**
+     * "Nấu với tủ của tôi": tìm món khớp nguyên liệu tủ lạnh của user.
+     * Dùng query findByAnyIngredients (lọc nhanh) + chấm điểm chi tiết theo tên
+     * nguyên liệu đã chuẩn hoá bỏ dấu.
+     */
+    @Transactional(readOnly = true)
+    public List<RecipeMatchDto> matchWithFridge(User user) {
+        List<String> fridgeNames = fridgeItemRepository.findByUser_IdOrderByIdAsc(user.getId()).stream()
+                .map(item -> item.getFood() != null ? item.getFood().getName() : null)
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(name -> !name.isEmpty())
+                .distinct()
+                .toList();
+        if (fridgeNames.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> ingredientIds = new ArrayList<>();
+        for (String name : fridgeNames) {
+            ingredientRepository.findByNameIgnoreCase(name)
+                    .ifPresent(ingredient -> ingredientIds.add(ingredient.getId()));
+        }
+
+        List<Recipe> candidates;
+        if (ingredientIds.isEmpty()) {
+            candidates = recipeRepository.findAll();
+        } else {
+            candidates = recipeRepository.findByAnyIngredients(ingredientIds);
+            if (candidates.isEmpty()) {
+                candidates = recipeRepository.findAll();
+            }
+        }
+
+        List<String> fridgeKeys = fridgeNames.stream()
+                .map(StringUtils::searchable)
+                .filter(key -> key.length() >= 3)
+                .toList();
+
+        List<RecipeMatchDto> result = new ArrayList<>();
+        for (Recipe recipe : candidates) {
+            if (recipe.getIngredients() == null || recipe.getIngredients().isEmpty()) {
+                continue;
+            }
+            long total = recipe.getIngredients().size();
+            long matched = recipe.getIngredients().stream()
+                    .filter(ri -> {
+                        String key = StringUtils.searchable(ri.getIngredient().getName());
+                        if (key.length() < 3) {
+                            return false;
+                        }
+                        return fridgeKeys.stream().anyMatch(fk -> fk.contains(key) || key.contains(fk));
+                    })
+                    .count();
+            if (matched == 0) {
+                continue;
+            }
+            int percent = (int) Math.round(matched * 100.0 / total);
+            result.add(new RecipeMatchDto(toResponse(recipe), matched, total, percent));
+        }
+
+        result.sort(Comparator
+                .comparingInt(RecipeMatchDto::matchPercent).reversed()
+                .thenComparing(Comparator.comparingLong(RecipeMatchDto::matchedIngredients).reversed()));
+        return result.stream().limit(20).toList();
     }
 }

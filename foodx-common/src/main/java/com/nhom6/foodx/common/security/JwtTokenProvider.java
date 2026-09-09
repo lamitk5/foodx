@@ -5,7 +5,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -16,7 +15,6 @@ import java.util.function.Function;
 /**
  * Tạo và kiểm tra tính hợp lệ của JWT dùng chung giữa các microservices.
  */
-@Component
 public class JwtTokenProvider {
 
     private final SecretKey secretKey;

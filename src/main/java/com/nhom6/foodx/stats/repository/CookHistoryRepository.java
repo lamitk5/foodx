@@ -13,4 +13,7 @@ public interface CookHistoryRepository extends JpaRepository<CookHistory, Long> 
     long countByUser_Id(Long userId);
 
     long countByUser_IdAndCookedAtBetween(Long userId, LocalDate start, LocalDate end);
+
+    /** Kiểm tra đã ghi nhận món này trong ngày (chống trùng khi bấm đúp). */
+    boolean existsByUser_IdAndRecipeIdAndCookedAt(Long userId, Long recipeId, LocalDate cookedAt);
 }

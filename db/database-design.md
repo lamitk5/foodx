@@ -1,3 +1,9 @@
+> ⚠️ **TÀI LIỆU CŨ**: sơ đồ bên dưới phản ánh thiết kế giai đoạn đầu. Lược đồ
+> runtime hiện tại do JPA `ddl-auto` tạo từ các `@Entity` (khác tên bảng: `fridge_stock`,
+> `shopping_items`, `meal_plan_entries`, `foods`, `profiles`, `recipe_posts`,
+> `chat_sessions`, `chat_messages`, `cook_history`...), dữ liệu mẫu seed bởi
+> `DataSeeder` (Java). Chỉ dùng file này để tham khảo hướng thiết kế.
+
 # 🗄️ FoodX - Thiết Kế Cơ Sở Dữ Liệu
 
 > Tài liệu mô tả thiết kế database cho hệ thống **FoodX - Quản lý ẩm thực**.

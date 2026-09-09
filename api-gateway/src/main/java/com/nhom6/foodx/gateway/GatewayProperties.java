@@ -2,10 +2,8 @@ package com.nhom6.foodx.gateway;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 @Data
-@Component
 @ConfigurationProperties(prefix = "gateway.services")
 public class GatewayProperties {
     private String userService = "http://localhost:8081";

@@ -67,34 +67,57 @@ public final class PromptTemplate {
                 request.getMaxSuggestions() == null ? 3 : request.getMaxSuggestions());
     }
 
-    /** Prompt chat với Trợ lý AI nấu ăn. */
+    /** Prompt chat với Trợ lý AI nấu ăn (không bối cảnh). */
     public static String chatPrompt(String message, List<String> availableIngredients) {
+        return chatPrompt(message, availableIngredients, "");
+    }
+
+    /**
+     * Prompt chat có bối cảnh người dùng (hồ sơ + tủ lạnh + lịch sử hội thoại).
+     * @param extraContext chuỗi bối cảnh do server dựng (có thể rỗng)
+     */
+    public static String chatPrompt(String message, List<String> availableIngredients, String extraContext) {
         String ings = availableIngredients == null || availableIngredients.isEmpty()
                 ? "không có (bạn tự gợi ý)"
                 : String.join(", ", availableIngredients);
+        String context = (extraContext == null || extraContext.isBlank())
+                ? ""
+                : "Bối cảnh người dùng (server cung cấp):\n" + extraContext + "\n\n";
         return """
                 Bạn là trợ lý AI chuyên về nấu ăn thân thiện. Trả lời câu hỏi của người dùng
                 bằng tiếng Việt, rõ ràng, dễ hiểu. Nếu có thể, hãy gợi ý sử dụng các nguyên liệu
-                người dùng đang có. Nếu câu hỏi không liên quan đến ẩm thực, hãy lịch sự từ chối.
+                người dùng đang có. Tôn trọng chế độ ăn, dị ứng và món không thích của người dùng.
+                Nếu câu hỏi không liên quan đến ẩm thực, hãy lịch sự từ chối.
 
-                Nguyên liệu hiện có: %s
+                %s
+                Nguyên liệu hiện có (theo người dùng chọn): %s
 
                 Câu hỏi của người dùng: %s
-                """.formatted(ings, message);
+                """.formatted(context, ings, message);
     }
 
-    /** Prompt hướng dẫn nấu từng bước. */
+    /** Prompt hướng dẫn nấu từng bước (không bối cảnh). */
     public static String stepByStepPrompt(String dish, List<String> availableIngredients) {
+        return stepByStepPrompt(dish, availableIngredients, "");
+    }
+
+    /** Prompt hướng dẫn nấu từng bước có bối cảnh người dùng. */
+    public static String stepByStepPrompt(String dish, List<String> availableIngredients, String extraContext) {
         String ings = availableIngredients == null || availableIngredients.isEmpty()
                 ? "không có (hãy liệt kê nguyên liệu cần thiết)"
                 : String.join(", ", availableIngredients);
+        String context = (extraContext == null || extraContext.isBlank())
+                ? ""
+                : "Bối cảnh người dùng (server cung cấp):\n" + extraContext + "\n\n";
         return """
                 Bạn là đầu bếp chuyên nghiệp. Hãy hướng dẫn nấu món "%s" từng bước chi tiết.
                 Mỗi bước trên một dòng riêng, bắt đầu bằng số thứ tự. Liệt kê rõ nguyên liệu
                 và khối lượng. Nếu người dùng có sẵn nguyên liệu (%s), ưu tiên dùng chúng.
+                Tránh các nguyên liệu người dùng dị ứng.
 
+                %s
                 Chỉ đưa ra các bước nấu, không kèm văn bản quảng cáo.
-                """.formatted(dish, ings);
+                """.formatted(dish, ings, context);
     }
 
     /** Prompt gợi ý món ăn cho trang chủ. */

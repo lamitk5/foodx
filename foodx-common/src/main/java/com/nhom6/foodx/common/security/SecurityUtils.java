@@ -3,9 +3,7 @@ package com.nhom6.foodx.common.security;
 import com.nhom6.foodx.common.exception.BusinessException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 
-@Component
 public class SecurityUtils {
 
     public static UserPrincipal getCurrentUser() {

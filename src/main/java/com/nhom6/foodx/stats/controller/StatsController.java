@@ -30,7 +30,7 @@ public class StatsController {
 
     @PostMapping("/cooked")
     public ApiResponse<Void> recordCook(@RequestBody CookRequest request) {
-        statsService.recordCook(securityUtils.getCurrentUser(), request.recipeId());
-        return ApiResponse.success(null, "Đã ghi nhận món đã nấu");
+        statsService.recordCook(securityUtils.getCurrentUser(), request.recipeId(), request.servings());
+        return ApiResponse.success(null, "Đã ghi nhận món đã nấu (nguyên liệu trong tủ đã được trừ tương ứng)");
     }
 }

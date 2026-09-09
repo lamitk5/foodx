@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhom6.foodx.ai.dto.ChatRequest;
 import com.nhom6.foodx.ai.dto.ChatResponse;
+import com.nhom6.foodx.ai.service.AiContextService;
 import com.nhom6.foodx.ai.service.ChatService;
 import com.nhom6.foodx.auth.entity.User;
 import com.nhom6.foodx.chat.dto.MessageResponse;
@@ -35,6 +36,7 @@ public class ChatSessionService {
     private final ChatSessionRepository sessionRepository;
     private final ChatMessageRepository messageRepository;
     private final ChatService chatService;
+    private final AiContextService aiContextService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional(readOnly = true)
@@ -92,17 +94,31 @@ public class ChatSessionService {
         }
         ChatSession session = findSession(user, id);
         String mode = request.mode() == null ? "chat" : request.mode();
+        String message = request.message().trim();
+
+        // ---- Bối cảnh server: hồ sơ + tủ lạnh + lịch sử phiên (AI "nhớ" cuộc trò chuyện) ----
+        List<ChatMessage> history = messageRepository.findBySession_IdOrderByCreatedAtAsc(id);
+        StringBuilder context = new StringBuilder(aiContextService.buildContext(user));
+        if (history.size() > 1) {
+            context.append("\nLịch sử hội thoại gần đây trong phiên này:\n");
+            history.stream()
+                    .skip(Math.max(0, history.size() - 8))
+                    .forEach(m -> context
+                            .append("user".equals(m.getRole()) ? "Người dùng: " : "Trợ lý FoodX: ")
+                            .append(m.getContent() == null ? "" : m.getContent().replace("\n", " "))
+                            .append("\n"));
+        }
 
         ChatResponse ai = chatService.chat(ChatRequest.builder()
-                .message(request.message().trim())
+                .message(message)
                 .mode(mode)
                 .availableIngredients(request.availableIngredients())
-                .build());
+                .build(), context.toString());
 
         messageRepository.save(ChatMessage.builder()
                 .session(session)
                 .role("user")
-                .content(request.message().trim())
+                .content(message)
                 .build());
 
         String stepsJson = null;

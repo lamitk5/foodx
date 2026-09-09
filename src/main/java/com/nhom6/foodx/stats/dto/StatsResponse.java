@@ -10,7 +10,8 @@ public record StatsResponse(
         long weekCooked,
         long monthCooked,
         List<KcalDay> byDay,
-        List<TopRecipe> topRecipes
+        List<TopRecipe> topRecipes,
+        long currentStreak
 ) {
     public record KcalDay(String date, long kcal) {
     }

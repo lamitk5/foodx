@@ -5,6 +5,8 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.nio.file.Paths;
+
 @Configuration
 public class WebStaticConfig implements WebMvcConfigurer {
 
@@ -12,6 +14,17 @@ public class WebStaticConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/**")
                 .addResourceLocations("classpath:/static/", "file:./src/main/resources/static/");
+
+        String uploadLocation = Paths.get("uploads")
+                .toAbsolutePath()
+                .normalize()
+                .toUri()
+                .toString();
+        if (!uploadLocation.endsWith("/")) {
+            uploadLocation += "/";
+        }
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations(uploadLocation, "file:./uploads/");
     }
 
     @Override

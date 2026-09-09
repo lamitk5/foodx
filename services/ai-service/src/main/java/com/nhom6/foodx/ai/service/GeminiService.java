@@ -105,6 +105,72 @@ public class GeminiService {
         }
     }
 
+    public String analyzeImage(String base64Data, String mimeType, String prompt) {
+        if (geminiConfig.getApiKey() == null || geminiConfig.getApiKey().isBlank()) {
+            throw new BusinessException(503, "Gemini API key chưa được cấu hình");
+        }
+
+        GeminiRequest.GenerationConfig config = GeminiRequest.GenerationConfig.builder()
+                .temperature(0.2)
+                .maxOutputTokens(4096)
+                .responseMimeType("application/json")
+                .build();
+
+        GeminiRequest.Part textPart = GeminiRequest.Part.builder()
+                .text(prompt)
+                .build();
+
+        GeminiRequest.Part imagePart = GeminiRequest.Part.builder()
+                .inlineData(GeminiRequest.InlineData.builder()
+                        .mimeType(mimeType != null && !mimeType.isBlank() ? mimeType : "image/jpeg")
+                        .data(base64Data)
+                        .build())
+                .build();
+
+        GeminiRequest request = GeminiRequest.builder()
+                .contents(List.of(GeminiRequest.Content.builder()
+                        .parts(List.of(textPart, imagePart))
+                        .build()))
+                .generationConfig(config)
+                .build();
+
+        String uri = geminiConfig.getUrl() + "/" + geminiConfig.getModel()
+                + ":generateContent?key=" + geminiConfig.getApiKey();
+
+        try {
+            GeminiResponse response = webClientBuilder.build()
+                    .post()
+                    .uri(uri)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header("x-goog-api-key", geminiConfig.getApiKey())
+                    .bodyValue(request)
+                    .retrieve()
+                    .bodyToMono(GeminiResponse.class)
+                    .block();
+
+            if (response == null || response.getCandidates() == null
+                    || response.getCandidates().isEmpty()
+                    || response.getCandidates().get(0).getContent() == null
+                    || response.getCandidates().get(0).getContent().getParts() == null) {
+                throw new BusinessException(502, "Gemini Vision API trả về phản hồi rỗng");
+            }
+
+            StringBuilder sb = new StringBuilder();
+            for (GeminiResponse.Part part : response.getCandidates().get(0).getContent().getParts()) {
+                sb.append(part.getText());
+            }
+            return sb.toString();
+        } catch (BusinessException ex) {
+            throw ex;
+        } catch (org.springframework.web.reactive.function.client.WebClientResponseException ex) {
+            log.error("Lỗi HTTP từ Gemini Vision API: Status={}, Body={}", ex.getStatusCode(), ex.getResponseBodyAsString(), ex);
+            throw new BusinessException(ex.getStatusCode().value(), "Lỗi từ Gemini Vision: " + ex.getResponseBodyAsString());
+        } catch (Exception ex) {
+            log.error("Lỗi gọi Gemini Vision API", ex);
+            throw new BusinessException(502, "Lỗi khi gọi Gemini Vision API: " + ex.getMessage());
+        }
+    }
+
     private String extractJson(String text) {
         if (text == null) {
             return "{}";

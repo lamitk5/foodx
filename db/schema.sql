@@ -1,3 +1,13 @@
+-- ============================================================================
+-- ⚠️ TÀI LIỆU THAM KHẢO CŨ (KHÔNG được nạp tự động khi chạy ứng dụng)
+-- Lược đồ runtime do JPA `ddl-auto` tạo (dev: update; prod: validate) theo các
+-- @Entity trong src/main/java/com/nhom6/foodx/** (bảng thực tế: fridge_stock,
+-- shopping_items, meal_plan_entries, foods, profiles, recipe_posts, chat_sessions,
+-- chat_messages, cook_history, saved_recipes...).
+-- Dữ liệu mẫu được seed bởi Java DataSeeder (common/config/DataSeeder.java,
+-- chỉ chạy khi profile != prod). File này có thể lệch với entity — đối chiếu
+-- với entity trước khi dùng. Nguồn chuẩn duy nhất: mã nguồn.
+-- ============================================================================
 -- =============================================================
 -- FoodX - Database Schema
 -- Hệ thống Quản Lý Ẩm Thực

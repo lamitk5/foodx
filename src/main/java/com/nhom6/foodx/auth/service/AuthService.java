@@ -77,10 +77,21 @@ public class AuthService {
 
     @Transactional
     public void changePassword(User user, String oldPassword, String newPassword) {
-        if (oldPassword != null && !oldPassword.isBlank()) {
-            if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-                throw new BusinessException(400, "Mật khẩu cũ không chính xác");
-            }
+        // Bắt buộc xác minh mật khẩu cũ khi đổi mật khẩu của tài khoản đang đăng nhập
+        if (oldPassword == null || oldPassword.isBlank()) {
+            throw new BusinessException(400, "Vui lòng nhập mật khẩu hiện tại");
+        }
+        if (newPassword == null || newPassword.isBlank()) {
+            throw new BusinessException(400, "Mật khẩu mới không được để trống");
+        }
+        if (newPassword.length() < 6 || newPassword.length() > 100) {
+            throw new BusinessException(400, "Mật khẩu mới phải từ 6-100 ký tự");
+        }
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new BusinessException(400, "Mật khẩu cũ không chính xác");
+        }
+        if (passwordEncoder.matches(newPassword, user.getPassword())) {
+            throw new BusinessException(400, "Mật khẩu mới phải khác mật khẩu hiện tại");
         }
         user.setPassword(passwordEncoder.encode(newPassword));
         user.setUpdatedAt(LocalDateTime.now());

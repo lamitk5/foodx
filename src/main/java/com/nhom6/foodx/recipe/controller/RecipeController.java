@@ -45,6 +45,13 @@ public class RecipeController {
         return ApiResponse.success(recipeService.search(keyword, category, cuisine));
     }
 
+    @GetMapping("/match")
+    public ApiResponse<List<com.nhom6.foodx.recipe.dto.RecipeMatchDto>> matchWithFridge() {
+        return ApiResponse.success(
+                recipeService.matchWithFridge(securityUtils.getCurrentUser()),
+                "Danh sách món khớp nguyên liệu tủ lạnh của bạn");
+    }
+
     @GetMapping("/{id}")
     public ApiResponse<RecipeResponse> getById(@PathVariable Long id) {
         return ApiResponse.success(recipeService.getById(id));

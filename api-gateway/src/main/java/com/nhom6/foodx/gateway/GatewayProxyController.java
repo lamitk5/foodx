@@ -52,9 +52,23 @@ public class GatewayProxyController {
         String queryString = request.getQueryString();
         String targetUrl = targetBaseUrl + path + (queryString != null ? "?" + queryString : "");
 
+        URI uri;
+        try {
+            uri = URI.create(targetUrl);
+        } catch (Exception e) {
+            try {
+                java.net.URL parsedUrl = java.net.URI.create(targetBaseUrl).toURL();
+                uri = new URI(parsedUrl.getProtocol(), parsedUrl.getUserInfo(), parsedUrl.getHost(), parsedUrl.getPort(), path, queryString, null);
+            } catch (Exception parseEx) {
+                log.error("Invalid target URL {}: {}", targetUrl, parseEx.getMessage());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(("{\"code\": 400, \"message\": \"Bad URL: " + parseEx.getMessage() + "\"}").getBytes());
+            }
+        }
+
         try {
             HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
-                    .uri(URI.create(targetUrl))
+                    .uri(uri)
                     .timeout(Duration.ofSeconds(60));
 
             // Copy request headers
@@ -92,7 +106,7 @@ public class GatewayProxyController {
 
             return new ResponseEntity<>(response.body(), responseHeaders, HttpStatus.valueOf(response.statusCode()));
 
-        } catch (IOException | InterruptedException ex) {
+        } catch (Exception ex) {
             log.error("Error proxying request to {}: {}", targetUrl, ex.getMessage());
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                     .body(("{\"code\": 503, \"message\": \"Service Unavailable: " + ex.getMessage() + "\"}").getBytes());

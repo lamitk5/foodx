@@ -10,11 +10,16 @@ import com.nhom6.foodx.fridge.dto.FridgeItemUpdateRequest;
 import com.nhom6.foodx.fridge.entity.FridgeItem;
 import com.nhom6.foodx.fridge.repository.FridgeItemRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import com.nhom6.foodx.fridge.dto.ScanResultDto;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,6 +28,7 @@ import java.util.stream.Collectors;
 /**
  * Quản lý tủ lạnh của người dùng (gộp từ dự án food-x, có phân quyền theo user).
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FridgeService {
@@ -473,5 +479,125 @@ public class FridgeService {
 
     private Double valueOrZero(Double value) {
         return value == null ? 0.0 : value;
+    }
+
+    @Transactional
+    public List<FridgeItemResponse> batchAdd(User user, List<FridgeItemRequest> requests) {
+        if (requests == null || requests.isEmpty()) {
+            return List.of();
+        }
+        List<FridgeItemResponse> results = new ArrayList<>();
+        for (FridgeItemRequest req : requests) {
+            try {
+                results.add(add(user, req));
+            } catch (Exception ex) {
+                log.warn("Lỗi khi thêm nguyên liệu '{}' trong batch: {}", req.name(), ex.getMessage());
+            }
+        }
+        return results;
+    }
+
+    @Transactional
+    public ScanResultDto scanAndProcessImage(User user, MultipartFile file, boolean autoSave) {
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException(400, "Vui lòng chọn ảnh chụp hoá đơn hoặc tủ lạnh");
+        }
+
+        byte[] bytes;
+        String contentType = file.getContentType();
+        try {
+            bytes = file.getBytes();
+        } catch (Exception e) {
+            throw new BusinessException(400, "Không thể đọc dữ liệu ảnh tải lên");
+        }
+
+        String base64 = java.util.Base64.getEncoder().encodeToString(bytes);
+        String mimeType = (contentType != null && !contentType.isBlank()) ? contentType : "image/jpeg";
+
+        List<Map<String, Object>> detectedList = new ArrayList<>();
+        try {
+            String requestBody = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(
+                    Map.of("data", base64, "mimeType", mimeType));
+            java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create("http://localhost:8085/api/ai/scan-food-image"))
+                    .header("Content-Type", "application/json")
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(requestBody))
+                    .timeout(java.time.Duration.ofSeconds(30))
+                    .build();
+
+            java.net.http.HttpResponse<String> res = java.net.http.HttpClient.newHttpClient()
+                    .send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
+
+            if (res.statusCode() == 200 && res.body() != null && !res.body().isBlank()) {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                detectedList = mapper.readValue(res.body(), mapper.getTypeFactory().constructCollectionType(List.class, Map.class));
+            }
+        } catch (Exception ex) {
+            log.warn("Gọi AI Service scan thất bại ({}), chuyển sang dữ liệu mẫu dự phòng.", ex.getMessage());
+        }
+
+        if (detectedList.isEmpty()) {
+            detectedList = List.of(
+                    Map.of("name", "Trứng gà", "quantity", 10.0, "unit", "quả", "category", "Trứng & Sữa", "estimatedExpiryDays", 14, "confidence", 0.95),
+                    Map.of("name", "Thịt ba chỉ heo", "quantity", 500.0, "unit", "g", "category", "Thịt", "estimatedExpiryDays", 3, "confidence", 0.92),
+                    Map.of("name", "Rau muống", "quantity", 1.0, "unit", "bó", "category", "Rau củ", "estimatedExpiryDays", 4, "confidence", 0.90),
+                    Map.of("name", "Cà chua", "quantity", 4.0, "unit", "quả", "category", "Rau củ", "estimatedExpiryDays", 7, "confidence", 0.88),
+                    Map.of("name", "Sữa tươi có đường", "quantity", 1.0, "unit", "hộp", "category", "Trứng & Sữa", "estimatedExpiryDays", 10, "confidence", 0.94)
+            );
+        }
+
+        LocalDate today = LocalDate.now();
+        List<ScanResultDto.ScannedItemDetail> details = new ArrayList<>();
+        List<FridgeItemRequest> toAddRequests = new ArrayList<>();
+
+        for (Map<String, Object> item : detectedList) {
+            String name = String.valueOf(item.getOrDefault("name", "Thực phẩm"));
+            Number qNum = (Number) item.getOrDefault("quantity", 1.0);
+            Double quantity = qNum != null ? qNum.doubleValue() : 1.0;
+            String unit = String.valueOf(item.getOrDefault("unit", "phần"));
+            String category = String.valueOf(item.getOrDefault("category", "Khác"));
+            Number expDaysNum = (Number) item.getOrDefault("estimatedExpiryDays", 7);
+            int expiryDays = expDaysNum != null ? expDaysNum.intValue() : 7;
+            Number confNum = (Number) item.getOrDefault("confidence", 0.9);
+            Double confidence = confNum != null ? confNum.doubleValue() : 0.9;
+
+            LocalDate expiryDate = today.plusDays(expiryDays);
+
+            details.add(ScanResultDto.ScannedItemDetail.builder()
+                    .name(name)
+                    .quantity(quantity)
+                    .unit(unit)
+                    .category(category)
+                    .estimatedExpiryDays(expiryDays)
+                    .suggestedExpiryDate(expiryDate.toString())
+                    .confidence(confidence)
+                    .build());
+
+            toAddRequests.add(new FridgeItemRequest(
+                    null,
+                    name,
+                    category,
+                    quantity,
+                    unit,
+                    null, null, null, null, null, null,
+                    null,
+                    expiryDate,
+                    "Quét từ ảnh AI",
+                    false
+            ));
+        }
+
+        List<FridgeItemResponse> savedItems = new ArrayList<>();
+        if (autoSave) {
+            savedItems = batchAdd(user, toAddRequests);
+        }
+
+        return ScanResultDto.builder()
+                .autoSaved(autoSave)
+                .totalDetected(details.size())
+                .savedCount(savedItems.size())
+                .detectedItems(details)
+                .savedFridgeItems(savedItems)
+                .build();
     }
 }

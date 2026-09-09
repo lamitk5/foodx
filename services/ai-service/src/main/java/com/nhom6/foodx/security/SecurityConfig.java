@@ -56,8 +56,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_WHITELIST).permitAll()
-                        // Trạng thái AI có thể kiểm tra công khai
+                        // Trạng thái AI và endpoint tạo sinh cho service nội bộ
                         .requestMatchers(HttpMethod.GET, "/api/ai/status").permitAll()
+                        .requestMatchers("/api/ai/generate", "/api/ai/parse-recipe", "/api/ai/scan-food-image").permitAll()
                         // Danh mục nguyên liệu & dữ liệu trang chủ công khai
                         .requestMatchers(HttpMethod.GET, "/api/ingredients/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/home/**").permitAll()

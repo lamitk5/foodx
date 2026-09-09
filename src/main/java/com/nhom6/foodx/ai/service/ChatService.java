@@ -36,10 +36,19 @@ public class ChatService {
     }
 
     public ChatResponse chat(ChatRequest request) {
+        return chat(request, null);
+    }
+
+    /**
+     * Chat có bối cảnh người dùng (hồ sơ + tủ lạnh + lịch sử) do server dựng.
+     * Nếu {@code extraContext} rỗng/null thì hành vi như {@link #chat(ChatRequest)}.
+     */
+    public ChatResponse chat(ChatRequest request, String extraContext) {
         String reply;
         List<String> steps = null;
 
         boolean stepMode = "step".equalsIgnoreCase(request.getMode());
+        String context = extraContext == null ? "" : extraContext;
 
         if (aiProviderService.isMockMode()) {
             // ---- Chế độ mock (test không cần AI) ----
@@ -53,8 +62,8 @@ public class ChatService {
             // ---- Chế độ dùng AI thật (Groq, dự phòng Gemini) ----
             try {
                 String prompt = stepMode
-                        ? PromptTemplate.stepByStepPrompt(request.getMessage(), request.getAvailableIngredients())
-                        : PromptTemplate.chatPrompt(request.getMessage(), request.getAvailableIngredients());
+                        ? PromptTemplate.stepByStepPrompt(request.getMessage(), request.getAvailableIngredients(), context)
+                        : PromptTemplate.chatPrompt(request.getMessage(), request.getAvailableIngredients(), context);
                 // Gọi 1 lần duy nhất cho cả reply và steps (tiết kiệm quota gói free)
                 String text = aiProviderService.generateText(prompt);
                 if (stepMode) {

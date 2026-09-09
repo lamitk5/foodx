@@ -1,609 +1,221 @@
-# 🍽️ FoodX - Tài liệu API
+# 🍽️ FoodX — Tài Liệu API (đồng bộ với mã nguồn hiện tại)
 
-> **Ứng dụng:** FoodX - Quản lý công thức nấu ăn, tủ lạnh ảo, trợ lý AI nấu ăn
-> **Base URL:** `http://localhost:8080` (dev) / biến đổi theo môi trường triển khai
+> Cập nhật theo codebase thực tế (`src/main/java/com/nhom6/foodx/**`).
+> Base URL: `http://localhost:8080`. Swagger UI: `/swagger-ui.html`.
 
 ---
 
 ## 1. Tổng quan
 
-FoodX là một REST API được xây dựng bằng **Spring Boot 4.1.0** (Java 17). Tài liệu này mô tả **toàn bộ các API đang có trong dự án**, bao gồm:
-| 🤖 **AI** | `/api/ai` | Gợi ý công thức, trợ lý AI nấu ăn |
-| Nhóm API | Base path | Mô tả |
-|----------|-----------|-------|
-| 🔐 **Auth** | `/api/auth` | Đăng ký, đăng nhập, cấp JWT |
-| 🧅 **Ingredient** | `/api/ingredients` | Quản lý danh mục nguyên liệu |
-| 🍳 **Recipe** | `/api/recipes` | Quản lý công thức, import công thức |
-| 🏠 **Home** | `/api/home` | Dữ liệu tổng hợp cho trang chủ |
-| 🤖 **AI** | `/api/ai` | Gợi ý công thức, trợ lý AI nấu ăn |
-
-> **Ghi chú:** Các module `fridge` (tủ lạnh ảo) và `mealplan` (kế hoạch ăn uống) hiện **chưa có controller** (chưa được expose endpoint) — tuy đã có entity/repository/DTO bên dưới. Sẽ được bổ sung trong các giai đoạn sau.
-
----
-
-## 2. Định dạng phản hồi chuẩn (ApiResponse)
-
-Mọi endpoint đều trả về một object JSON theo cấu trúc thống nhất (**`ApiResponse<T>`**):
-
-```json
-{
-  "success": true,
-  "message": "Thông báo (chuỗi)",
-  "data": { },
-  "timestamp": "2024-01-01T10:00:00.000",
-  "status": 200
-}
-```
-
-| Trường | Kiểu | Ý nghĩa |
-|--------|------|---------|
-| `success` | `boolean` | `true` nếu thành công, `false` nếu thất bại |
-| `message` | `string` | Thông điệp mô tả (có thể null khi gọi `success(data)` |
-| `data` | `any` | Payload dữ liệu chính (có thể null) |
-| `timestamp` | `string` (ISO) | Thời điểm server trả về |
-| `status` | `integer` | Mã trạng thái HTTP |
-
----
-
-## 3. Xác thực (Authentication - JWT)
-
-Hệ thống dùng **JWT Bearer Token**. Cơ chế:
-
-- Sau khi đăng nhập/đăng ký thành công, nhận được `accessToken`.
-- Đính kèm token vào header của mọi request có yêu cầu xác thực:
-  ```
-  Authorization: Bearer <accessToken>
-  ```
-- JWT chứa `subject` (username), claim `uid` (userId) và `role` (ADMIN | USER).
-- Thời hạn mặc định: `86400000` ms = **24 giờ** (`app.jwt.expiration-ms`).
-- Issuer: `foodx`.
-
-### Các endpoint **công khai** (không cần token)
-
-| Phương thức | Path | Mô tả |
-|-------------|------|-------|
-| ANY | `/api/auth/**` | Đăng ký / đăng nhập |
-| GET | `/api/ingredients/**` | Tìm kiếm / xem nguyên liệu |
-| GET | `/api/recipes/**` | Tìm kiếm / xem công thức |
-| GET | `/api/home/**` | Dữ liệu trang chủ |
-| ANY | `/api/ai/**` | AI gợi ý / chat |
-| ANY | `/v3/api-docs/**`, `/swagger-ui/**`, ... | Tài liệu Swagger |
-
-### Các endpoint **cần xác thực** (bắt buộc token)
-
-| Phương thức | Path |
-|-------------|------|
-| POST / PUT / DELETE | `/api/ingredients/**` (tạo/sửa/xóa) |
-| POST / PUT / DELETE | `/api/recipes/**` (tạo/sửa/xóa/import) |
-
----
-
-## 4. Cấu hình & Tài liệu tự động (Swagger / OpenAPI)
-
-Dự án tích hợp **Springdoc OpenAPI**. Sau khi chạy server, truy cập:
-
-- **Swagger UI:** `http://localhost:8080/swagger-ui.html`
-- **OpenAPI JSON:** `http://localhost:8080/v3/api-docs`
-
-Cấu hình trong `application.properties`:
-```properties
-springdoc.api-docs.path=/v3/api-docs
-springdoc.swagger-ui.path=/swagger-ui.html
-```
-
----
-
-## 5. Bảng mã trạng thái
-
-| Mã | Ý nghĩa |
-|----|---------|
-| 200 | Thành công |
-| 400 | Dữ liệu không hợp lệ (validation lỗi) |
-| 401 | Chưa xác thực / Token không hợp lệ |
-| 403 | Không có quyền truy cập |
-| 404 | Không tìm thấy tài nguyên |
-| 500 | Lỗi hệ thống |
-
----
-
-## 6. Chi tiết các API
-
-### 6.1 🏠 Home
-
-#### `GET /api/home`
-Lấy dữ liệu tổng hợp cho trang chủ (món nổi bật, danh mục, lời chào).
-- **Xác thực:** ❌ Không cần
-- **Response:** `ApiResponse<HomeResponse>`
-
-```json
-{
-  "success": true,
-  "message": "Thành công",
-  "data": {
-    "featuredRecipes": [
-      {
-        "id": 1,
-        "title": "Phở bò",
-        "imageUrl": "https://...",
-        "summary": "Món bún ngon",
-        "category": "Món chính",
-        "cookTime": 120,
-        "servings": 4
-      }
-    ],
-    "categoryGroups": [
-      {
-        "category": "Món chính",
-        "recipes": [ { "id": 1, "title": "Phở bò" } ]
-      }
-    ],
-    "greeting": "Chào mừng bạn quay lại!"
-  },
-  "timestamp": "...",
-  "status": 200
-}
-```
-
----
-
-### 6.2 🔐 Auth
-
-#### `POST /api/auth/register`
-Đăng ký tài khoản mới.
-- **Xác thực:** ❌ Không cần
-- **Request body:** `RegisterRequest`
-
-```json
-{
-  "username": "johndoe",          // bắt buộc, 3-50 ký tự
-  "email": "johndoe@email.com",   // bắt buộc, hợp lệ, tối đa 100 ký tự
-  "password": "secret123",        // bắt buộc, tối thiểu 6 ký tự
-  "fullName": "John Doe"          // không bắt buộc, tối đa 100 ký tự
-}
-```
-
-- **Response:** `ApiResponse<AuthResponse>` — trả token sau khi đăng ký thành công
-```json
-{
-  "success": true,
-  "message": "Đăng ký thành công",
-  "data": {
-    "accessToken": "eyJhbGciOi...",
-    "tokenType": "Bearer",
-    "expiresIn": 86400000,
-    "userId": 1,
-    "username": "johndoe",
-    "email": "johndoe@email.com",
-    "role": "USER"
-  },
-  "status": 200
-}
-```
-
-#### `POST /api/auth/login`
-Đăng nhập bằng username/email và mật khẩu.
-- **Xác thực:** ❌ Không cần
-- **Request body:** `LoginRequest`
-
-```json
-{
-  "username": "johndoe",     // bắt buộc (username HOẶC email)
-  "password": "secret123"    // bắt buộc
-}
-```
-
-- **Response:** `ApiResponse<AuthResponse>` (cấu trúc giống register)
-```json
-{
-  "success": true,
-  "message": "Đăng nhập thành công",
-  "data": {
-    "accessToken": "eyJhbGciOi...",
-    "tokenType": "Bearer",
-    "expiresIn": 86400000,
-    "userId": 1,
-    "username": "johndoe",
-    "email": "johndoe@email.com",
-    "role": "USER"
-  },
-  "status": 200
-}
-```
-
----
-
-### 6.3 🧅 Ingredient
-
-#### `GET /api/ingredients`
-Tìm kiếm danh sách nguyên liệu theo tên và/hoặc danh mục.
-- **Xác thực:** ❌ Không cần
-- **Query params (tuỳ chọn):**
-  - `name` (string): lọc theo tên
-  - `category` (string): lọc theo danh mục
-- **Response:** `ApiResponse<List<IngredientDto>>`
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": 1,
-      "name": "Hành tím",
-      "defaultUnit": "củ",
-      "category": "Rau củ",
-      "caloriesPerUnit": 40.0,
-      "description": "Hành tím"
-    }
-  ],
-  "status": 200
-}
-```
-
-#### `GET /api/ingredients/{id}`
-Lấy chi tiết một nguyên liệu theo ID.
-- **Xác thực:** ❌ Không cần
-- **Path param:** `id` (Long)
-- **Response:** `ApiResponse<IngredientDto>`
-
-#### `POST /api/ingredients`
-Tạo nguyên liệu mới.
-- **Xác thực:** ✅ Bắt buộc (Bearer token)
-- **Request body:** `IngredientDto` — `name` bắt buộc, tối đa 100 ký tự; `defaultUnit` ≤ 20, `category` ≤ 50, `description` ≤ 500 ký tự.
-
-```json
-{
-  "name": "Ớt chuông",
-  "defaultUnit": "trái",
-  "category": "Rau củ",
-  "caloriesPerUnit": 26.0,
-  "description": "Ớt chuông đỏ"
-}
-```
-
-- **Response:** `ApiResponse<IngredientDto>`
-
-#### `PUT /api/ingredients/{id}`
-Cập nhật nguyên liệu theo ID.
-- **Xác thực:** ✅ Bắt buộc
-- **Path param:** `id` (Long)
-- **Request body:** `IngredientDto` (tương tự create)
-
-#### `DELETE /api/ingredients/{id}`
-Xóa nguyên liệu theo ID.
-- **Xác thực:** ✅ Bắt buộc
-- **Path param:** `id` (Long)
-- **Response:** `ApiResponse<Void>` — message `"Xoá nguyên liệu thành công"`
-
----
-
-### 6.4 🍳 Recipe
-
-#### `GET /api/recipes`
-Tìm kiếm công thức.
-- **Xác thực:** ❌ Không cần
-- **Query params (tuỳ chọn):**
-  - `keyword` (string)
-  - `category` (string)
-  - `cuisine` (string)
-- **Response:** `ApiResponse<List<RecipeResponse>>`
-
-#### `GET /api/recipes/{id}`
-Lấy chi tiết công thức.
-- **Xác thực:** ❌ Không cần
-- **Path param:** `id` (Long)
-- **Response:** `ApiResponse<RecipeResponse>`
-
-Cấu trúc `RecipeResponse`:
-```json
-{
-  "id": 1,
-  "title": "Phở bò",
-  "description": "Món ăn truyền thống",
-  "instructions": "Nấu nước dùng...",
-  "prepTime": 30,
-  "cookTime": 120,
-  "servings": 4,
-  "cuisine": "Việt Nam",
-  "category": "Món chính",
-  "imageUrl": "https://...",
-  "sourceUrl": "https://...",
-  "authorId": 1,
-  "authorName": "johndoe",
-  "ingredients": [
-    {
-      "id": 10,
-      "ingredientName": "Bánh phở",
-      "quantity": 500.0,
-      "unit": "g",
-      "note": "Loại tươi"
-    }
-  ],
-  "createdAt": "2024-01-01T10:00:00",
-  "updatedAt": "2024-01-01T10:00:00"
-}
-```
-
-#### `POST /api/recipes`
-Tạo công thức mới (công thức thuộc về user đang đăng nhập).
-- **Xác thực:** ✅ Bắt buộc
-- **Request body:** `RecipeRequest`
-
-```json
-{
-  "title": "Phở bò",            // bắt buộc, ≤ 200 ký tự
-  "description": "Món ăn truyền thống",
-  "instructions": "Nấu nước dùng...",
-  "prepTime": 30,
-  "cookTime": 120,
-  "servings": 4,
-  "cuisine": "Việt Nam",
-  "category": "Món chính",
-  "imageUrl": "https://...",
-  "sourceUrl": "https://...",
-  "ingredients": [
-    {
-      "ingredientName": "Bánh phở",   // bắt buộc
-      "quantity": 500.0,
-      "unit": "g",
-      "note": "Loại tươi"
-    }
-  ]
-}
-```
-
-- **Response:** `ApiResponse<RecipeResponse>`
-- **Message:** `"Tạo công thức thành công"`
-
-#### `POST /api/recipes/import`
-Import công thức từ text/URL (được AI parse).
-- **Xác thực:** ✅ Bắt buộc
-- **Request body:** `RecipeImportRequest`
-
-```json
-{
-  "sourceUrl": "https://...",    // tuỳ chọn
-  "text": "Nguyên liệu: ... Cách làm: ..."   // bắt buộc (hoặc sourceUrl)
-}
-```
-
-> **Lưu ý:** annotation `@NotBlank` trên trường `text` cho thấy hiện tại bắt buộc phải có `text`, dù vậy DTO vẫn có cả `sourceUrl` tùy chọn.
-
-- **Response:** `ApiResponse<RecipeResponse>`
-- **Message:** `"Import công thức thành công"`
-
-#### `PUT /api/recipes/{id}`
-Cập nhật công thức theo ID.
-- **Xác thực:** ✅ Bắt buộc
-- **Path param:** `id` (Long)
-- **Request body:** `RecipeRequest` (tương tự create)
-- **Message:** `"Cập nhật công thức thành công"`
-
-#### `DELETE /api/recipes/{id}`
-Xóa công thức theo ID.
-- **Xác thực:** ✅ Bắt buộc
-- **Path param:** `id` (Long)
-- **Response:** `ApiResponse<Void>` — message `"Xoá công thức thành công"`
-
----
-
-### 6.5 🤖 AI
-
-> Các endpoint AI hiện được cấu hình **công khai** (`/api/ai/**` permitAll) nhưng có thể được bảo vệ trong giai đoạn sau.
-
-#### `POST /api/ai/suggest`
-Gợi ý công thức dựa trên nguyên liệu có sẵn.
-- **Xác thực:** ❌ Không bắt buộc (hiện tại)
-- **Request body:** `SuggestRequest`
-
-```json
-{
-  "availableIngredients": ["trứng", "cà chua", "hành"],
-  "preference": "không dùng thịt",
-  "mealType": "tối",
-  "maxSuggestions": 3
-}
-```
-
-| Trường | Kiểu | Ý nghĩa |
-|--------|------|---------|
-| `availableIngredients` | `List<String>` | Nguyên liệu hiện có trong tủ lạnh |
-| `preference` | `string` | Yêu cầu bổ sung (không dùng thịt, món xào...) |
-| `mealType` | `string` | Bữa: sáng, trưa, tối, tráng miệng |
-| `maxSuggestions` | `integer` | Số lượng gợi ý |
-
-- **Response:** `ApiResponse<SuggestResponse>`
-```json
-{
-  "success": true,
-  "message": "Gợi ý thành công",
-  "data": {
-    "suggestions": [
-      {
-        "title": "Trứng sốt cà chua",
-        "description": "Món ăn đơn giản",
-        "ingredients": ["trứng", "cà chua", "hành"],
-        "instructions": "Phi hành, cho cà chua...",
-        "estimatedTime": "20 phút"
-      }
-    ]
-  },
-  "status": 200
-}
-```
-
-#### `POST /api/ai/chat`
-Hỏi đáp với Trợ lý AI nấu ăn.
-- **Xác thực:** ❌ Không bắt buộc (hiện tại)
-- **Request body:** `ChatRequest`
-
-```json
-{
-  "message": "Cách nấu cơm chiên trứng?",   // bắt buộc
-  "availableIngredients": ["cơm", "trứng"],  // tuỳ chọn
-  "mode": "step"                              // 'chat' | 'step'
-}
-```
-
-| Trường | Kiểu | Ý nghĩa |
-|--------|------|---------|
-| `message` | `string` | Câu hỏi / lời nhắn (bắt buộc) |
-| `availableIngredients` | `List<String>` | Nguyên liệu hiện có (tuỳ chọn) |
-| `mode` | `string` | `chat` (hỏi đáp) hoặc `step` (nấu từng bước) |
-
-- **Response:** `ApiResponse<ChatResponse>`
-```json
-{
-  "success": true,
-  "message": "Trợ lý AI phản hồi",
-  "data": {
-    "reply": "Để nấu cơm chiên trứng, bạn cần...",
-    "steps": ["Đánh trứng", "Phi thơm", "Cho cơm vào"],
-    "timestamp": "2024-01-01T10:00:00"
-  },
-  "status": 200
-}
-```
-
-#### `GET /api/chat/sessions`
-Lấy danh sách các phiên trò chuyện AI của tài khoản đang đăng nhập.
-- **Xác thực:** 🔒 Bắt buộc (Bearer Token)
-- **Response:** `ApiResponse<List<SessionResponse>>`
-
-#### `POST /api/chat/sessions`
-Tạo một phiên trò chuyện mới cho tài khoản.
-- **Xác thực:** 🔒 Bắt buộc (Bearer Token)
-- **Request body:**
-```json
-{
-  "title": "Nấu ăn tối nay",
-  "mode": "chat"
-}
-```
-- **Response:** `ApiResponse<SessionResponse>`
-
-#### `GET /api/chat/sessions/{id}`
-Lấy chi tiết một phiên trò chuyện và toàn bộ lịch sử tin nhắn & bước nấu.
-- **Xác thực:** 🔒 Bắt buộc (Bearer Token)
-- **Response:** `ApiResponse<SessionDetailResponse>`
-
-#### `PATCH /api/chat/sessions/{id}`
-Đổi tên tiêu đề phiên trò chuyện.
-- **Xác thực:** 🔒 Bắt buộc (Bearer Token)
-- **Request body:** `{ "title": "Bí quyết phở bò" }`
-- **Response:** `ApiResponse<SessionResponse>`
-
-#### `DELETE /api/chat/sessions/{id}`
-Xóa phiên trò chuyện và toàn bộ tin nhắn thuộc phiên.
-- **Xác thực:** 🔒 Bắt buộc (Bearer Token)
-- **Response:** `ApiResponse<Void>`
-
-#### `POST /api/chat/sessions/{id}/messages`
-Gửi tin nhắn trong phiên trò chuyện cụ thể, lưu trữ tin nhắn người dùng và câu trả lời AI vào cơ sở dữ liệu.
-- **Xác thực:** 🔒 Bắt buộc (Bearer Token)
-- **Request body:** `SendMessageRequest`
-```json
-{
-  "message": "Cách nấu bún bò Huế thơm ngon?",
-  "mode": "step",
-  "availableIngredients": ["bún", "bò"]
-}
-```
-- **Response:** `ApiResponse<ChatResponse>`
-
----
-
-## 7. Xử lý lỗi (Error Handling)
-
-Mọi lỗi đều được xử lý tập trung trong `GlobalExceptionHandler`:
-
-### 7.1 BusinessException (lỗi nghiệp vụ, ví dụ: trùng tài khoản)
-```json
-{
-  "success": false,
-  "message": "Tên đăng nhập đã tồn tại",
-  "timestamp": "...",
-  "status": 400
-}
-```
-
-### 7.2 Validation lỗi (400)
-Khi dữ liệu request không hợp lệ:
-```json
-{
-  "success": false,
-  "message": "Dữ liệu không hợp lệ",
-  "data": {
-    "username": "Tên đăng nhập từ 3-50 ký tự",
-    "password": "Mật khẩu tối thiểu 6 ký tự"
-  },
-  "status": 400
-}
-```
-
-### 7.3 Lỗi hệ thống (500)
-```json
-{
-  "success": false,
-  "message": "Đã xảy ra lỗi hệ thống: <chi tiết>",
-  "timestamp": "...",
-  "status": 500
-}
-```
-
----
-
-## 8. Ví dụ luồng sử dụng điển hình
-
-1. **Đăng ký / đăng nhập** → lấy `accessToken`.
-2. Đính token vào tất cả request cần xác thực.
-3. **Tìm kiếm** công thức (công khai, không cần token).
-4. **Tạo / import** công thức của riêng mình (cần token).
-5. Dùng **AI** để gợi ý món dựa trên nguyên liệu trong tủ.
-
-### Ví dụ curl (tạo công thức - cần token)
+| Mục | Giá trị |
+|---|---|
+| Định dạng | JSON (`application/json`; upload dùng `multipart/form-data`) |
+| Auth | JWT Bearer — header `Authorization: Bearer <token>` (lấy ở `/api/auth/register` hoặc `/login`) |
+| Envelope | Mọi endpoint trả về `ApiResponse`: `{ "success": bool, "message": string, "data": ..., "status": int }` |
+| Lỗi | HTTP 400/401/403/404/409/429/500 kèm envelope `success=false`; message tiếng Việt, không lộ chi tiết nội bộ |
+| Rate limit | 30 yêu cầu/phút/IP (cấu hình `app.rate-limit-per-minute`) áp cho: `/api/ai/**`, `/api/fridge/search-image`, `/api/recipes/search-image`, `/api/fridge/estimate-nutrition`, `/api/upload` → HTTP 429 |
+| CORS | Đóng (SPA cùng origin với backend) |
+
+**Xác thực (ví dụ):**
 ```bash
-curl -X POST http://localhost:8080/api/recipes \
-  -H "Authorization: Bearer <accessToken>" \
+curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{
-    "title": "Món mới",
-    "instructions": "...",
-    "ingredients": [{ "ingredientName": "gà", "quantity": 1, "unit": "con" }]
-  }'
+  -d '{"username":"minhanh","password":"123456"}'
+# → data.accessToken dùng cho các request sau:
+curl http://localhost:8080/api/fridge -H "Authorization: Bearer <accessToken>"
 ```
 
 ---
 
-## 9. Cấu hình môi trường
+## 2. Auth — `/api/auth`
 
-Trong `application.properties`:
-```properties
-spring.profiles.active=dev          # profile đang chạy (dev / prod)
-app.jwt.secret=...                  # khóa bí mật JWT (≥32 bytes)
-app.jwt.expiration-ms=86400000      # thời hạn token (24h)
-app.gemini.api-key=${GEMINI_API_KEY}  # API key Gemini cho AI
-app.gemini.model=gemini-1.5-flash   # model AI
-```
+| Method | Path | Auth | Mô tả |
+|---|---|---|---|
+| POST | `/register` | ❌ | `{username, email, password (6–100 ký tự), fullName?}` → `AuthResponse` + JWT |
+| POST | `/login` | ❌ | `{username (hoặc email), password}` → `AuthResponse` + JWT |
+| GET | `/me` | ✅ | Thông tin user hiện tại theo token |
+| POST | `/change-password` | ✅ | `{oldPassword, newPassword}` — **bắt buộc đúng mật khẩu cũ**, mật khẩu mới phải khác cũ |
 
-> ⚠️ **Bảo mật:** khóa JWT mặc định (`app.jwt.secret`) bắt buộc phải thay đổi khi triển khai production.
+`AuthResponse.data`: `{accessToken, tokenType:"Bearer", expiresIn, userId, username, email, role, fullName, avatarUrl}`
 
 ---
 
-## 10. Module chưa có API (đang phát triển)
+## 3. Trang chủ — `/api/home` (public)
 
-Các nhóm sau có **entity / repository / DTO** nhưng **chưa có controller** (chưa thể gọi qua HTTP):
+| Method | Path | Mô tả |
+|---|---|---|
+| GET | `/api/home` | `{featuredRecipes (8 món mới nhất), categoryGroups [{category, recipes}] , greeting}` — dữ liệu công khai |
 
-### 🧊 Fridge (tủ lạnh ảo) — dự kiến:
-- `FridgeItem` — nguyên liệu trong tủ + hạn sử dụng
-- `ShoppingList` / `ShoppingListItem` — danh sách mua sắm
-
-### 📅 Mealplan (kế hoạch ăn uống) — dự kiến:
-- `MealPlan` / `MealPlanItem` — kế hoạch bữa ăn
-- `UserAllergy` — dị ứng của người dùng
-- Gợi ý kế hoạch bằng AI
-
-> Khi các module này được expose controller, tài liệu sẽ được bổ sung.
+Trang SPA: `GET /` (index.html), `GET /app`, `GET /app.html` (redirect → index.html) — không cần auth.
 
 ---
 
-*Tài liệu được sinh tự động dựa trên mã nguồn hiện tại của dự án.*
+## 4. Nguyên liệu — `/api/ingredients`
+
+| Method | Path | Auth | Mô tả |
+|---|---|---|---|
+| GET | `/api/ingredients` | ❌ | Danh sách catalog nguyên liệu toàn cục |
+| GET | `/api/ingredients/{id}` | ❌ | Chi tiết 1 nguyên liệu |
+| POST | `/api/ingredients` | ✅ | Thêm nguyên liệu toàn cục |
+| PUT | `/api/ingredients/{id}` | ✅ | Cập nhật |
+| DELETE | `/api/ingredients/{id}` | ✅ | Xoá |
+
+> ⚠️ Catalog dùng chung, mọi user đăng nhập đều sửa được — cần tách quyền admin khi mở production.
+
+---
+
+## 5. Tủ lạnh — `/api/fridge` (tất cả cần JWT)
+
+| Method | Path | Mô tả |
+|---|---|---|
+| GET | `/api/fridge` | Danh sách thực phẩm của user hiện tại |
+| POST | `/api/fridge` | Thêm: `{sourceKey?, name, type?, quantity, unit, kcal?, protein?, carb?, fat?, components?, benefit?, imageUrl?, expiresAt? (yyyy-MM-dd), note?, customFood?}` |
+| PUT | `/api/fridge/{id}` | Cập nhật thực phẩm (id số) |
+| PATCH | `/api/fridge/{id}/quantity` | `?delta=±số` — đổi số lượng (về ≤ 0 thì tự xoá) |
+| PATCH | `/api/fridge/{id}/expiry` | `{expiresAt}` — đổi hạn dùng |
+| POST | `/api/fridge/merge-duplicates` | Gộp thực phẩm trùng tên + trùng hạn dùng |
+| DELETE | `/api/fridge/{id}` | Xoá 1 thực phẩm |
+| DELETE | `/api/fridge/all` (hoặc `/clear-all`) | Dọn sạch tủ |
+| GET | `/api/fridge/search-image` | `?query=tên món` — tìm ảnh (local/Wikipedia) |
+| GET | `/api/fridge/estimate-nutrition` | `?name=...&quantity=100&unit=g` — ước lượng dinh dưỡng |
+
+`FridgeItemResponse` (1 item, mảng `data`): `{id, foodId/sourceKey, name, type, quantity, unit, kcal, protein, carb, fat, imageUrl, expiresAt, note, createdAt, updatedAt}`
+
+---
+
+## 6. Công thức — `/api/recipes`
+
+| Method | Path | Auth | Mô tả |
+|---|---|---|---|
+| GET | `/api/recipes` | ❌ | Danh sách; lọc **một** tiêu chí: `?keyword=`, `?category=`, `?cuisine=` |
+| GET | `/api/recipes/{id}` | ❌ | Chi tiết kèm `ingredients[]` |
+| GET | `/api/recipes/match` | ✅ | **Món khớp tủ lạnh của user**: `[{recipe, matchedIngredients, totalIngredients, matchPercent}]` (giảm dần theo %) |
+| GET | `/api/recipes/saved` | ✅ | Món đã lưu |
+| POST | `/api/recipes/{id}/save` | ✅ | Lưu / bỏ lưu (toggle) → `true/false` |
+| POST | `/api/recipes` | ✅ | Tạo mới: `{title, description?, instructions?, prepTime?, cookTime?, servings?, cuisine?, category?, kcal?, protein?, carb?, fat?, difficulty?, mealSlots?, imageUrl?, sourceUrl?, ingredients?: [{ingredientName, quantity, unit, note}]}` |
+| PUT | `/api/recipes/{id}` | ✅ | Cập nhật (gửi kèm `ingredients` thì thay nguyên liệu) |
+| DELETE | `/api/recipes/{id}` | ✅ | Xoá |
+| POST | `/api/recipes/import` | ✅ | Import từ text/URL: `{sourceUrl?, text}` — AI parse, regex fallback |
+| GET | `/api/recipes/search-image` | ✅ | `?query=` — tìm ảnh món (rate-limited) |
+
+> Ảnh món: seed & món tạo mới ưu tiên ảnh **local** `/images/foods/<slug>.jpg` — không gọi mạng trong vòng đọc/ghi dữ liệu.
+
+---
+
+## 7. Kế hoạch bữa ăn — `/api/plan` (cần JWT)
+
+| Method | Path | Mô tả |
+|---|---|---|
+| GET | `/api/plan?start=yyyy-MM-dd&end=yyyy-MM-dd` | Thực đơn trong khoảng ngày |
+| GET | `/api/plan?date=...&slot=...` | 1 khung giờ cụ thể |
+| POST | `/api/plan` | Đặt món: `{planDate, slot: morning\|lunch\|dinner, recipeId}` |
+| DELETE | `/api/plan?date=...&slot=...` | Xoá món khỏi khung giờ |
+| POST | `/api/plan/auto?start=...&end=...` | **AI** lên thực đơn 7 ngày × 3 bữa (dùng hồ sơ + tủ lạnh); fallback thuật toán khi AI lỗi |
+| POST | `/api/plan/suggest-slot` | `{planDate, slot, prompt?, targetKcal?}` — AI gợi ý món cho 1 khung giờ |
+| POST | `/api/plan/estimate-dish` | `{dishName, slot}` — AI ước lượng dinh dưỡng |
+| POST | `/api/plan/custom-slot` | `{planDate, slot, title, kcal, protein?, carb?, fat?, description?}` — đặt món tự nhập |
+
+> Ràng buộc unique `(user, planDate, slot)` — đặt lại là ghi đè món cũ.
+
+---
+
+## 8. Đi chợ — `/api/shopping` (cần JWT)
+
+| Method | Path | Mô tả |
+|---|---|---|
+| GET | `/api/shopping` | Danh sách mua sắm |
+| POST | `/api/shopping` | Thêm: `{name, quantity?, price?, category?}` (quantity dạng text: "500 g", "2 quả") |
+| PATCH | `/api/shopping/{id}/toggle` | Tick mua/không mua — **tick "đã mua" tự nạp vào tủ lạnh** (gom trùng, hạn +7 ngày) |
+| PATCH | `/api/shopping/{id}` | Sửa món |
+| DELETE | `/api/shopping/{id}` | Xoá món |
+| DELETE | `/api/shopping/done` | Xoá các món đã mua |
+| DELETE | `/api/shopping/all` | Xoá toàn bộ |
+
+---
+
+## 9. Cộng đồng — `/api/social`
+
+| Method | Path | Auth | Mô tả |
+|---|---|---|---|
+| GET | `/api/social/posts` | ❌ | Feed mới nhất (khách xem được) |
+| GET | `/api/social/posts/my` | ✅ | Bài của user hiện tại |
+| GET | `/api/social/posts/{id}` | ❌ | Chi tiết bài viết |
+| POST | `/api/social/posts` | ✅ | Đăng bài: `{title, description?, ingredients?, instructions?, imageUrl?, cookTime?, kcal?, category?}` |
+| DELETE | `/api/social/posts/{id}` | ✅ | Xoá bài của mình |
+| POST | `/api/social/posts/{id}/like` | ✅ | Like / bỏ like (toggle) |
+| GET | `/api/social/posts/{id}/comments` | ❌ | Bình luận của bài |
+| POST | `/api/social/posts/{id}/comments` | ✅ | Thêm bình luận |
+| DELETE | `/api/social/comments/{id}` | ✅ | Xoá bình luận của mình |
+
+---
+
+## 10. Thống kê & vòng tiêu thụ — `/api/stats` (cần JWT)
+
+| Method | Path | Mô tả |
+|---|---|---|
+| GET | `/api/stats` | `{totalCooked, weekCooked, monthCooked, byDay (14 ngày: [{date,kcal}]), topRecipes[5], currentStreak}` |
+| POST | `/api/stats/cooked` | `{recipeId, servings?}` — ghi lịch sử nấu (mỗi ngày/món 1 lần — bấm đúp không nhân đôi) và **tự trừ nguyên liệu tủ lạnh theo khẩu phần** (quy đổi g/kg, ml/l; hết thì xoá khỏi tủ) |
+
+---
+
+## 11. Hồ sơ — `/api/profile` (cần JWT)
+
+| Method | Path | Mô tả |
+|---|---|---|
+| GET | `/api/profile` | Hồ sơ dinh dưỡng (tự tạo mặc định nếu chưa có) |
+| PUT | `/api/profile` | `{name?, gender?, age?, weight?, height?, target?, activity?, diet?, allergies?, dislikes?}` (validate range) |
+| POST | `/api/profile/avatar` | Upload avatar — `multipart`, field `avatar` (jpg/png/webp ≤ 5MB) |
+| DELETE | `/api/profile/avatar` | Xoá avatar |
+
+---
+
+## 12. Chat AI đa phiên — `/api/chat/sessions` (cần JWT)
+
+| Method | Path | Mô tả |
+|---|---|---|
+| GET | `/api/chat/sessions` | Danh sách phiên của user |
+| POST | `/api/chat/sessions` | Tạo phiên `{title?, mode?: chat\|step}` |
+| GET | `/api/chat/sessions/{id}` | Chi tiết phiên + tin nhắn |
+| PATCH | `/api/chat/sessions/{id}` | Đổi tên `{title}` |
+| DELETE | `/api/chat/sessions/{id}` | Xoá phiên (kèm tin nhắn) |
+| POST | `/api/chat/sessions/{id}/messages` | Gửi tin `{message, mode?, availableIngredients?}` → `{reply, steps?, timestamp}` |
+
+> Server **tự nạp bối cảnh**: hồ sơ (chế độ ăn, dị ứng, món ghét) + tủ lạnh + 8 tin nhắn gần nhất của phiên → AI trả lời đúng ngữ cảnh và "nhớ" cuộc trò chuyện. Phiên mới tự đặt tiêu đề từ câu hỏi đầu tiên.
+
+---
+
+## 13. AI trực tiếp — `/api/ai`
+
+| Method | Path | Auth | Mô tả |
+|---|---|---|---|
+| GET | `/api/ai/status` | ❌ | `{mock, provider: groq\|gemini\|mock, message}` |
+| POST | `/api/ai/chat` | ✅ | `{message, mode?: chat\|step, availableIngredients?}` — 1 lượt hỏi (không lưu phiên), có bối cảnh server |
+| POST | `/api/ai/suggest` | ✅ | `{availableIngredients[], preference?, mealType?, maxSuggestions?}` → suggestions JSON |
+
+> Provider: **Groq** ưu tiên → **Gemini** dự phòng → **Mock** khi chưa cấu hình key hoặc cả hai lỗi. Đặt key qua env `GROQ_API_KEY` / `GEMINI_API_KEY`.
+
+---
+
+## 14. Upload — `/api/upload` (cần JWT)
+
+| Method | Path | Mô tả |
+|---|---|---|
+| POST | `/api/upload` | `multipart/form-data`, field `file` — chỉ **JPG/PNG/WEBP ≤ 5MB** (từ chối SVG) → `{url: "/uploads/yyyy-MM-dd/<uuid>.<ext>"}` |
+
+File đã upload được phục vụ công khai tại `GET /uploads/**`.
+
+---
+
+## 15. Cấu hình quan trọng
+
+| Key | Mặc định | Ghi chú |
+|---|---|---|
+| `spring.profiles.active` | `dev` | `dev` = MySQL local; `ai-test` = H2 in-memory; `prod` = schema validate + đọc env |
+| `app.jwt.secret` | placeholder | **Prod bắt buộc env `JWT_SECRET`** (≥ 32 bytes) |
+| `app.jwt.expiration-ms` | `86400000` | 24h (chưa có refresh token) |
+| `app.rate-limit-per-minute` | `30` | Rate limit theo IP (in-memory, 1 tiến trình) |
+| `spring.servlet.multipart.*` | 5MB | Upload |
+
+### Ghi chú phát triển
+- Database: lược đồ do **JPA `ddl-auto`** sinh từ entity; dữ liệu mẫu do **DataSeeder** seed (profile ≠ `prod`). Các file `db/*.sql` chỉ là tài liệu tham khảo cũ.
+- Gợi ý mở rộng: phân trang cho `/api/recipes` & `/api/social/posts`, refresh token, quyền admin cho catalog `ingredients`, OAuth/email verify, web push, barcode scan.

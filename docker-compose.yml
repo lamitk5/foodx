@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mysql:
     image: mysql:8.0
@@ -17,11 +15,18 @@ services:
 
   api-gateway:
     build:
-      context: .
-      dockerfile: api-gateway/Dockerfile
+      context: ./api-gateway
+      dockerfile: Dockerfile
     container_name: foodx-api-gateway
     ports:
       - "8080:8080"
+    environment:
+      GATEWAY_SERVICES_USER_SERVICE: "http://user-service:8081"
+      GATEWAY_SERVICES_INVENTORY_SERVICE: "http://inventory-service:8082"
+      GATEWAY_SERVICES_RECIPE_SERVICE: "http://recipe-service:8083"
+      GATEWAY_SERVICES_PLAN_SHOPPING_SERVICE: "http://plan-shopping-service:8084"
+      GATEWAY_SERVICES_AI_SERVICE: "http://ai-service:8085"
+      GATEWAY_SERVICES_SOCIAL_STATS_SERVICE: "http://social-stats-service:8086"
     depends_on:
       - user-service
       - inventory-service
@@ -34,11 +39,15 @@ services:
 
   user-service:
     build:
-      context: .
-      dockerfile: services/user-service/Dockerfile
+      context: ./services/user-service
+      dockerfile: Dockerfile
     container_name: foodx-user-service
     ports:
       - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/foodx?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "root"
     depends_on:
       - mysql
     networks:
@@ -46,11 +55,15 @@ services:
 
   inventory-service:
     build:
-      context: .
-      dockerfile: services/inventory-service/Dockerfile
+      context: ./services/inventory-service
+      dockerfile: Dockerfile
     container_name: foodx-inventory-service
     ports:
       - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/foodx?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "root"
     depends_on:
       - mysql
     networks:
@@ -58,11 +71,15 @@ services:
 
   recipe-service:
     build:
-      context: .
-      dockerfile: services/recipe-service/Dockerfile
+      context: ./services/recipe-service
+      dockerfile: Dockerfile
     container_name: foodx-recipe-service
     ports:
       - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/foodx?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "root"
     depends_on:
       - mysql
     networks:
@@ -70,11 +87,15 @@ services:
 
   plan-shopping-service:
     build:
-      context: .
-      dockerfile: services/plan-shopping-service/Dockerfile
+      context: ./services/plan-shopping-service
+      dockerfile: Dockerfile
     container_name: foodx-plan-shopping-service
     ports:
       - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/foodx?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "root"
     depends_on:
       - mysql
     networks:
@@ -82,11 +103,15 @@ services:
 
   ai-service:
     build:
-      context: .
-      dockerfile: services/ai-service/Dockerfile
+      context: ./services/ai-service
+      dockerfile: Dockerfile
     container_name: foodx-ai-service
     ports:
       - "8085:8085"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/foodx?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "root"
     depends_on:
       - mysql
     networks:
@@ -94,11 +119,15 @@ services:
 
   social-stats-service:
     build:
-      context: .
-      dockerfile: services/social-stats-service/Dockerfile
+      context: ./services/social-stats-service
+      dockerfile: Dockerfile
     container_name: foodx-social-stats-service
     ports:
       - "8086:8086"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/foodx?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "root"
     depends_on:
       - mysql
     networks:

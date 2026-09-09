@@ -372,7 +372,7 @@ public class FoodImageSearchService {
         return null;
     }
 
-    private String toSlug(String input) {
+    public static String toSlug(String input) {
         if (input == null) return "food";
         String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
         String noAccents  = Pattern.compile("\\p{InCombiningDiacriticalMarks}+")

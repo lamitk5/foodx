@@ -1,0 +1,383 @@
+{
+	"info": {
+		"_postman_id": "c1f7892a-3b56-4d89-9a21-88d4e73b2201",
+		"name": "FoodX - Test Tủ Lạnh Thông Minh V2 (Từ File Excel)",
+		"description": "Bộ kịch bản API Postman ánh xạ trực tiếp từ file Excel FoodX_TestCase_TuLanh_ThongMinh_V2.xlsx",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "00. [Auth] Đăng nhập lấy Bearer Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Login thành công 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const res = pm.response.json();",
+							"    pm.environment.set(\"accessToken\", res.data.accessToken);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"username\": \"minhanh\",\n  \"password\": \"123456\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/auth/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"login"
+					]
+				}
+			}
+		},
+		{
+			"name": "01. [TC12] Thêm nguyên liệu hợp lệ có dấu",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Lưu thành công nguyên liệu vào tủ lạnh\", function () {",
+							"    const res = pm.response.json();",
+							"    pm.expect(res.success).to.be.true;",
+							"    pm.expect(res.data.name).to.include(\"Thịt ba chỉ heo\");",
+							"    pm.expect(res.data.quantity).to.be.at.least(450);",
+							"    pm.environment.set(\"createdItemId\", res.data.id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Thịt ba chỉ heo\",\n  \"type\": \"Thịt\",\n  \"quantity\": 450,\n  \"unit\": \"g\",\n  \"kcal\": 350,\n  \"protein\": 28,\n  \"expiresAt\": \"2026-11-20\",\n  \"note\": \"Ngăn mát\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/fridge",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"fridge"
+					]
+				}
+			}
+		},
+		{
+			"name": "02. [TC13/TC17] Kiểm thử Tên rỗng & Chặn XSS Injection",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Hệ thống từ chối XSS và tên sai định dạng - HTTP 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"    const res = pm.response.json();",
+							"    pm.expect(res.success).to.be.false;",
+							"    pm.expect(res.message).to.include(\"Tên thực phẩm chỉ được chứa chữ cái\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"<script>alert('xss')</script>\",\n  \"quantity\": 200,\n  \"unit\": \"g\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/fridge",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"fridge"
+					]
+				}
+			}
+		},
+		{
+			"name": "03. [TC25/TC26] Kiểm thử biên số lượng <= 0 (Pairwise)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Chặn số lượng âm hoặc bằng 0 - HTTP 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"    const res = pm.response.json();",
+							"    pm.expect(res.success).to.be.false;",
+							"    pm.expect(res.message).to.include(\"Số lượng phải lớn hơn 0\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Cà chua bi\",\n  \"quantity\": -50,\n  \"unit\": \"quả\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/fridge",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"fridge"
+					]
+				}
+			}
+		},
+		{
+			"name": "04. [TC45] Cập nhật thông tin nguyên liệu (PUT Method)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Cập nhật thông tin nguyên liệu thành công\", function () {",
+							"    const res = pm.response.json();",
+							"    pm.expect(res.success).to.be.true;",
+							"    pm.expect(res.message).to.eql(\"Đã cập nhật nguyên liệu thành công\");",
+							"    pm.expect(res.data.name).to.include(\"Thịt bò Wagyu\");",
+							"    pm.expect(res.data.quantity).to.eql(600);",
+							"    pm.expect(res.data.note).to.eql(\"Hàng tươi vừa nhập\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Thịt bò Wagyu\",\n  \"type\": \"Thịt\",\n  \"quantity\": 600,\n  \"unit\": \"g\",\n  \"kcal\": 450,\n  \"protein\": 32,\n  \"expiresAt\": \"2026-12-01\",\n  \"note\": \"Hàng tươi vừa nhập\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/fridge/{{createdItemId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"fridge",
+						"{{createdItemId}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "05. [TC30/TC31] Tăng giảm số lượng nút +/- trên card",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Thay đổi số lượng thành công - HTTP 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const res = pm.response.json();",
+							"    pm.expect(res.success).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/fridge/{{createdItemId}}/quantity?delta=50",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"fridge",
+						"{{createdItemId}}",
+						"quantity"
+					],
+					"query": [
+						{
+							"key": "delta",
+							"value": "50"
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "06. [TC61] Thực hiện Gộp trùng nguyên liệu",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Gộp trùng hoàn tất - HTTP 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const res = pm.response.json();",
+							"    pm.expect(res.success).to.be.true;",
+							"    pm.expect(res.message).to.include(\"Đã gộp các nguyên liệu trùng\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/fridge/merge-duplicates",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"fridge",
+						"merge-duplicates"
+					]
+				}
+			}
+		},
+		{
+			"name": "07. [TC65] AI Cứu Tủ Lạnh (Khớp món ăn theo nguyên liệu)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"AI khớp món ăn thành công - HTTP 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    const res = pm.response.json();",
+							"    pm.expect(res.success).to.be.true;",
+							"    pm.expect(res.data).to.be.an(\"array\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/recipes/match",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"recipes",
+						"match"
+					]
+				}
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080"
+		},
+		{
+			"key": "accessToken",
+			"value": ""
+		},
+		{
+			"key": "createdItemId",
+			"value": "1"
+		}
+	]
+}

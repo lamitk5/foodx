@@ -35,4 +35,17 @@ public final class StringUtils {
         }
         return value.substring(0, maxLen) + "...";
     }
+
+    /**
+     * Chuẩn hoá chuỗi để so khớp không nhạy dấu tiếng Việt:
+     * trim, lowercase, bỏ dấu (đ -> d). Dùng cho tìm kiếm & khớp nguyên liệu.
+     */
+    public static String searchable(String value) {
+        if (value == null) {
+            return "";
+        }
+        String normalized = normalize(value).toLowerCase();
+        String nfd = java.text.Normalizer.normalize(normalized, java.text.Normalizer.Form.NFD);
+        return nfd.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").replace("đ", "d");
+    }
 }

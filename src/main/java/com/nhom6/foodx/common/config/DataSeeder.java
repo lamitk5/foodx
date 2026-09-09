@@ -6,26 +6,41 @@ import com.nhom6.foodx.food.entity.Food;
 import com.nhom6.foodx.food.repository.FoodRepository;
 import com.nhom6.foodx.fridge.entity.FridgeItem;
 import com.nhom6.foodx.fridge.repository.FridgeItemRepository;
+import com.nhom6.foodx.ingredient.entity.Ingredient;
+import com.nhom6.foodx.ingredient.repository.IngredientRepository;
 import com.nhom6.foodx.recipe.entity.Recipe;
+import com.nhom6.foodx.recipe.entity.RecipeIngredient;
 import com.nhom6.foodx.recipe.repository.RecipeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Seed dữ liệu mẫu cho ứng dụng (User, Catalog Food, Tủ lạnh Fridge, Công thức Recipe).
+ * CHỈ chạy ở môi trường không phải prod (dev, ai-test, test...) để tránh tạo
+ * tài khoản demo có mật khẩu yếu trên production.
  */
 @Slf4j
 @Component
+@Profile("!prod")
+@Transactional
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
 
@@ -33,6 +48,7 @@ public class DataSeeder implements CommandLineRunner {
     private final FoodRepository foodRepository;
     private final FridgeItemRepository fridgeItemRepository;
     private final RecipeRepository recipeRepository;
+    private final IngredientRepository ingredientRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -41,6 +57,8 @@ public class DataSeeder implements CommandLineRunner {
         seedFoods();
         seedFridgeItems();
         seedRecipes();
+        // Bổ sung nguyên liệu/category/ảnh cho dữ liệu recipe đã tồn tại từ các lần chạy trước
+        seedExistingRecipeData();
     }
 
     // =========================================================================
@@ -314,7 +332,7 @@ public class DataSeeder implements CommandLineRunner {
         if (recipeRepository.count() >= 15) {
             return;
         }
-        List<Recipe> recipes = List.of(
+        List<Recipe> seedList = List.of(
                 // --- BỮA SÁNG (350 - 500 kcal) ---
                 recipe("Phở bò tái Hà Nội", "Tô phở nước dùng trong veo, thơm thảo quả hồi quế, thịt bò mềm và bánh phở dẻo mềm.",
                         "Ninh xương bò với gừng hành nướng trong 90 phút.\nTrụng bánh phở, xếp thịt bò tái mỏng lên trên.\nChan nước dùng sôi sùng sục, rắc hành hoa, ngò gai.\nĂn kèm chanh ớt và quẩy nóng.",
@@ -393,8 +411,25 @@ public class DataSeeder implements CommandLineRunner {
                         "Gà chặt miếng ướp nước mắm, gừng thái sợi, sả băm và nước màu 15 phút.\nKho gà săn lại rồi đun liu riu đến khi cạn sốt óng ả.\nĂn cùng cơm nóng và bát canh rau ngót thịt nạc băm mát lành.",
                         30, "Dễ", 1, 520, 40, 52, 16, "dinner,lunch")
         );
+
+        List<Recipe> recipes = new ArrayList<>(seedList);
+        // Bổ sung món tráng miệng để catalog đa dạng
+        recipes.add(recipe("Bánh flan caramel sữa tươi", "Món tráng miệng mềm mịn thơm vị caramel tự làm tại nhà chỉ với trứng, sữa tươi và đường.",
+                "Thắng đường với chút nước đến khi vàng cánh gián rồi tráng đáy khuôn.\nĐánh tan trứng với sữa tươi, lọc qua rây cho mịn.\nĐổ sữa trứng vào khuôn, hấp cách thủy lửa nhỏ 30 phút hoặc nướng cách thủy 160°C.\nĐể nguội rồi cho tủ lạnh, úp ra đĩa khi ăn.",
+                40, "Trung bình", 4, 220, 6, 30, 9, "dessert"));
+        recipes.add(recipe("Chè đậu đen nước cốt dừa", "Bát chè đậu đen bùi bùi ngọt thanh, chan nước cốt dừa béo thơm chuẩn vị.",
+                "Vo sạch đậu đen, ngâm 4-6 tiếng rồi nấu nhừ với chút muối.\nCho đường vào khuấy tan, nêm ngọt vừa ăn.\nMúc chè ra bát, chan nước cốt dừa và rắc dừa nạo lên trên.",
+                90, "Dễ", 4, 260, 9, 48, 5, "dessert"));
+        recipes.add(recipe("Sinh tố bơ chuối sữa chua", "Ly sinh tố bơ béo ngậy quyện chuối chín và sữa chua mát lạnh, đầy năng lượng.",
+                "Bơ chín bỏ hạt, chuối lột vỏ cắt khúc.\nCho bơ, chuối, sữa chua, sữa tươi và mật ong vào máy xay.\nXay nhuyễn mịn rồi rót ra ly, thêm đá bào và thưởng thức ngay.",
+                10, "Dễ", 2, 290, 6, 38, 13, "dessert"));
+
+        // Gắn category phong phú, ảnh local và danh sách nguyên liệu thật cho từng món
+        for (Recipe r : recipes) {
+            enrichRecipeData(r);
+        }
         recipeRepository.saveAll(recipes);
-        log.info("Đã seed bổ sung {} công thức món ăn phong phú chuẩn Việt Nam vào catalog", recipes.size());
+        log.info("Đã seed {} công thức món ăn chuẩn Việt Nam (kèm nguyên liệu, category, ảnh local) vào catalog", recipes.size());
     }
 
     private Recipe recipe(String title, String desc, String steps, int time, String diff, int serve,
@@ -417,5 +452,188 @@ public class DataSeeder implements CommandLineRunner {
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
+    }
+
+    // =========================================================================
+    // 4b. ENRICH RECIPES: category đa dạng + ảnh local + NGUYÊN LIỆU THẬT
+    //     (Tên nguyên liệu dùng đúng tên trong catalog Food/Fridge để tính năng
+    //      "khớp tủ lạnh" & gợi ý món hoạt động với dữ liệu thật)
+    // =========================================================================
+
+    private void seedExistingRecipeData() {
+        // Dữ liệu recipe đã tồn tại từ các lần chạy trước (chưa có nguyên liệu) → bổ sung
+        List<Recipe> existing = recipeRepository.findAll();
+        int enriched = 0;
+        for (Recipe r : existing) {
+            if (r.getIngredients() == null || r.getIngredients().isEmpty()) {
+                enrichRecipeData(r);
+                recipeRepository.save(r);
+                enriched++;
+            }
+        }
+        if (enriched > 0) {
+            log.info("Đã bổ sung nguyên liệu/category/ảnh cho {} công thức đang có sẵn", enriched);
+        }
+    }
+
+    /** Gắn category, ảnh local (nếu thiếu) và nguyên liệu (nếu chưa có) theo metadata seed. */
+    private void enrichRecipeData(Recipe r) {
+        String[] meta = SEED_RECIPE_META.get(r.getTitle().trim());
+        if (meta != null) {
+            r.setCategory(meta[0]);
+        }
+        if (r.getImageUrl() == null || r.getImageUrl().isBlank()) {
+            r.setImageUrl(localRecipeImage(r.getTitle()));
+        }
+        if (r.getIngredients() != null && !r.getIngredients().isEmpty()) {
+            return;
+        }
+        if (meta == null || meta.length < 2) {
+            return;
+        }
+        List<RecipeIngredient> ings = new ArrayList<>();
+        for (int i = 1; i < meta.length; i++) {
+            String[] parts = meta[i].split("\\|", 3);
+            String name = parts.length > 0 ? parts[0].trim() : "";
+            if (name.isEmpty()) {
+                continue;
+            }
+            double qty = 1.0;
+            try {
+                qty = Double.parseDouble(parts[1].trim());
+            } catch (Exception ignored) {
+                // giữ mặc định 1.0
+            }
+            String unit = parts.length > 2 && !parts[2].isBlank() ? parts[2].trim() : "phần";
+            Ingredient ing = ingredientRepository.findByNameIgnoreCase(name)
+                    .orElseGet(() -> ingredientRepository.save(Ingredient.builder()
+                            .name(name)
+                            .category("Thực phẩm")
+                            .createdAt(LocalDateTime.now())
+                            .updatedAt(LocalDateTime.now())
+                            .build()));
+            ings.add(RecipeIngredient.builder()
+                    .recipe(r)
+                    .ingredient(ing)
+                    .quantity(qty)
+                    .unit(unit)
+                    .build());
+        }
+        r.setIngredients(ings);
+    }
+
+    /** Ảnh local theo slug tên món (đã có sẵn trong static/images/foods), fallback ảnh mặc định. */
+    private String localRecipeImage(String title) {
+        String slug = slugify(title);
+        String rel = "/images/foods/" + slug + ".jpg";
+        try {
+            if (new ClassPathResource("static" + rel).exists()) {
+                return rel;
+            }
+        } catch (Exception ignored) {
+            // kiểm tra tiếp đường dẫn source
+        }
+        if (Files.exists(Paths.get("src/main/resources/static" + rel))) {
+            return rel;
+        }
+        return "/images/recipes/default-recipe.jpg";
+    }
+
+    private static String slugify(String input) {
+        if (input == null || input.isBlank()) {
+            return "default";
+        }
+        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
+        String noAccents = Pattern.compile("\\p{InCombiningDiacriticalMarks}+")
+                .matcher(normalized).replaceAll("")
+                .replace("đ", "d").replace("Đ", "D");
+        return noAccents.toLowerCase(Locale.ROOT)
+                .replaceAll("[^a-z0-9]+", "-")
+                .replaceAll("^-+|-+$", "")
+                .replaceAll("^$", "default");
+    }
+
+    /**
+     * Metadata seed cho công thức: [category, "nguyên liệu|số lượng|đơn vị", ...].
+     * Tên nguyên liệu khớp với tên thực phẩm trong catalog Food để demo "khớp tủ" chạy thật.
+     */
+    private static final Map<String, String[]> SEED_RECIPE_META = buildSeedRecipeMeta();
+
+    private static Map<String, String[]> buildSeedRecipeMeta() {
+        Map<String, String[]> m = new HashMap<>();
+        m.put("Phở bò tái Hà Nội", new String[]{"Món sáng",
+                "Thịt bò|300|g", "Xương ống bò|500|g", "Bánh phở tươi|400|g", "Hành tím|2|củ",
+                "Gừng tươi|1|củ", "Hành lá|1|bó", "Chanh|1|quả", "Ớt tươi|2|quả", "Rau thơm|1|bó"});
+        m.put("Bánh mì trứng ốp la bơ tỏi", new String[]{"Món nhanh",
+                "Trứng gà|2|quả", "Bánh mì|2|ổ", "Tỏi|1|củ", "Bơ lạt|10|g", "Dưa leo|1|quả", "Tương ớt|1|muỗng"});
+        m.put("Cháo gà xé gừng hành hoa", new String[]{"Món sáng",
+                "Ức gà|200|g", "Gạo tẻ|100|g", "Gừng tươi|1|củ", "Hành tím|1|củ", "Hành lá|1|bó", "Nước mắm|1|muỗng"});
+        m.put("Yến mạch hoa quả hạt chia sữa chua", new String[]{"Món sáng",
+                "Yến mạch cán dẹt|40|g", "Sữa tươi|100|ml", "Sữa chua|1|hộp", "Chuối|1|quả",
+                "Quả bơ|1|quả", "Hạt chia|1|muỗng", "Mật ong|1|muỗng"});
+        m.put("Hủ tiếu Nam Vang tôm thịt", new String[]{"Món sáng",
+                "Tôm tươi|150|g", "Thịt heo|150|g", "Hủ tiếu khô|200|g", "Củ cải trắng|1|củ",
+                "Trứng cút|6|quả", "Tỏi|1|củ", "Hành lá|1|bó"});
+        m.put("Bún mọc sườn non dọc mùng", new String[]{"Món sáng",
+                "Thịt heo|200|g", "Sườn non|300|g", "Bún tươi|300|g", "Dọc mùng|1|bó",
+                "Nấm hương|5|cái", "Hành tím|1|củ"});
+        m.put("Bánh cuốn nóng chả lụa", new String[]{"Món sáng",
+                "Thịt heo|150|g", "Bột gạo|200|g", "Chả lụa|200|g", "Mộc nhĩ|5|cái",
+                "Hành tím|2|củ", "Nước mắm|1|muỗng"});
+        m.put("Cơm chiên trứng xúc xích kiểu Việt", new String[]{"Món nhanh",
+                "Cơm trắng|400|g", "Trứng gà|2|quả", "Xúc xích|2|cây", "Tỏi|1|củ", "Hành lá|1|bó", "Xì dầu|1|muỗng"});
+        m.put("Cơm tấm sườn nướng mật ong", new String[]{"Món chính",
+                "Thịt heo|300|g", "Cơm trắng|300|g", "Trứng gà|1|quả", "Cà rốt|1|củ",
+                "Tỏi|1|củ", "Mật ong|2|muỗng", "Dầu hào|1|muỗng"});
+        m.put("Cơm bò lúc lắc khoai tây sốt tiêu", new String[]{"Món chính",
+                "Thịt bò|300|g", "Khoai tây|2|củ", "Cơm trắng|300|g", "Hành tím|2|củ",
+                "Tỏi|1|củ", "Ớt chuông|1|quả", "Cà chua|2|quả"});
+        m.put("Bún chả Hà Nội nướng than", new String[]{"Món chính",
+                "Thịt heo|350|g", "Bún tươi|300|g", "Cà rốt|1|củ", "Đu đủ xanh|1|quả",
+                "Tỏi|1|củ", "Ớt tươi|2|quả", "Rau sống|1|đĩa"});
+        m.put("Cơm ức gà áp chảo sốt bơ tỏi & bông cải", new String[]{"Món ăn kiêng",
+                "Ức gà|250|g", "Bông cải xanh|200|g", "Tỏi|1|củ", "Cơm gạo lứt|150|g",
+                "Dầu ô liu|1|muỗng", "Bơ lạt|10|g"});
+        m.put("Cơm cá basa kho tộ & canh cải thìa", new String[]{"Món chính",
+                "Cá basa|300|g", "Cơm trắng|300|g", "Hành tím|1|củ", "Ớt tươi|2|quả",
+                "Tôm tươi|50|g", "Cải thìa|200|g", "Hành lá|1|bó"});
+        m.put("Cơm sườn non rim chua ngọt", new String[]{"Món chính",
+                "Sườn non|400|g", "Cơm trắng|300|g", "Cà chua|2|quả", "Tỏi|1|củ",
+                "Dưa leo|1|quả", "Hành tím|1|củ"});
+        m.put("Mì Ý sốt bò bằm cà chua phô mai", new String[]{"Món chính",
+                "Mì Ý|250|g", "Thịt bò|200|g", "Cà chua|3|quả", "Phô mai|50|g", "Tỏi|1|củ", "Dầu ô liu|1|muỗng"});
+        m.put("Bún bò Huế bắp bò chả cua", new String[]{"Món chính",
+                "Thịt bò|300|g", "Giò heo|400|g", "Bún tươi|300|g", "Thịt cua|100|g",
+                "Sả|2|cây", "Hành tím|1|củ", "Ớt bột|1|muỗng"});
+        m.put("Cá hồi áp chảo măng tây sốt chanh leo", new String[]{"Món ăn kiêng",
+                "Cá hồi|250|g", "Măng tây|150|g", "Chanh leo|2|quả", "Tỏi|1|củ",
+                "Bơ lạt|10|g", "Mật ong|1|muỗng"});
+        m.put("Canh chua cá lóc miền Tây & cá kho tộ", new String[]{"Món chính",
+                "Cá lóc|500|g", "Cơm trắng|300|g", "Cà chua|2|quả", "Dứa|1|quả",
+                "Đậu bắp|100|g", "Me chua|1|muỗng", "Hành lá|1|bó", "Ớt tươi|2|quả"});
+        m.put("Canh sườn hầm rau củ ngũ sắc & cơm", new String[]{"Món chính",
+                "Sườn non|350|g", "Cà rốt|1|củ", "Khoai tây|1|củ", "Bắp ngọt|1|trái",
+                "Nấm hương|5|cái", "Cơm trắng|250|g", "Hành lá|1|bó"});
+        m.put("Đậu hũ dồn thịt sốt cà chua & cơm", new String[]{"Món chính",
+                "Đậu hũ|2|hộp", "Thịt heo|150|g", "Cà chua|3|quả", "Cơm trắng|300|g",
+                "Mộc nhĩ|3|cái", "Hành tím|1|củ", "Hành lá|1|bó"});
+        m.put("Thịt bò xào cần tỏi & canh rong biển đậu hũ", new String[]{"Món chính",
+                "Thịt bò|250|g", "Cần tây|200|g", "Tỏi|1|củ", "Rong biển khô|10|g",
+                "Đậu hũ|1|hộp", "Tôm tươi|50|g", "Cơm trắng|250|g"});
+        m.put("Salad tôm nướng quả bơ sốt mè rang", new String[]{"Món nhanh",
+                "Tôm tươi|200|g", "Quả bơ|1|quả", "Cà chua bi|8|quả", "Dưa leo|1|quả",
+                "Xà lách xoăn|100|g", "Mè rang|1|muỗng"});
+        m.put("Gà hấp lá chanh & canh bí đao tôm tươi", new String[]{"Món ăn kiêng",
+                "Thịt gà|400|g", "Lá chanh|5|lá", "Bí đao|300|g", "Tôm tươi|100|g", "Gừng tươi|1|củ"});
+        m.put("Gà kho gừng sả ớt & canh rau ngót", new String[]{"Món chính",
+                "Thịt gà|500|g", "Gừng tươi|1|củ", "Sả|2|cây", "Ớt tươi|2|quả",
+                "Rau ngót|200|g", "Hành tím|1|củ", "Cơm trắng|300|g", "Nước mắm|2|muỗng"});
+        m.put("Bánh flan caramel sữa tươi", new String[]{"Món tráng miệng",
+                "Trứng gà|4|quả", "Sữa tươi|500|ml", "Đường|100|g", "Vani|1|ống"});
+        m.put("Chè đậu đen nước cốt dừa", new String[]{"Món tráng miệng",
+                "Đậu đen|200|g", "Nước cốt dừa|200|ml", "Đường|80|g", "Vani|1|ống"});
+        m.put("Sinh tố bơ chuối sữa chua", new String[]{"Món tráng miệng",
+                "Quả bơ|1|quả", "Chuối|2|quả", "Sữa chua|1|hộp", "Sữa tươi|150|ml", "Mật ong|1|muỗng"});
+        return m;
     }
 }

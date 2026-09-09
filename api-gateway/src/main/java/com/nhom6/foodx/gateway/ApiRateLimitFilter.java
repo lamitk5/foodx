@@ -1,0 +1,82 @@
+package com.nhom6.foodx.gateway;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * Giới hạn tần suất đơn giản (in-memory, theo IP) cho các endpoint "đắt tiền":
+ * AI chat/suggest, tìm ảnh mạng, tra cứu dinh dưỡng, upload file.
+ */
+@Slf4j
+@Component
+public class ApiRateLimitFilter extends OncePerRequestFilter {
+
+    private static final Set<String> LIMITED_PREFIXES = Set.of(
+            "/api/ai/chat",
+            "/api/ai/suggest",
+            "/api/fridge/search-image",
+            "/api/recipes/search-image",
+            "/api/fridge/estimate-nutrition",
+            "/api/fridge/scan-image",
+            "/api/upload");
+
+    private final Map<String, long[]> windows = new ConcurrentHashMap<>();
+
+    @Value("${app.rate-limit-per-minute:30}")
+    private int limitPerMinute;
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return LIMITED_PREFIXES.stream().noneMatch(path::startsWith);
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+        String clientIp = resolveClientIp(request);
+        long now = System.currentTimeMillis();
+        boolean allowed;
+        synchronized (this) {
+            if (windows.size() > 10_000) {
+                windows.entrySet().removeIf(e -> now - e.getValue()[0] > 60_000);
+            }
+            long[] window = windows.computeIfAbsent(clientIp, k -> new long[]{now, 0});
+            if (now - window[0] > 60_000) {
+                window[0] = now;
+                window[1] = 0;
+            }
+            window[1]++;
+            allowed = window[1] <= Math.max(1, limitPerMinute);
+        }
+
+        if (!allowed) {
+            log.warn("Rate limit exceeded for IP {} on {}", clientIp, request.getRequestURI());
+            response.setStatus(429);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"success\":false,\"message\":\"Quá nhiều yêu cầu — vui lòng thử lại sau 1 phút\",\"status\":429}");
+            return;
+        }
+        chain.doFilter(request, response);
+    }
+
+    private String resolveClientIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            int comma = forwarded.indexOf(',');
+            return (comma > 0 ? forwarded.substring(0, comma) : forwarded).trim();
+        }
+        return request.getRemoteAddr();
+    }
+}

@@ -1,3 +1,8 @@
+-- ============================================================================
+-- ⚠️ TÀI LIỆU THAM KHẢO CŨ — dữ liệu mẫu thực tế do Java DataSeeder seed khi chạy
+-- (xem src/main/java/com/nhom6/foodx/common/config/DataSeeder.java).
+-- File này KHÔNG được nạp tự động. Có thể lệch với entity hiện tại.
+-- ============================================================================
 -- =============================================================
 -- FoodX - Dữ liệu mẫu (Seed Data cho H2 & MySQL)
 -- =============================================================

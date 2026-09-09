@@ -100,4 +100,18 @@ public class FridgeController {
         fridgeService.delete(securityUtils.getCurrentUser(), id);
         return ApiResponse.success(null, "Đã xóa khỏi tủ lạnh");
     }
+
+    @PostMapping("/scan-image")
+    public ApiResponse<com.nhom6.foodx.fridge.dto.ScanResultDto> scanImage(
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file,
+            @RequestParam(required = false, defaultValue = "false") boolean autoSave) {
+        var result = fridgeService.scanAndProcessImage(securityUtils.getCurrentUser(), file, autoSave);
+        return ApiResponse.success(result, "Quét và phân tích ảnh thực phẩm thành công");
+    }
+
+    @PostMapping("/batch")
+    public ApiResponse<List<FridgeItemResponse>> batchAdd(@RequestBody List<FridgeItemRequest> requests) {
+        var result = fridgeService.batchAdd(securityUtils.getCurrentUser(), requests);
+        return ApiResponse.success(result, "Đã thêm danh sách thực phẩm vào tủ lạnh thành công");
+    }
 }
