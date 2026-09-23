@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project>
+   <description>FoodX Web UI Automation Test Suite in Katalon Studio</description>
+   <name>foodx-katalon</name>
+   <tag></tag>
+   <UUID>d8f1e62a-892b-4d43-9821-foodx0000001</UUID>
+   <migratedVersion>5.9.0</migratedVersion>
+   <pageLoadTimeout>30</pageLoadTimeout>
+   <projectFileLocation>d:\du_an_ca_nhan\foodx\katalon\foodx-katalon.prj</projectFileLocation>
+   <sourceContent>
+      <sourceFolderList>
+         <sourceFolderConfiguration>
+            <url>Include/scripts/groovy</url>
+         </sourceFolderConfiguration>
+      </sourceFolderList>
+      <systemFolderList>
+         <systemFolderConfiguration>
+            <url>Include/scripts/groovy</url>
+         </systemFolderConfiguration>
+         <systemFolderConfiguration>
+            <url>Include/features</url>
+         </systemFolderConfiguration>
+         <systemFolderConfiguration>
+            <url>Include/config</url>
+         </systemFolderConfiguration>
+      </systemFolderList>
+   </sourceContent>
+   <timeStampOfPropertiesCreated>1724570000000</timeStampOfPropertiesCreated>
+   <type>WEB</type>
+</Project>

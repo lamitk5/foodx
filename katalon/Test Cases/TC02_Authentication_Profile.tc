@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description>Kiểm thử luồng Đăng ký tài khoản mới, Đăng nhập, Xem hồ sơ dinh dưỡng và Đăng xuất</description>
+   <name>TC02_Authentication_Profile</name>
+   <tag>Auth,Profile,Modal</tag>
+   <comment></comment>
+   <testCaseGuid>c01a0002-foodx-4001-8001-000000000002</testCaseGuid>
+</TestCaseEntity>

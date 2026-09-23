@@ -1,0 +1,20 @@
+{
+  "name": "FoodX — Smart Kitchen & Meal Planner",
+  "short_name": "FoodX",
+  "description": "Quản lý tủ lạnh thông minh, kế hoạch bữa ăn và trợ lý AI nấu ăn",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#059669",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["food", "lifestyle", "productivity"]
+}

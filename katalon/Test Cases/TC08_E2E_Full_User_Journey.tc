@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description>Kiểm thử Luồng Người Dùng Toàn Diện (End-to-End User Journey) từ Đăng nhập, Tủ Lạnh, Công Thức, Đi Chợ đến Kế Hoạch Bữa Ăn</description>
+   <name>TC08_E2E_Full_User_Journey</name>
+   <tag>E2E,FullFlow,Integration</tag>
+   <comment></comment>
+   <testCaseGuid>c01a0008-foodx-4001-8001-000000000008</testCaseGuid>
+</TestCaseEntity>

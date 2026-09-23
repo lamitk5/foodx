@@ -1,10 +1,15 @@
-HELP.md
 target/
+**/target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### STS ###
+### IDE & Editors ###
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
 .apt_generated
 .classpath
 .factorypath
@@ -12,14 +17,6 @@ target/
 .settings
 .springBeans
 .sts4-cache
-
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-
-### NetBeans ###
 /nbproject/private/
 /nbbuild/
 /dist/
@@ -29,5 +26,39 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### VS Code ###
-.vscode/
+### Logs, Dumps & Temp ###
+*.log
+hs_err_pid*.log
+*.tmp
+*.bak
+
+### Uploads & Static Data ###
+uploads/
+/uploads/
+
+### Test scripts, outputs & screenshots ###
+*.py
+*.pyc
+__pycache__/
+test-reports/
+*.png
+!src/main/resources/static/images/**
+!dk-dn/shots/**
+
+### AI Agents & Assistant Generated Files ###
+.gemini/
+.claude/
+.codebuddy/
+.cursor/
+.kiro/
+.qoder/
+.code-review-graph/
+.cursorrules
+.windsurfrules
+.mcp.json
+opencode.jsonc
+AGENTS.md
+CLAUDE.md
+CODEBUDDY.md
+GEMINI.md
+QODER.md
