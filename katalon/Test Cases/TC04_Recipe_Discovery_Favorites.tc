@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description>Kiểm thử khám phá công thức món ăn: Tìm kiếm, lọc danh mục, xem chi tiết và lưu món yêu thích</description>
+   <name>TC04_Recipe_Discovery_Favorites</name>
+   <tag>Recipe,Favorites,Search</tag>
+   <comment></comment>
+   <testCaseGuid>c01a0004-foodx-4001-8001-000000000004</testCaseGuid>
+</TestCaseEntity>
