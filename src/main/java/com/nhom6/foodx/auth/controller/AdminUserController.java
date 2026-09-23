@@ -10,6 +10,7 @@ import com.nhom6.foodx.common.response.ApiResponse;
 import com.nhom6.foodx.security.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,6 +33,7 @@ public class AdminUserController {
     private final UserRepository userRepository;
     private final SecurityUtils securityUtils;
     private final PasswordEncoder passwordEncoder;
+    private final JdbcTemplate jdbcTemplate;
 
     private User requireAdmin() {
         User current = securityUtils.getCurrentUser();
@@ -122,8 +124,35 @@ public class AdminUserController {
         if (!userRepository.existsById(id)) {
             throw new ResourceNotFoundException("Không tìm thấy người dùng id=" + id);
         }
+
+        cleanUserData(id);
         userRepository.deleteById(id);
         return ApiResponse.success(null, "Đã xóa người dùng thành công");
+    }
+
+    private void cleanUserData(Long userId) {
+        tryExecute("DELETE FROM post_comments WHERE post_id IN (SELECT id FROM recipe_posts WHERE author_id = ?)", userId);
+        tryExecute("DELETE FROM post_likes WHERE post_id IN (SELECT id FROM recipe_posts WHERE author_id = ?)", userId);
+        tryExecute("DELETE FROM recipe_posts WHERE author_id = ?", userId);
+        tryExecute("DELETE FROM post_comments WHERE user_id = ?", userId);
+        tryExecute("DELETE FROM post_likes WHERE user_id = ?", userId);
+        tryExecute("DELETE FROM chat_messages WHERE session_id IN (SELECT id FROM chat_sessions WHERE user_id = ?)", userId);
+        tryExecute("DELETE FROM chat_sessions WHERE user_id = ?", userId);
+        tryExecute("DELETE FROM fridge_stock WHERE user_id = ?", userId);
+        tryExecute("DELETE FROM meal_plan_entries WHERE user_id = ?", userId);
+        tryExecute("DELETE FROM shopping_items WHERE user_id = ?", userId);
+        tryExecute("DELETE FROM cook_history WHERE user_id = ?", userId);
+        tryExecute("DELETE FROM favorites WHERE user_id = ?", userId);
+        tryExecute("DELETE FROM saved_recipes WHERE user_id = ?", userId);
+        tryExecute("DELETE FROM profiles WHERE user_id = ?", userId);
+        tryExecute("UPDATE recipes SET author_id = NULL WHERE author_id = ?", userId);
+    }
+
+    private void tryExecute(String sql, Long param) {
+        try {
+            jdbcTemplate.update(sql, param);
+        } catch (Exception ignored) {
+        }
     }
 
     private AdminUserResponse toResponse(User u) {
