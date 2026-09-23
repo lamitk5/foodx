@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description>Kiểm thử danh sách mua sắm: Thêm nhanh bằng chip, thêm thủ công, đánh dấu đã mua và đồng bộ vào tủ lạnh</description>
+   <name>TC06_Shopping_List_Sync</name>
+   <tag>Shopping,Sync,Fridge</tag>
+   <comment></comment>
+   <testCaseGuid>c01a0006-foodx-4001-8001-000000000006</testCaseGuid>
+</TestCaseEntity>
