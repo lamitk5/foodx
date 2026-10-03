@@ -225,14 +225,14 @@ async function addRecipeIngredientsToShopping(recipeId, onlyMissing = false) {
             try {
                 const res = await apiRequest('/api/shopping', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: recipeTitle, quantity: defaultServingQty, price: 25000, category: catTag })
+                    body: JSON.stringify({ name: recipeTitle, quantity: defaultServingQty, price: 0, category: catTag })
                 });
                 if (!Array.isArray(state.shopping)) state.shopping = [];
                 state.shopping.push({
                     id: (res && res.id) || (Date.now() + Math.floor(Math.random() * 1000)),
                     name: recipeTitle,
                     quantity: defaultServingQty,
-                    price: 25000,
+                    price: 0,
                     category: catTag,
                     done: false
                 });
@@ -252,14 +252,14 @@ async function addRecipeIngredientsToShopping(recipeId, onlyMissing = false) {
                 try {
                     const res = await apiRequest('/api/shopping', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name: rawName.trim(), quantity: qty.trim() || '1 phần', price: 25000, category: catTag })
+                        body: JSON.stringify({ name: rawName.trim(), quantity: qty.trim() || '1 phần', price: 0, category: catTag })
                     });
                     if (!Array.isArray(state.shopping)) state.shopping = [];
                     state.shopping.push({
                         id: (res && res.id) || (Date.now() + Math.floor(Math.random() * 1000)),
                         name: rawName.trim(),
                         quantity: qty.trim() || '1 phần',
-                        price: 25000,
+                        price: 0,
                         category: catTag,
                         done: false
                     });
@@ -391,7 +391,7 @@ async function addShop() {
         await apiRequest('/api/shopping', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: v, quantity: '1 phần', price: 25000, category: 'Nguyên liệu' })
+            body: JSON.stringify({ name: v, quantity: '1 phần', price: 0, category: 'Nguyên liệu' })
         });
         if (input) input.value = '';
         await renderShopping();
@@ -411,7 +411,7 @@ async function addShopByName(name, qty, category) {
         await apiRequest('/api/shopping', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name, quantity: qty || '1 phần', price: 25000, category: category || 'Nguyên liệu' })
+            body: JSON.stringify({ name: name, quantity: qty || '1 phần', price: 0, category: category || 'Nguyên liệu' })
         });
         await renderShopping();
         showToast(`Đã thêm "${name}" vào Danh sách mua 🛒`, 'success');
@@ -720,7 +720,7 @@ async function selectSrmRecipe(recipe) {
                         body: JSON.stringify({
                             name: name,
                             quantity: qty.trim() || '1 phần',
-                            price: 25000,
+                            price: 0,
                             category: 'Công thức: ' + recipeTitle
                         })
                     });

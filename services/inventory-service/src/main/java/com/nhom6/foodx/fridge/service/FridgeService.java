@@ -52,8 +52,8 @@ public class FridgeService {
             throw new BusinessException(400, "Tên thực phẩm không được để trống");
         }
         String cleanName = request.name().trim();
-        if (!cleanName.matches("^[\\p{L}\\s]+$")) {
-            throw new BusinessException(400, "Tên thực phẩm chỉ được chứa chữ cái");
+        if (!cleanName.matches("^[\\p{L}\\p{N}\\s/().,+\\-&%]+$")) {
+            throw new BusinessException(400, "Tên thực phẩm chỉ được chứa chữ, số và ký tự thông dụng");
         }
         if (cleanName.length() > 100) {
             throw new BusinessException(400, "Tên thực phẩm không được vượt quá 100 ký tự");
@@ -202,8 +202,8 @@ public class FridgeService {
 
         if (request.name() != null && !request.name().isBlank()) {
             String updatedName = request.name().trim();
-            if (!updatedName.matches("^[\\p{L}\\s]+$")) {
-                throw new BusinessException(400, "Tên thực phẩm chỉ được chứa chữ cái");
+            if (!updatedName.matches("^[\\p{L}\\p{N}\\s/().,+\\-&%]+$")) {
+                throw new BusinessException(400, "Tên thực phẩm chỉ được chứa chữ, số và ký tự thông dụng");
             }
             if (updatedName.length() > 100) {
                 throw new BusinessException(400, "Tên thực phẩm không được vượt quá 100 ký tự");
