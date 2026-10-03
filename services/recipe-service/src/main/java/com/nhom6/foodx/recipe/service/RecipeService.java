@@ -2,6 +2,7 @@ package com.nhom6.foodx.recipe.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.nhom6.foodx.auth.entity.User;
+import com.nhom6.foodx.common.exception.BusinessException;
 import com.nhom6.foodx.common.exception.ResourceNotFoundException;
 import com.nhom6.foodx.common.utils.StringUtils;
 import com.nhom6.foodx.fridge.repository.FridgeItemRepository;
@@ -37,6 +38,7 @@ public class RecipeService {
     private final IngredientRepository ingredientRepository;
     private final FridgeItemRepository fridgeItemRepository;
     private final com.nhom6.foodx.food.service.FoodImageSearchService foodImageSearchService;
+    private final com.nhom6.foodx.security.SecurityUtils securityUtils;
 
     @Transactional(readOnly = true)
     public List<RecipeResponse> search(String keyword, String category, String cuisine) {
@@ -84,6 +86,7 @@ public class RecipeService {
     @Transactional
     public RecipeResponse update(Long id, RecipeRequest request) {
         Recipe recipe = findEntity(id);
+        assertCanManage(recipe);
         applyRequest(recipe, request);
 
         if (!isUsableImage(recipe.getImageUrl())) {
@@ -104,7 +107,17 @@ public class RecipeService {
     @Transactional
     public void delete(Long id) {
         Recipe recipe = findEntity(id);
+        assertCanManage(recipe);
         recipeRepository.delete(recipe);
+    }
+
+    private void assertCanManage(Recipe recipe) {
+        User current = securityUtils.getCurrentUser();
+        boolean admin = current.getRole() == User.Role.ADMIN;
+        Long authorId = recipe.getAuthor() != null ? recipe.getAuthor().getId() : null;
+        if (!admin && (authorId == null || !authorId.equals(current.getId()))) {
+            throw new BusinessException(403, "Bạn không có quyền sửa hoặc xoá công thức này");
+        }
     }
 
     @Transactional
