@@ -77,11 +77,12 @@ async function authRequest(
     if (
         !response.ok
     ) {
-
-        throw new Error(
+        const err = new Error(
             data?.message ||
             `Có lỗi xảy ra (${response.status}).`
         );
+        err.status = response.status;
+        throw err;
     }
 
 
@@ -282,8 +283,9 @@ async function loadAuthState(
         );
 
         // Chỉ đăng xuất nếu token thực sự hết hạn hoặc bị từ chối (401, 403)
+        const status = error?.status;
         const errMsg = String(error?.message || "");
-        if (errMsg.includes("401") || errMsg.includes("403") || errMsg.includes("hết hạn") || errMsg.includes("Unauthorized")) {
+        if (status === 401 || status === 403 || errMsg.includes("401") || errMsg.includes("403") || errMsg.includes("hết hạn") || errMsg.includes("Unauthorized")) {
             setToken("");
             try { localStorage.removeItem("foodx_user"); } catch (_) {}
             authState = {
@@ -842,7 +844,7 @@ document
 
                 /* Clear onboarding flag on logout */
                 try {
-                    localStorage.removeItem(ONB_KEY);
+                    localStorage.removeItem((typeof window !== "undefined" && window.ONB_KEY) || "foodx_onboarding_done");
                 } catch (e) {}
 
 
@@ -928,6 +930,55 @@ function requireAuth(actionName, callback) {
 }
 
 // Module window exports
+document.getElementById("changePasswordForm")?.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!isUserLoggedIn()) {
+        requireAuth("profile");
+        return;
+    }
+
+    const submitButton = event.submitter || event.currentTarget.querySelector('button[type="submit"]');
+    const restore = buttonLoading(submitButton, "Đang cập nhật...");
+    const oldPassword = document.getElementById("oldPassword")?.value || "";
+    const newPassword = document.getElementById("newPassword")?.value || "";
+    const confirmNewPassword = document.getElementById("confirmNewPassword")?.value || "";
+
+    if (!oldPassword || !newPassword || !confirmNewPassword) {
+        restore();
+        showToast("Vui lòng nhập đầy đủ mật khẩu hiện tại và mật khẩu mới.", "warning");
+        return;
+    }
+    if (newPassword.length < 6 || newPassword.length > 100) {
+        restore();
+        showToast("Mật khẩu mới phải từ 6-100 ký tự.", "warning");
+        return;
+    }
+    if (newPassword !== confirmNewPassword) {
+        restore();
+        showToast("Mật khẩu mới nhập lại không khớp.", "warning");
+        return;
+    }
+    if (oldPassword === newPassword) {
+        restore();
+        showToast("Mật khẩu mới phải khác mật khẩu hiện tại.", "warning");
+        return;
+    }
+
+    try {
+        await authRequest(`${AUTH_API}/change-password`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ oldPassword, newPassword })
+        });
+        document.getElementById("changePasswordForm")?.reset();
+        showToast("Đã đổi mật khẩu thành công.", "success");
+    } catch (error) {
+        showToast(error.message || "Không đổi được mật khẩu.", "error");
+    } finally {
+        restore();
+    }
+});
+
 if (typeof window !== 'undefined') window.isUserLoggedIn = isUserLoggedIn;
 if (typeof window !== 'undefined') window.requireAuth = requireAuth;
 if (typeof window !== 'undefined') window.authRequest = authRequest;

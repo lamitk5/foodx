@@ -30,6 +30,9 @@ public class RegisterRequest {
     @Size(min = 6, max = 100, message = "Mật khẩu tối thiểu 6 ký tự")
     private String password;
 
+    /** Xác nhận mật khẩu (tuỳ chọn với client cũ; nếu gửi thì phải khớp). */
+    private String confirmPassword;
+
     @Size(max = 100, message = "Họ tên tối đa 100 ký tự")
     private String fullName;
 }

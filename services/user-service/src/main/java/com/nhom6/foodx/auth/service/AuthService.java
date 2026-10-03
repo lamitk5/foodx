@@ -28,16 +28,21 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) {
+        String username = request.getUsername() == null ? "" : request.getUsername().trim();
+        String email = request.getEmail() == null ? "" : request.getEmail().trim();
+        if (request.getConfirmPassword() != null && !request.getConfirmPassword().equals(request.getPassword())) {
+            throw new BusinessException(400, "Mật khẩu nhập lại không khớp");
+        }
+        if (userRepository.existsByUsernameIgnoreCase(username)) {
             throw new BusinessException(400, "Tên đăng nhập đã tồn tại");
         }
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new BusinessException(400, "Email đã được sử dụng");
         }
 
         User user = User.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
+                .username(username)
+                .email(email)
                 .password(passwordEncoder.encode(request.getPassword()))
                 .fullName(request.getFullName())
                 .role(User.Role.USER)

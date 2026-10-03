@@ -67,6 +67,10 @@ public class UserProfile {
     @Column(columnDefinition = "TEXT")
     private String dislikes;
 
+    /** Mục tiêu cá nhân hóa (tăng cơ, giảm cân...) — tách khỏi dislikes. */
+    @Column(columnDefinition = "TEXT")
+    private String goals;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

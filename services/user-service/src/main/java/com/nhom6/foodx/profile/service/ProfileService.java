@@ -103,8 +103,18 @@ public class ProfileService {
         if (request.diet() != null) {
             profile.setDiet(request.diet());
         }
+        if (request.phone() != null) {
+            String phone = request.phone().trim();
+            if (!phone.isEmpty() && !phone.matches("^(0|\\+84)[3-9][0-9]{8}$|^[0-9]{10,11}$")) {
+                throw new BusinessException(400, "Số điện thoại không hợp lệ");
+            }
+            user.setPhone(phone);
+        }
         profile.setAllergies(request.allergies() == null ? "" : request.allergies().trim());
         profile.setDislikes(request.dislikes() == null ? "" : request.dislikes().trim());
+        if (request.goals() != null) {
+            profile.setGoals(request.goals().trim());
+        }
 
         userRepository.save(user);
         profileRepository.save(profile);
@@ -190,7 +200,9 @@ public class ProfileService {
                 profile.getActivity(),
                 profile.getDiet(),
                 profile.getAllergies(),
-                profile.getDislikes()
+                profile.getDislikes(),
+                user.getPhone(),
+                profile.getGoals()
         );
     }
 }
