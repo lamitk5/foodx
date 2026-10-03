@@ -88,7 +88,15 @@ async function loadSocialFeed() {
 
     let apiPosts = [];
     try {
-        const res = await apiRequest(SOCIAL_API + '/posts');
+        const wantMine = currentSocialCategory === 'my';
+        if (wantMine && typeof isUserLoggedIn === 'function' && !isUserLoggedIn()) {
+            if (typeof requireAuth === 'function') requireAuth('recipe');
+            apiPosts = [];
+            allSocialPostsCache = [];
+            renderSocialFeedFiltered();
+            return;
+        }
+        const res = await apiRequest(wantMine ? (SOCIAL_API + '/posts/my') : (SOCIAL_API + '/posts'));
         if (Array.isArray(res)) {
             apiPosts = res;
         } else if (res && Array.isArray(res.data)) {
@@ -313,7 +321,7 @@ function wirePostEvents() {
 
     // Save button
     document.querySelectorAll('[data-save]').forEach(function (btn) {
-        btn.addEventListener('click', function (e) {
+        btn.addEventListener('click', async function (e) {
             e.stopPropagation();
             if (!isUserLoggedIn()) {
                 requireAuth('favorite');
@@ -325,9 +333,31 @@ function wirePostEvents() {
                 || (communityFeedPosts || []).find(p => String(p.id) === String(id));
             
             const isCurrentlySaved = !!savedPostsState[id];
+            let catalogRecipeId = postObj && (postObj.recipeId || postObj.catalogRecipeId);
+            if (!catalogRecipeId && title) {
+                try {
+                    const recipes = await apiRequest('/api/recipes?keyword=' + encodeURIComponent(title));
+                    const list = Array.isArray(recipes) ? recipes : [];
+                    const exact = list.find(function (r) {
+                        return String(r.title || '').trim().toLowerCase() === String(title).trim().toLowerCase();
+                    });
+                    if (exact) catalogRecipeId = exact.id;
+                } catch (_) {}
+            }
+            if (catalogRecipeId) {
+                try {
+                    await apiRequest('/api/favorites/toggle', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ targetId: Number(catalogRecipeId), targetType: 'RECIPE' })
+                    });
+                } catch (err) {
+                    showToast(err.message || 'Không đồng bộ được danh sách yêu thích.', 'warning');
+                }
+            }
             if (isCurrentlySaved) {
                 delete savedPostsState[id];
-                state.favorites = state.favorites.filter(x => String(x) !== String(id));
+                state.favorites = state.favorites.filter(x => String(x) !== String(id) && String(x) !== String(catalogRecipeId || ''));
                 btn.classList.remove('saved-active');
                 btn.innerHTML = '🤍 Lưu món';
                 showToast('Đã bỏ lưu "' + title + '".', 'info');
@@ -341,10 +371,11 @@ function wirePostEvents() {
                     description: postObj ? postObj.description : '',
                     ingredients: postObj ? postObj.ingredients : [],
                     instructions: postObj ? postObj.instructions : '',
+                    recipeId: catalogRecipeId || null,
                     savedAt: new Date().toISOString()
                 };
-                if (!state.favorites.some(x => String(x) === String(id))) {
-                    state.favorites.push(id);
+                if (catalogRecipeId && !state.favorites.some(x => String(x) === String(catalogRecipeId))) {
+                    state.favorites.push(catalogRecipeId);
                 }
                 btn.classList.add('saved-active');
                 btn.innerHTML = '🔖 Đã lưu';
@@ -725,7 +756,11 @@ async function handlePostImageUpload(file) {
             document.querySelectorAll('#socialCategoryPills .social-pill').forEach(function(p) { p.classList.remove('active'); });
             pill.classList.add('active');
             currentSocialCategory = pill.getAttribute('data-social-cat') || 'all';
-            renderSocialFeedFiltered();
+            if (currentSocialCategory === 'my') {
+                loadSocialFeed();
+            } else {
+                renderSocialFeedFiltered();
+            }
         });
     });
 
