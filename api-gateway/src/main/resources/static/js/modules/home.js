@@ -298,9 +298,10 @@ function renderRecipeDetail() {
             // Auto search image from web/wikipedia if recipe has title
             if (r.title && typeof apiRequest === 'function') {
                 apiRequest('/api/recipes/search-image?query=' + encodeURIComponent(r.title)).then(function (res) {
-                    if (res && res.data && res.data.imageUrl && !res.data.imageUrl.includes('placeholder')) {
-                        r.imageUrl = res.data.imageUrl;
-                        img.src = res.data.imageUrl;
+                    const imageUrl = (res && res.imageUrl) || (res && res.data && res.data.imageUrl);
+                    if (imageUrl && !imageUrl.includes('placeholder')) {
+                        r.imageUrl = imageUrl;
+                        img.src = imageUrl;
                         img.hidden = false;
                         if (heroBox) heroBox.classList.add('has-img');
                     }

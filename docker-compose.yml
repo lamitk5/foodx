@@ -45,6 +45,8 @@ services:
       APP_RATE_LIMIT_PER_MINUTE: "120"
       APP_AI_MAX_CONCURRENT_GLOBAL: "24"
       JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+    volumes:
+      - foodx_uploads:/app/uploads
     depends_on:
       - user-service
       - inventory-service
@@ -68,6 +70,8 @@ services:
       SPRING_DATASOURCE_USERNAME: "root"
       SPRING_DATASOURCE_PASSWORD: "root"
       JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+    volumes:
+      - foodx_uploads:/app/uploads
     depends_on:
       - mysql
     networks:
@@ -85,6 +89,8 @@ services:
       SPRING_DATASOURCE_USERNAME: "root"
       SPRING_DATASOURCE_PASSWORD: "root"
       JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8"
+    volumes:
+      - foodx_uploads:/app/uploads
     depends_on:
       - mysql
     networks:
@@ -169,3 +175,4 @@ networks:
 volumes:
   mysql_data:
   redis_data:
+  foodx_uploads:

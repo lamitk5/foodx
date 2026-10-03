@@ -21,6 +21,7 @@ import './modules/home.js';
 import './modules/chat.js';
 import './modules/onboarding.js';
 import './modules/threeD.js';
+import './modules/admin.js';
 
 // Boot application
 function boot() {
