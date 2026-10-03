@@ -5568,7 +5568,7 @@ async function saveIngredientFull(id) {
         return;
     }
     if (!FOOD_NAME_REGEX.test(name)) {
-        showToast("Tên nguyên liệu chỉ được chứa chữ cái.", "warning");
+        showToast("Tên nguyên liệu chỉ được chứa chữ, số và ký tự thông dụng.", "warning");
         document.getElementById("editIngredientName")?.focus();
         return;
     }
@@ -5807,8 +5807,8 @@ document
 
         try {
             const res = await apiRequest(`/api/fridge/estimate-nutrition?name=${encodeURIComponent(name)}&quantity=${quantity}&unit=${encodeURIComponent(unit)}`);
-            if (res && res.data) {
-                const d = res.data;
+            const d = res && (res.kcal != null ? res : res.data);
+            if (d && d.kcal != null) {
                 const calInput = document.getElementById("customFoodCalories");
                 const proInput = document.getElementById("customFoodProtein");
                 const carbInput = document.getElementById("customFoodCarb");
@@ -5897,7 +5897,7 @@ function autoUpdateCustomFoodNutrition() {
     }
 }
 
-const FOOD_NAME_REGEX = /^[\p{L}\s]+$/u;
+const FOOD_NAME_REGEX = /^[\p{L}\p{N}\s/().,+\-&%]+$/u;
 
 function validateCustomFoodQuantityLive() {
     const input = document.getElementById("customFoodQuantity");
@@ -5944,7 +5944,7 @@ function validateCustomFoodNameLive() {
         }
         input.style.borderColor = "#ef4444";
         input.style.backgroundColor = "rgba(239, 68, 68, 0.08)";
-        input.setCustomValidity("Tên nguyên liệu chỉ được chứa chữ cái");
+        input.setCustomValidity("Tên nguyên liệu chỉ được chứa chữ, số và ký tự thông dụng");
     } else {
         if (errEl) errEl.style.display = "none";
         input.style.borderColor = "";
@@ -5981,7 +5981,7 @@ document.getElementById("customFoodName")?.addEventListener("blur", function () 
         showToast("⚠️ Tên nguyên liệu không được vượt quá 100 ký tự.", "warning");
     } else if (val.length > 0 && !FOOD_NAME_REGEX.test(val)) {
         validateCustomFoodNameLive();
-        showToast("⚠️ Tên nguyên liệu chỉ được chứa chữ cái.", "warning");
+        showToast("⚠️ Tên nguyên liệu chỉ được chứa chữ, số và ký tự thông dụng.", "warning");
     }
 });
 document.getElementById("customFoodUnit")?.addEventListener("change", autoUpdateCustomFoodNutrition);
@@ -6038,7 +6038,7 @@ document
             if (!FOOD_NAME_REGEX.test(name)) {
                 validateCustomFoodNameLive();
                 showToast(
-                    "Tên nguyên liệu chỉ được chứa chữ cái (không chứa số hoặc ký tự đặc biệt).",
+                    "Tên nguyên liệu chỉ được chứa chữ, số và ký tự thông dụng.",
                     "warning"
                 );
                 document.getElementById("customFoodName")?.focus();
@@ -8102,14 +8102,14 @@ async function addRecipeIngredientsToShopping(recipeId, onlyMissing = false) {
             try {
                 const res = await apiRequest('/api/shopping', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: recipeTitle, quantity: defaultServingQty, price: 25000, category: catTag })
+                    body: JSON.stringify({ name: recipeTitle, quantity: defaultServingQty, price: 0, category: catTag })
                 });
                 if (!Array.isArray(state.shopping)) state.shopping = [];
                 state.shopping.push({
                     id: (res && res.id) || (Date.now() + Math.floor(Math.random() * 1000)),
                     name: recipeTitle,
                     quantity: defaultServingQty,
-                    price: 25000,
+                    price: 0,
                     category: catTag,
                     done: false
                 });
@@ -8129,14 +8129,14 @@ async function addRecipeIngredientsToShopping(recipeId, onlyMissing = false) {
                 try {
                     const res = await apiRequest('/api/shopping', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name: rawName.trim(), quantity: qty.trim() || '1 phần', price: 25000, category: catTag })
+                        body: JSON.stringify({ name: rawName.trim(), quantity: qty.trim() || '1 phần', price: 0, category: catTag })
                     });
                     if (!Array.isArray(state.shopping)) state.shopping = [];
                     state.shopping.push({
                         id: (res && res.id) || (Date.now() + Math.floor(Math.random() * 1000)),
                         name: rawName.trim(),
                         quantity: qty.trim() || '1 phần',
-                        price: 25000,
+                        price: 0,
                         category: catTag,
                         done: false
                     });
@@ -12712,13 +12712,13 @@ async function mergeAndSaveShoppingItem(name, newQtyVal, newUnit, category) {
         await apiRequest('/api/shopping/' + existing.id, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: existing.name, quantity: mergedQtyStr, price: existing.price || 25000, category: existing.category || category })
+            body: JSON.stringify({ name: existing.name, quantity: mergedQtyStr, price: existing.price || 0, category: existing.category || category })
         });
     } else {
         await apiRequest('/api/shopping', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name, quantity: newQtyVal + ' ' + newUnit, price: 25000, category: category || 'Nguyên liệu' })
+            body: JSON.stringify({ name: name, quantity: newQtyVal + ' ' + newUnit, price: 0, category: category || 'Nguyên liệu' })
         });
     }
 }
@@ -13070,7 +13070,7 @@ async function selectSrmRecipe(recipe) {
                         body: JSON.stringify({
                             name: name,
                             quantity: qty.trim() || '1 phần',
-                            price: 25000,
+                            price: 0,
                             category: 'Công thức: ' + recipeTitle
                         })
                     });

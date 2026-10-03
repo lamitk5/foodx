@@ -58,8 +58,11 @@ public class SecurityConfig {
                         .requestMatchers(PUBLIC_WHITELIST).permitAll()
                         // Trạng thái AI có thể kiểm tra công khai
                         .requestMatchers(HttpMethod.GET, "/api/ai/status").permitAll()
-                        // Danh mục nguyên liệu & dữ liệu trang chủ công khai
+                        // Danh mục nguyên liệu: đọc công khai, ghi chỉ admin
                         .requestMatchers(HttpMethod.GET, "/api/ingredients/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/ingredients/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/ingredients/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/ingredients/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/home/**").permitAll()
                         // "Bài của tôi" luôn yêu cầu đăng nhập (phải khai báo trước pattern công khai)
                         .requestMatchers(HttpMethod.GET, "/api/social/posts/my").authenticated()
