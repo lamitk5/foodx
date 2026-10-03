@@ -48,6 +48,9 @@ public class User {
     @Column(length = 100)
     private String fullName;
 
+    @Column(length = 20)
+    private String phone;
+
     /** Đường dẫn ảnh đại diện (lưu trong uploads/avatars). */
     @Column(name = "avatar_url", length = 500)
     private String avatarUrl;

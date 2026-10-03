@@ -404,6 +404,45 @@
 
                     </button>
 
+                    <div class="settings-divider"></div>
+
+                    <p class="settings-section-label">Đổi mật khẩu</p>
+
+                    <form id="changePasswordForm" autocomplete="off">
+                        <input
+                                class="settings-input"
+                                type="password"
+                                id="oldPassword"
+                                name="oldPassword"
+                                placeholder="Mật khẩu hiện tại"
+                                minlength="1"
+                                required>
+                        <input
+                                class="settings-input"
+                                type="password"
+                                id="newPassword"
+                                name="newPassword"
+                                placeholder="Mật khẩu mới (tối thiểu 6 ký tự)"
+                                minlength="6"
+                                maxlength="100"
+                                required>
+                        <input
+                                class="settings-input"
+                                type="password"
+                                id="confirmNewPassword"
+                                name="confirmNewPassword"
+                                placeholder="Nhập lại mật khẩu mới"
+                                minlength="6"
+                                maxlength="100"
+                                required>
+                        <button
+                                type="submit"
+                                class="settings-login-button"
+                                id="changePasswordButton">
+                            Cập nhật mật khẩu
+                        </button>
+                    </form>
+
                 </div>
 
             </div>

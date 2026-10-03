@@ -1,4 +1,7 @@
 const ONB_KEY = "foodx_onboarding_done";
+if (typeof window !== "undefined") {
+    window.ONB_KEY = ONB_KEY;
+}
 
 const onbState = {
     cuisines: [],
@@ -250,11 +253,13 @@ onbBindSeg("#onbDiet", null, "diet");
         /* Save onboarding profile to state */
         const dietValue = (onbState.diet && onbState.diet !== "Không") ? onbState.diet : (state.profile.diet || "Ăn linh tinh");
         const allergiesStr = Array.isArray(onbState.allergies) ? onbState.allergies.join(", ") : (onbState.allergies || "");
-        const dislikesStr = onbState.goalOther || (Array.isArray(onbState.goals) ? onbState.goals.join(", ") : "");
+        const goalsStr = [onbState.goalOther, Array.isArray(onbState.goals) ? onbState.goals.join(", ") : ""]
+            .filter(function (part) { return part && String(part).trim(); })
+            .join(", ");
 
         state.profile.diet = dietValue;
         state.profile.allergies = allergiesStr;
-        state.profile.dislikes = dislikesStr;
+        state.profile.goals = goalsStr;
 
         state.profile.onboarding = {
             cuisines: onbState.cuisines ? onbState.cuisines.slice() : [],
@@ -290,7 +295,8 @@ onbBindSeg("#onbDiet", null, "diet");
                         activity: state.profile.activity || 1.2,
                         diet: dietValue,
                         allergies: allergiesStr,
-                        dislikes: dislikesStr
+                        dislikes: state.profile.dislikes || "",
+                        goals: goalsStr
                     })
                 });
                 console.log("✅ Đã lưu chế độ ăn & hồ sơ vào MySQL thành công!");

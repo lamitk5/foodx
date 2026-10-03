@@ -136,6 +136,14 @@ function apiProfileToState(data) {
 
         dislikes:
             data.dislikes ||
+            "",
+
+        phone:
+            data.phone ||
+            "",
+
+        goals:
+            data.goals ||
             ""
     };
 }
@@ -157,9 +165,15 @@ async function loadProfileFromApi(
             data.userId;
 
 
+        const onboarding =
+            state.profile && state.profile.onboarding;
+
+
         state.profile =
-            apiProfileToState(
-                data
+            Object.assign(
+                {},
+                apiProfileToState(data),
+                onboarding ? { onboarding } : {}
             );
 
 

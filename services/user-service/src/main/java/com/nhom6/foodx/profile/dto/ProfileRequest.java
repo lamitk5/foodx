@@ -13,6 +13,8 @@ public record ProfileRequest(
         Double activity,
         String diet,
         String allergies,
-        String dislikes
+        String dislikes,
+        String phone,
+        String goals
 ) {
 }

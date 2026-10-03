@@ -229,9 +229,15 @@ async function apiRequest(
         if (response.status === 401) {
             if (token) {
                 setToken("");
+                try { localStorage.removeItem("foodx_user"); } catch (_) {}
+                if (typeof authState !== "undefined") {
+                    authState.authenticated = false;
+                    authState.userId = null;
+                    authState.role = "";
+                    window.authState = authState;
+                }
                 if (typeof resetChatOnLogout === "function") resetChatOnLogout();
                 if (typeof renderAuthSettings === "function") {
-                    authState.authenticated = false;
                     renderAuthSettings();
                 }
             }
@@ -709,7 +715,9 @@ function createDefaultState() {
             activity: 1.2,
             diet: "Cân bằng",
             allergies: "",
-            dislikes: ""
+            dislikes: "",
+            phone: "",
+            goals: ""
         },
 
         fridge:
@@ -920,6 +928,14 @@ function apiProfileToState(data) {
 
         dislikes:
             data.dislikes ||
+            "",
+
+        phone:
+            data.phone ||
+            "",
+
+        goals:
+            data.goals ||
             ""
     };
 }
@@ -941,9 +957,15 @@ async function loadProfileFromApi(
             data.userId;
 
 
+        const onboarding =
+            state.profile && state.profile.onboarding;
+
+
         state.profile =
-            apiProfileToState(
-                data
+            Object.assign(
+                {},
+                apiProfileToState(data),
+                onboarding ? { onboarding } : {}
             );
 
 
@@ -1448,11 +1470,12 @@ async function authRequest(
     if (
         !response.ok
     ) {
-
-        throw new Error(
+        const err = new Error(
             data?.message ||
             `Có lỗi xảy ra (${response.status}).`
         );
+        err.status = response.status;
+        throw err;
     }
 
 
@@ -1669,8 +1692,9 @@ async function loadAuthState(
         );
 
         // Chỉ đăng xuất nếu token thực sự hết hạn hoặc bị từ chối (401, 403)
+        const status = error?.status;
         const errMsg = String(error?.message || "");
-        if (errMsg.includes("401") || errMsg.includes("403") || errMsg.includes("hết hạn") || errMsg.includes("Unauthorized")) {
+        if (status === 401 || status === 403 || errMsg.includes("401") || errMsg.includes("403") || errMsg.includes("hết hạn") || errMsg.includes("Unauthorized")) {
             setToken("");
             try { localStorage.removeItem("foodx_user"); } catch (_) {}
             authState = {
@@ -2166,6 +2190,55 @@ document
             }
         }
     );
+
+document.getElementById("changePasswordForm")?.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (typeof isUserLoggedIn === "function" && !isUserLoggedIn()) {
+        if (typeof requireAuth === "function") requireAuth("profile");
+        return;
+    }
+
+    const submitButton = event.submitter || event.currentTarget.querySelector('button[type="submit"]');
+    const restore = buttonLoading(submitButton, "Đang cập nhật...");
+    const oldPassword = document.getElementById("oldPassword")?.value || "";
+    const newPassword = document.getElementById("newPassword")?.value || "";
+    const confirmNewPassword = document.getElementById("confirmNewPassword")?.value || "";
+
+    if (!oldPassword || !newPassword || !confirmNewPassword) {
+        restore();
+        showToast("Vui lòng nhập đầy đủ mật khẩu hiện tại và mật khẩu mới.", "warning");
+        return;
+    }
+    if (newPassword.length < 6 || newPassword.length > 100) {
+        restore();
+        showToast("Mật khẩu mới phải từ 6-100 ký tự.", "warning");
+        return;
+    }
+    if (newPassword !== confirmNewPassword) {
+        restore();
+        showToast("Mật khẩu mới nhập lại không khớp.", "warning");
+        return;
+    }
+    if (oldPassword === newPassword) {
+        restore();
+        showToast("Mật khẩu mới phải khác mật khẩu hiện tại.", "warning");
+        return;
+    }
+
+    try {
+        await authRequest(`${AUTH_API}/change-password`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ oldPassword, newPassword })
+        });
+        document.getElementById("changePasswordForm")?.reset();
+        showToast("Đã đổi mật khẩu thành công.", "success");
+    } catch (error) {
+        showToast(error.message || "Không đổi được mật khẩu.", "error");
+    } finally {
+        restore();
+    }
+});
 
 /* =========================================================
    NAVIGATION
@@ -3594,32 +3667,34 @@ document.getElementById("profileForm")?.addEventListener("submit", async event =
         activity: Number(document.getElementById("profileActivity")?.value),
         diet: document.getElementById("profileDiet")?.value,
         allergies: document.getElementById("profileAllergies")?.value.trim(),
-        dislikes: document.getElementById("profileDislikes")?.value.trim()
+        dislikes: document.getElementById("profileDislikes")?.value.trim(),
+        goals: selGoals.join(", ")
     };
 
     try {
-        let data = {};
-        try {
-            data = await apiRequest(PROFILE_API, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-        } catch (e) {
-            console.warn("Backend profile save fallback:", e);
-        }
-
-        state.profile = Object.assign({}, state.profile, payload, {
-            onboarding: {
-                cuisines: selCuisines,
-                spice: spiceVal,
-                goals: selGoals,
-                calo: caloVal,
-                equip: selEquip,
-                allergies: payload.allergies ? payload.allergies.split(',').map(s=>s.trim()) : [],
-                diet: payload.diet
-            }
+        const data = await apiRequest(PROFILE_API, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
         });
+
+        const onboarding = {
+            cuisines: selCuisines,
+            spice: spiceVal,
+            goals: selGoals,
+            calo: caloVal,
+            equip: selEquip,
+            allergies: payload.allergies ? payload.allergies.split(',').map(s=>s.trim()) : [],
+            diet: payload.diet
+        };
+
+        state.profile = Object.assign(
+            {},
+            state.profile,
+            payload,
+            data ? apiProfileToState(data) : {},
+            { onboarding }
+        );
 
         // Sync with global onbState if present
         if (typeof onbState !== 'undefined') {
@@ -3772,34 +3847,18 @@ profileAvatarInput
 
             try {
 
-                const response =
-                    await fetch(
+                const data =
+                    await apiRequest(
                         `${PROFILE_API}/avatar`,
                         {
-
-                            method:
-                                "POST",
-
-                            body:
-                            formData
+                            method: "POST",
+                            body: formData
                         }
                     );
 
 
-                if (!response.ok) {
-
-                    const errorText =
-                        await response.text();
-
-
-                    throw new Error(
-                        `${response.status} ${errorText}`
-                    );
-                }
-
-
-                const data =
-                    await response.json();
+                const onboarding =
+                    state.profile && state.profile.onboarding;
 
 
                 state.userId =
@@ -3807,8 +3866,10 @@ profileAvatarInput
 
 
                 state.profile =
-                    apiProfileToState(
-                        data
+                    Object.assign(
+                        {},
+                        apiProfileToState(data),
+                        onboarding ? { onboarding } : {}
                     );
 
 
@@ -15219,11 +15280,13 @@ onbBindSeg("#onbDiet", null, "diet");
         /* Save onboarding profile to state */
         const dietValue = (onbState.diet && onbState.diet !== "Không") ? onbState.diet : (state.profile.diet || "Ăn linh tinh");
         const allergiesStr = Array.isArray(onbState.allergies) ? onbState.allergies.join(", ") : (onbState.allergies || "");
-        const dislikesStr = onbState.goalOther || (Array.isArray(onbState.goals) ? onbState.goals.join(", ") : "");
+        const goalsStr = [onbState.goalOther, Array.isArray(onbState.goals) ? onbState.goals.join(", ") : ""]
+            .filter(function (part) { return part && String(part).trim(); })
+            .join(", ");
 
         state.profile.diet = dietValue;
         state.profile.allergies = allergiesStr;
-        state.profile.dislikes = dislikesStr;
+        state.profile.goals = goalsStr;
 
         state.profile.onboarding = {
             cuisines: onbState.cuisines ? onbState.cuisines.slice() : [],
@@ -15259,7 +15322,8 @@ onbBindSeg("#onbDiet", null, "diet");
                         activity: state.profile.activity || 1.2,
                         diet: dietValue,
                         allergies: allergiesStr,
-                        dislikes: dislikesStr
+                        dislikes: state.profile.dislikes || "",
+                        goals: goalsStr
                     })
                 });
                 console.log("✅ Đã lưu chế độ ăn & hồ sơ vào MySQL thành công!");

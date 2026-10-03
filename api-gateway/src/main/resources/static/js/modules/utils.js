@@ -229,9 +229,15 @@ async function apiRequest(
         if (response.status === 401) {
             if (token) {
                 setToken("");
+                try { localStorage.removeItem("foodx_user"); } catch (_) {}
+                if (typeof authState !== "undefined") {
+                    authState.authenticated = false;
+                    authState.userId = null;
+                    authState.role = "";
+                    window.authState = authState;
+                }
                 if (typeof resetChatOnLogout === "function") resetChatOnLogout();
                 if (typeof renderAuthSettings === "function") {
-                    authState.authenticated = false;
                     renderAuthSettings();
                 }
             }

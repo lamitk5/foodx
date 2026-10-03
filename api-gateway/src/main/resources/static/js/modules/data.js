@@ -403,7 +403,9 @@ function createDefaultState() {
             activity: 1.2,
             diet: "Cân bằng",
             allergies: "",
-            dislikes: ""
+            dislikes: "",
+            phone: "",
+            goals: ""
         },
 
         fridge:

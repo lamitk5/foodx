@@ -1050,32 +1050,34 @@ document.getElementById("profileForm")?.addEventListener("submit", async event =
         activity: Number(document.getElementById("profileActivity")?.value),
         diet: document.getElementById("profileDiet")?.value,
         allergies: document.getElementById("profileAllergies")?.value.trim(),
-        dislikes: document.getElementById("profileDislikes")?.value.trim()
+        dislikes: document.getElementById("profileDislikes")?.value.trim(),
+        goals: selGoals.join(", ")
     };
 
     try {
-        let data = {};
-        try {
-            data = await apiRequest(PROFILE_API, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-        } catch (e) {
-            console.warn("Backend profile save fallback:", e);
-        }
-
-        state.profile = Object.assign({}, state.profile, payload, {
-            onboarding: {
-                cuisines: selCuisines,
-                spice: spiceVal,
-                goals: selGoals,
-                calo: caloVal,
-                equip: selEquip,
-                allergies: payload.allergies ? payload.allergies.split(',').map(s=>s.trim()) : [],
-                diet: payload.diet
-            }
+        const data = await apiRequest(PROFILE_API, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
         });
+
+        const onboarding = {
+            cuisines: selCuisines,
+            spice: spiceVal,
+            goals: selGoals,
+            calo: caloVal,
+            equip: selEquip,
+            allergies: payload.allergies ? payload.allergies.split(',').map(s=>s.trim()) : [],
+            diet: payload.diet
+        };
+
+        state.profile = Object.assign(
+            {},
+            state.profile,
+            payload,
+            data ? apiProfileToState(data) : {},
+            { onboarding }
+        );
 
         // Sync with global onbState if present
         if (typeof onbState !== 'undefined') {
@@ -1235,34 +1237,18 @@ profileAvatarInput
 
             try {
 
-                const response =
-                    await fetch(
+                const data =
+                    await apiRequest(
                         `${PROFILE_API}/avatar`,
                         {
-
-                            method:
-                                "POST",
-
-                            body:
-                            formData
+                            method: "POST",
+                            body: formData
                         }
                     );
 
 
-                if (!response.ok) {
-
-                    const errorText =
-                        await response.text();
-
-
-                    throw new Error(
-                        `${response.status} ${errorText}`
-                    );
-                }
-
-
-                const data =
-                    await response.json();
+                const onboarding =
+                    state.profile && state.profile.onboarding;
 
 
                 state.userId =
@@ -1270,8 +1256,10 @@ profileAvatarInput
 
 
                 state.profile =
-                    apiProfileToState(
-                        data
+                    Object.assign(
+                        {},
+                        apiProfileToState(data),
+                        onboarding ? { onboarding } : {}
                     );
 
                 if (state.profile.avatarUrl) {
