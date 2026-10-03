@@ -12360,9 +12360,10 @@ function renderRecipeDetail() {
             // Auto search image from web/wikipedia if recipe has title
             if (r.title && typeof apiRequest === 'function') {
                 apiRequest('/api/recipes/search-image?query=' + encodeURIComponent(r.title)).then(function (res) {
-                    if (res && res.data && res.data.imageUrl && !res.data.imageUrl.includes('placeholder')) {
-                        r.imageUrl = res.data.imageUrl;
-                        img.src = res.data.imageUrl;
+                    const imageUrl = (res && res.imageUrl) || (res && res.data && res.data.imageUrl);
+                    if (imageUrl && !imageUrl.includes('placeholder')) {
+                        r.imageUrl = imageUrl;
+                        img.src = imageUrl;
                         img.hidden = false;
                         if (heroBox) heroBox.classList.add('has-img');
                     }
@@ -13297,8 +13298,8 @@ function openRecipeCreateModal() {
             btn.disabled = true;
             try {
                 const res = await apiRequest('/api/recipes/search-image?query=' + encodeURIComponent(title));
-                if (res && res.data && res.data.imageUrl) {
-                    const imgUrl = res.data.imageUrl;
+                const imgUrl = (res && res.imageUrl) || (res && res.data && res.data.imageUrl);
+                if (imgUrl) {
                     document.getElementById('rcImageUrl').value = imgUrl;
                     updateRcImagePreview(imgUrl, '✓ Đã tìm thấy ảnh từ mạng');
                     showToast('Đã tìm thấy ảnh món ăn! 🖼', 'success');
@@ -13375,8 +13376,8 @@ function openRecipeCreateModal() {
             if (title && !currentImg) {
                 try {
                     const res = await apiRequest('/api/recipes/search-image?query=' + encodeURIComponent(title));
-                    if (res && res.data && res.data.imageUrl && !document.getElementById('rcImageUrl').value.trim()) {
-                        const imgUrl = res.data.imageUrl;
+                    const imgUrl = (res && res.imageUrl) || (res && res.data && res.data.imageUrl);
+                    if (imgUrl && !document.getElementById('rcImageUrl').value.trim()) {
                         document.getElementById('rcImageUrl').value = imgUrl;
                         updateRcImagePreview(imgUrl, '✓ Tự động tìm thấy ảnh');
                     }
