@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,16 +38,19 @@ public class IngredientController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<IngredientDto> create(@Valid @RequestBody IngredientDto dto) {
         return ApiResponse.success(ingredientService.create(dto), "Tạo nguyên liệu thành công");
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<IngredientDto> update(@PathVariable Long id, @Valid @RequestBody IngredientDto dto) {
         return ApiResponse.success(ingredientService.update(id, dto), "Cập nhật nguyên liệu thành công");
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         ingredientService.delete(id);
         return ApiResponse.success(null, "Xoá nguyên liệu thành công");

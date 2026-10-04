@@ -62,7 +62,11 @@ public class IngredientService {
     @Transactional
     public IngredientDto update(Long id, IngredientDto dto) {
         Ingredient ingredient = findEntity(id);
-        ingredient.setName(dto.getName().trim());
+        String newName = dto.getName().trim();
+        if (!ingredient.getName().equalsIgnoreCase(newName) && ingredientRepository.existsByNameIgnoreCase(newName)) {
+            throw new BusinessException(400, "Nguyên liệu đã tồn tại: " + newName);
+        }
+        ingredient.setName(newName);
         ingredient.setDefaultUnit(dto.getDefaultUnit());
         ingredient.setCategory(dto.getCategory());
         ingredient.setCaloriesPerUnit(dto.getCaloriesPerUnit());

@@ -48,14 +48,25 @@ public class ShoppingService {
         if (request.name() == null || request.name().isBlank()) {
             throw new BusinessException(400, "Tên nguyên liệu không được để trống");
         }
+        String name = request.name().trim();
+        if (name.length() > 150) {
+            name = name.substring(0, 150);
+        }
+        String quantity = request.quantity() == null ? "1 phần" : request.quantity().trim();
+        if (quantity.length() > 60) {
+            quantity = quantity.substring(0, 60);
+        }
+        if (request.price() != null && request.price() < 0) {
+            throw new BusinessException(400, "Giá không được là số âm");
+        }
         String category = request.category() == null || request.category().isBlank() ? "spice" : request.category().trim();
         if (category.length() > 250) {
             category = category.substring(0, 250);
         }
         ShoppingItem item = ShoppingItem.builder()
                 .userId(userId)
-                .name(request.name().trim())
-                .quantity(request.quantity() == null ? "1 phần" : request.quantity())
+                .name(name)
+                .quantity(quantity)
                 .price(request.price() == null ? 0 : request.price())
                 .category(category)
                 .done(false)
@@ -79,16 +90,31 @@ public class ShoppingService {
     public ShoppingItemResponse update(Long userId, Long id, ShoppingItemRequest request) {
         ShoppingItem item = findItem(userId, id);
         if (request.name() != null && !request.name().isBlank()) {
-            item.setName(request.name().trim());
+            String name = request.name().trim();
+            if (name.length() > 150) {
+                name = name.substring(0, 150);
+            }
+            item.setName(name);
         }
         if (request.quantity() != null) {
-            item.setQuantity(request.quantity());
+            String quantity = request.quantity().trim();
+            if (quantity.length() > 60) {
+                quantity = quantity.substring(0, 60);
+            }
+            item.setQuantity(quantity);
         }
         if (request.price() != null) {
+            if (request.price() < 0) {
+                throw new BusinessException(400, "Giá không được là số âm");
+            }
             item.setPrice(request.price());
         }
         if (request.category() != null) {
-            item.setCategory(request.category());
+            String category = request.category().trim();
+            if (category.length() > 250) {
+                category = category.substring(0, 250);
+            }
+            item.setCategory(category);
         }
         return toResponse(shoppingItemRepository.save(item));
     }

@@ -325,6 +325,12 @@ function openCustomIngredientModal() {
     const form = document.getElementById("customIngredientForm");
     form?.reset();
 
+    const statusEl = document.getElementById("nutritionCalcStatus");
+    if (statusEl) {
+        statusEl.style.display = "none";
+        statusEl.textContent = "";
+    }
+
     const expiry = document.getElementById("customFoodExpiry");
     if (expiry) {
         expiry.setAttribute("min", toDateInputValue(new Date()));
@@ -415,7 +421,7 @@ async function quickAddCatalogItemToFridge(foodId, btn) {
                 protein: 0,
                 carb: 0,
                 fat: 0,
-                components: food.ingredients.join(', '),
+                components: Array.isArray(food.ingredients) ? food.ingredients.join(', ') : (food.components || food.name || ''),
                 benefit: "Cân bằng",
                 imageUrl: food.image,
                 expiresAt: futureDate(food.expiryDays || 7),
@@ -503,6 +509,86 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    const FOOD_NAME_REGEX = /^[\p{L}\p{N}\s,()\-._#/&+%]+$/u;
+
+    async function handleAutoCalculateNutrition() {
+        const nameInput = document.getElementById("customFoodName");
+        const name = nameInput ? nameInput.value.trim() : "";
+        const qtyInput = document.getElementById("customFoodQuantity");
+        const quantity = parseFloat(qtyInput ? qtyInput.value : "") || 100;
+        const unitEl = document.getElementById("customFoodUnit");
+        const unit = unitEl ? unitEl.value : "g";
+        const statusEl = document.getElementById("nutritionCalcStatus");
+        const btn = document.getElementById("btnAutoCalculateNutrition");
+
+        if (!name) {
+            if (statusEl) {
+                statusEl.style.display = "block";
+                statusEl.textContent = "⚠️ Vui lòng nhập tên thực phẩm trước khi tra cứu.";
+                statusEl.style.color = "#ef4444";
+            }
+            showToast("Vui lòng nhập tên thực phẩm trước khi tra cứu.", "warning");
+            if (nameInput) nameInput.focus();
+            return;
+        }
+
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = "⚡ Đang tính...";
+        }
+        if (statusEl) {
+            statusEl.style.display = "block";
+            statusEl.textContent = "⚡ Đang tra cứu calo và thành phần dinh dưỡng...";
+            statusEl.style.color = "var(--primary, #059669)";
+        }
+
+        try {
+            let est = null;
+            try {
+                est = await apiRequest(`/api/fridge/estimate-nutrition?name=${encodeURIComponent(name)}&quantity=${encodeURIComponent(quantity)}&unit=${encodeURIComponent(unit)}`);
+            } catch (apiErr) {
+                console.warn("API estimate-nutrition failed, fallback to client estimate:", apiErr);
+                est = estimateClientNutrition(name, quantity, unit);
+            }
+
+            if (est) {
+                const calEl = document.getElementById("customFoodCalories");
+                const proEl = document.getElementById("customFoodProtein");
+                const carbEl = document.getElementById("customFoodCarb");
+                const fatEl = document.getElementById("customFoodFat");
+                const benEl = document.getElementById("customFoodBenefit");
+                const ingEl = document.getElementById("customFoodIngredients");
+
+                if (calEl && est.kcal != null) calEl.value = Math.round(est.kcal);
+                if (proEl && est.protein != null) proEl.value = est.protein;
+                if (carbEl && est.carb != null) carbEl.value = est.carb;
+                if (fatEl && est.fat != null) fatEl.value = est.fat;
+                if (benEl && est.benefit) benEl.value = est.benefit;
+                if (ingEl && est.components && !ingEl.value) ingEl.value = est.components;
+
+                if (statusEl) {
+                    statusEl.style.display = "block";
+                    statusEl.textContent = `✓ Đã tính: ${Math.round(est.kcal || 0)} kcal, ${est.protein || 0}g protein, ${est.carb || 0}g carb, ${est.fat || 0}g fat` + (est.basisNote ? ` (${est.basisNote})` : "");
+                    statusEl.style.color = "#10b981";
+                }
+                showToast(`Đã ước tính dinh dưỡng cho "${name}"!`, "success");
+            }
+        } catch (e) {
+            if (statusEl) {
+                statusEl.style.display = "block";
+                statusEl.textContent = "⚠️ Không thể tra cứu dinh dưỡng: " + e.message;
+                statusEl.style.color = "#ef4444";
+            }
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = "⚡ Tra cứu & Tự tính Calo";
+            }
+        }
+    }
+
+    document.getElementById("btnAutoCalculateNutrition")?.addEventListener("click", handleAutoCalculateNutrition);
+
     // Custom ingredient submission
     document.getElementById("customIngredientForm")?.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -513,6 +599,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!name || isNaN(quantity) || quantity <= 0 || !expiry) {
             showToast("Vui lòng điền đủ tên, số lượng và ngày hết hạn.", "warning");
+            return;
+        }
+
+        if (name.length > 100) {
+            showToast("Tên thực phẩm không được vượt quá 100 ký tự.", "warning");
+            return;
+        }
+
+        if (!FOOD_NAME_REGEX.test(name)) {
+            showToast("Tên thực phẩm chứa ký tự không hợp lệ.", "warning");
             return;
         }
 
@@ -586,4 +682,5 @@ if (typeof window !== 'undefined') {
     window.quickAddCatalogItemToFridge = quickAddCatalogItemToFridge;
     window.openIngredientDetail = openIngredientDetail;
     window.saveIngredientExpiry = saveIngredientExpiry;
+    window.handleAutoCalculateNutrition = handleAutoCalculateNutrition;
 }
