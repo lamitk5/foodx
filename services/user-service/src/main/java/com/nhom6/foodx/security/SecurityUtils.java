@@ -32,6 +32,7 @@ public class SecurityUtils {
             throw new BusinessException(401, "Bạn cần đăng nhập");
         }
         return userRepository.findByUsername(username)
+                .or(() -> userRepository.findByUsernameIgnoreCase(username))
                 .orElseThrow(() -> new BusinessException(401, "Người dùng không tồn tại"));
     }
 }

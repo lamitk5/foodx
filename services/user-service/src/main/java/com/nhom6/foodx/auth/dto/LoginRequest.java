@@ -16,9 +16,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LoginRequest {
 
+    @NotBlank(message = "Tên đăng nhập hoặc email không được để trống")
     @JsonAlias({"email", "loginName", "user"})
     private String username;
 
-    @NotBlank(message = "Mat khau khong duoc de trong")
+    @NotBlank(message = "Mật khẩu không được để trống")
     private String password;
 }

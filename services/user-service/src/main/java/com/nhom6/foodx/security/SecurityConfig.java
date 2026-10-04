@@ -72,6 +72,8 @@ public class SecurityConfig {
                                 "/api/recipes/*/save", "/api/recipes/import").authenticated()
                         // Xem danh sách và chi tiết công thức công khai
                         .requestMatchers(HttpMethod.GET, "/api/recipes", "/api/recipes/*").permitAll()
+                        // Danh sách món yêu thích cá nhân hóa bắt buộc đăng nhập
+                        .requestMatchers("/api/favorites/**").authenticated()
                         // Toàn bộ các API còn lại (AI chat/suggest, fridge, plans, shopping, stats, profile, social...) bắt buộc đăng nhập
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

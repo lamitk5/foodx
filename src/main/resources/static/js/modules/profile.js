@@ -1,4 +1,32 @@
 var DEFAULT_AVATAR = (typeof window !== 'undefined' && window.DEFAULT_AVATAR) ? window.DEFAULT_AVATAR : '/images/avatars/default-avatar.svg';
+const PROFILE_API = (typeof window !== 'undefined' && window.PROFILE_API) || '/api/profile';
+if (typeof window !== 'undefined') {
+    window.PROFILE_API = PROFILE_API;
+}
+
+function apiProfileToState(data) {
+    if (!data) return {};
+    const fallbackName = (typeof authState !== 'undefined' && authState) ? authState.fullName : "";
+    const fallbackAvatar = (typeof authState !== 'undefined' && authState) ? authState.avatarUrl : "";
+    return {
+        name: data.name || fallbackName || "Người dùng Food X",
+        avatarUrl: data.avatarUrl || fallbackAvatar || "",
+        gender: data.gender || "male",
+        age: Number(data.age || 25),
+        weight: Number(data.weight || 60),
+        height: Number(data.height || 165),
+        target: Number(data.target || 60),
+        activity: Number(data.activity || 1.2),
+        diet: data.diet || "Ăn linh tinh",
+        allergies: data.allergies || "",
+        dislikes: data.dislikes || "",
+        phone: data.phone || "",
+        goals: data.goals || ""
+    };
+}
+if (typeof window !== 'undefined') {
+    window.apiProfileToState = apiProfileToState;
+}
 
 function calculateBMI(
     weight,
@@ -108,7 +136,7 @@ function calculateCalories(
 ) {
 
     if (
-        age < 18 ||
+        age < 10 ||
         !weight ||
         !height
     ) {
@@ -541,10 +569,12 @@ function fillProfileForm() {
     });
 
     // Populate Goals Chips
-    const goals = onb.goals || [];
+    const goalsList = Array.isArray(onb.goals) && onb.goals.length
+        ? onb.goals
+        : (p.goals ? String(p.goals).split(',').map(s => s.trim()).filter(Boolean) : []);
     document.querySelectorAll('#profileGoalsGrid .onb-chip').forEach(btn => {
         const txt = btn.textContent.trim();
-        btn.classList.toggle('active', goals.some(g => txt.includes(g) || g.includes(txt)));
+        btn.classList.toggle('active', goalsList.some(g => txt.includes(g) || g.includes(txt)));
     });
 
     // Populate Equipment Chips

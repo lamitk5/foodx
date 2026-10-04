@@ -1,3 +1,53 @@
+const AUTH_API = (typeof window !== "undefined" && window.AUTH_API) || "/api/auth";
+const PROFILE_API = (typeof window !== "undefined" && window.PROFILE_API) || "/api/profile";
+if (typeof window !== "undefined") {
+    window.AUTH_API = AUTH_API;
+    window.PROFILE_API = PROFILE_API;
+}
+
+function apiProfileToState(data) {
+    if (!data) return {};
+    const fallbackName = (typeof authState !== 'undefined' && authState) ? authState.fullName : "";
+    const fallbackAvatar = (typeof authState !== 'undefined' && authState) ? authState.avatarUrl : "";
+    return {
+        name: data.name || fallbackName || "Người dùng Food X",
+        avatarUrl: data.avatarUrl || fallbackAvatar || "",
+        gender: data.gender || "male",
+        age: Number(data.age || 25),
+        weight: Number(data.weight || 60),
+        height: Number(data.height || 165),
+        target: Number(data.target || 60),
+        activity: Number(data.activity || 1.2),
+        diet: data.diet || "Ăn linh tinh",
+        allergies: data.allergies || "",
+        dislikes: data.dislikes || "",
+        phone: data.phone || "",
+        goals: data.goals || ""
+    };
+}
+
+async function loadProfileFromApi(showErrorToast = true) {
+    try {
+        const data = await authRequest(PROFILE_API);
+        if (data) {
+            state.userId = data.userId;
+            state.profile = Object.assign({}, state.profile, apiProfileToState(data));
+            saveState();
+            if (typeof renderProfile === 'function') renderProfile();
+            if (typeof renderAvatar === 'function') renderAvatar();
+            if (typeof window.renderRecipes === 'function') window.renderRecipes();
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.warn("Không tải được profile từ server:", error);
+        if (showErrorToast && typeof showToast === 'function') {
+            showToast("Không tải được hồ sơ dinh dưỡng.", "error");
+        }
+        return false;
+    }
+}
+
 async function authRequest(
     url,
     options = {}
@@ -146,6 +196,11 @@ function applyAuthResponse(data) {
         } else if (typeof loadFridgeFromApi === 'function') {
             loadFridgeFromApi(false);
         }
+        if (typeof window.loadFavoritesFromApi === 'function') {
+            window.loadFavoritesFromApi(false);
+        } else if (typeof loadFavoritesFromApi === 'function') {
+            loadFavoritesFromApi(false);
+        }
         if (typeof loadHomeDashboard === 'function') loadHomeDashboard();
         if (typeof loadSocialFeed === 'function') loadSocialFeed();
 
@@ -161,8 +216,10 @@ function applyAuthResponse(data) {
         state.profile = createDefaultState().profile;
         state.fridge = [];
         state.selectedFridgeIds = [];
+        state.favorites = [];
         saveState();
         renderAll();
+        if (typeof renderFavorites === 'function') renderFavorites();
         if (typeof loadHomeDashboard === 'function') loadHomeDashboard();
         if (typeof loadSocialFeed === 'function') loadSocialFeed();
 
@@ -920,6 +977,9 @@ function requireAuth(actionName, callback) {
         case 'stats':
             msg = 'Vui lòng đăng nhập để xem thống kê dinh dưỡng & nấu nướng!';
             break;
+        case 'favorites':
+            msg = 'Vui lòng đăng nhập để lưu và quản lý món ăn yêu thích!';
+            break;
         default:
             break;
     }
@@ -929,60 +989,79 @@ function requireAuth(actionName, callback) {
     return false;
 }
 
-// Module window exports
-document.getElementById("changePasswordForm")?.addEventListener("submit", async event => {
-    event.preventDefault();
-    if (!isUserLoggedIn()) {
-        requireAuth("profile");
-        return;
-    }
+// Module window exports & change password form handler
+function bindChangePasswordForm() {
+    const form = document.getElementById("changePasswordForm");
+    if (!form || form.dataset.bound === "true") return;
+    form.dataset.bound = "true";
 
-    const submitButton = event.submitter || event.currentTarget.querySelector('button[type="submit"]');
-    const restore = buttonLoading(submitButton, "Đang cập nhật...");
-    const oldPassword = document.getElementById("oldPassword")?.value || "";
-    const newPassword = document.getElementById("newPassword")?.value || "";
-    const confirmNewPassword = document.getElementById("confirmNewPassword")?.value || "";
+    form.addEventListener("submit", async event => {
+        event.preventDefault();
+        if (!isUserLoggedIn()) {
+            requireAuth("profile");
+            return;
+        }
 
-    if (!oldPassword || !newPassword || !confirmNewPassword) {
-        restore();
-        showToast("Vui lòng nhập đầy đủ mật khẩu hiện tại và mật khẩu mới.", "warning");
-        return;
-    }
-    if (newPassword.length < 6 || newPassword.length > 100) {
-        restore();
-        showToast("Mật khẩu mới phải từ 6-100 ký tự.", "warning");
-        return;
-    }
-    if (newPassword !== confirmNewPassword) {
-        restore();
-        showToast("Mật khẩu mới nhập lại không khớp.", "warning");
-        return;
-    }
-    if (oldPassword === newPassword) {
-        restore();
-        showToast("Mật khẩu mới phải khác mật khẩu hiện tại.", "warning");
-        return;
-    }
+        const submitButton = event.submitter || form.querySelector('button[type="submit"]');
+        const restore = (typeof buttonLoading === 'function') ? buttonLoading(submitButton, "Đang cập nhật...") : () => {};
+        const oldPassword = document.getElementById("oldPassword")?.value || "";
+        const newPassword = document.getElementById("newPassword")?.value || "";
+        const confirmNewPassword = document.getElementById("confirmNewPassword")?.value || "";
 
-    try {
-        await authRequest(`${AUTH_API}/change-password`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ oldPassword, newPassword })
-        });
-        document.getElementById("changePasswordForm")?.reset();
-        showToast("Đã đổi mật khẩu thành công.", "success");
-    } catch (error) {
-        showToast(error.message || "Không đổi được mật khẩu.", "error");
-    } finally {
-        restore();
-    }
-});
+        if (!oldPassword || !newPassword || !confirmNewPassword) {
+            restore();
+            showToast("Vui lòng nhập đầy đủ mật khẩu hiện tại và mật khẩu mới.", "warning");
+            return;
+        }
+        if (newPassword.length < 6 || newPassword.length > 100) {
+            restore();
+            showToast("Mật khẩu mới phải từ 6-100 ký tự.", "warning");
+            return;
+        }
+        if (newPassword !== confirmNewPassword) {
+            restore();
+            showToast("Mật khẩu mới nhập lại không khớp.", "warning");
+            return;
+        }
+        if (oldPassword === newPassword) {
+            restore();
+            showToast("Mật khẩu mới phải khác mật khẩu hiện tại.", "warning");
+            return;
+        }
 
-if (typeof window !== 'undefined') window.isUserLoggedIn = isUserLoggedIn;
-if (typeof window !== 'undefined') window.requireAuth = requireAuth;
-if (typeof window !== 'undefined') window.authRequest = authRequest;
-if (typeof window !== 'undefined') window.applyAuthResponse = applyAuthResponse;
-if (typeof window !== 'undefined') window.renderAuthSettings = renderAuthSettings;
-if (typeof window !== 'undefined') window.loadAuthState = loadAuthState;
-if (typeof window !== 'undefined') window.openAuthModal = openAuthModal;
+        try {
+            await authRequest(`${AUTH_API}/change-password`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ oldPassword, newPassword })
+            });
+            form.reset();
+            showToast("Đã đổi mật khẩu thành công.", "success");
+        } catch (error) {
+            showToast(error.message || "Không đổi được mật khẩu.", "error");
+        } finally {
+            restore();
+        }
+    });
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bindChangePasswordForm);
+} else {
+    bindChangePasswordForm();
+}
+
+if (typeof window !== 'undefined') {
+    window.AUTH_API = AUTH_API;
+    window.PROFILE_API = PROFILE_API;
+    window.apiProfileToState = apiProfileToState;
+    window.loadProfileFromApi = loadProfileFromApi;
+    window.isUserLoggedIn = isUserLoggedIn;
+    window.requireAuth = requireAuth;
+    window.authRequest = authRequest;
+    window.applyAuthResponse = applyAuthResponse;
+    window.renderAuthSettings = renderAuthSettings;
+    window.loadAuthState = loadAuthState;
+    window.openAuthModal = openAuthModal;
+    window.bindChangePasswordForm = bindChangePasswordForm;
+}

@@ -35,13 +35,8 @@ public class AuthController {
 
     /** Đổi mật khẩu của tài khoản đang đăng nhập. */
     @PostMapping("/change-password")
-    public ApiResponse<Void> changePassword(@RequestBody java.util.Map<String, String> body) {
-        String oldPass = body.get("oldPassword");
-        String newPass = body.get("newPassword");
-        if (newPass == null || newPass.isBlank()) {
-            throw new com.nhom6.foodx.common.exception.BusinessException(400, "Mật khẩu mới không được để trống");
-        }
-        authService.changePassword(securityUtils.getCurrentUser(), oldPass, newPass);
+    public ApiResponse<Void> changePassword(@Valid @RequestBody com.nhom6.foodx.auth.dto.ChangePasswordRequest request) {
+        authService.changePassword(securityUtils.getCurrentUser(), request.getOldPassword(), request.getNewPassword());
         return ApiResponse.success(null, "Đổi mật khẩu thành công");
     }
 
