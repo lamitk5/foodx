@@ -85,8 +85,8 @@ public class FridgeService {
             throw new BusinessException(400, "Tên thực phẩm không được để trống");
         }
         String cleanName = request.name().trim();
-        if (!cleanName.matches("^[\\p{L}\\p{N}\\s,()\\-._#]+$")) {
-            throw new BusinessException(400, "Tên thực phẩm chứa ký tự không hợp lệ");
+        if (!cleanName.matches("^[\\p{L}\\p{N}\\s,()\\-._#/&+%]+$")) {
+            throw new BusinessException(400, "Tên thực phẩm chỉ được chứa chữ cái, chữ số và ký tự thông dụng");
         }
         if (cleanName.length() > 100) {
             throw new BusinessException(400, "Tên thực phẩm không được vượt quá 100 ký tự");
@@ -235,8 +235,8 @@ public class FridgeService {
 
         if (request.name() != null && !request.name().isBlank()) {
             String updatedName = request.name().trim();
-            if (!updatedName.matches("^[\\p{L}\\p{N}\\s,()\\-._#]+$")) {
-                throw new BusinessException(400, "Tên thực phẩm chứa ký tự không hợp lệ");
+            if (!updatedName.matches("^[\\p{L}\\p{N}\\s,()\\-._#/&+%]+$")) {
+                throw new BusinessException(400, "Tên thực phẩm chỉ được chứa chữ cái, chữ số và ký tự thông dụng");
             }
             if (updatedName.length() > 100) {
                 throw new BusinessException(400, "Tên thực phẩm không được vượt quá 100 ký tự");
@@ -289,9 +289,11 @@ public class FridgeService {
         List<FridgeItem> allItems = fridgeItemRepository.findByUserIdOrderByIdAsc(userId);
         var groups = allItems.stream()
                 .collect(Collectors.groupingBy(item -> {
-                    String nameKey = item.getFood().getName().trim().toLowerCase();
+                    String nameKey = item.getFood() != null && item.getFood().getName() != null
+                            ? item.getFood().getName().trim().toLowerCase() : "";
                     String expiryKey = item.getExpiresAt() == null ? "none" : item.getExpiresAt().toString();
-                    return nameKey + "___" + expiryKey;
+                    String unitKey = item.getUnit() == null ? "" : item.getUnit().trim().toLowerCase();
+                    return nameKey + "___" + expiryKey + "___" + unitKey;
                 }));
 
         for (List<FridgeItem> group : groups.values()) {
@@ -411,9 +413,11 @@ public class FridgeService {
         if (name == null || name.isBlank()) {
             throw new BusinessException(400, "Tên thực phẩm không được để trống");
         }
-        String cleanName = name.trim();
+        String trimmedName = name.trim();
+        final String cleanName = trimmedName.length() > 100 ? trimmedName.substring(0, 100) : trimmedName;
         double qty = (quantity == null || quantity <= 0) ? 1.0 : quantity;
-        String finalUnit = (unit == null || unit.isBlank()) ? "phần" : unit.trim();
+        String trimmedUnit = (unit == null || unit.isBlank()) ? "phần" : unit.trim();
+        final String finalUnit = trimmedUnit.length() > 20 ? trimmedUnit.substring(0, 20) : trimmedUnit;
 
         // Kiểm tra nguyên liệu đã có sẵn trong tủ lạnh chưa
         Optional<FridgeItem> existing = fridgeItemRepository.findFirstByUserIdAndFood_NameIgnoreCase(userId, cleanName);
