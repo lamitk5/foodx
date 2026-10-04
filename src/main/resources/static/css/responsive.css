@@ -110,6 +110,17 @@ body.dark
                 70px;
     }
 
+    .topbar {
+        margin-left: -18px;
+        margin-right: -18px;
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .topbar-kicker {
+        display: none;
+    }
+
     .stats {
         grid-template-columns:
             1fr 1fr;

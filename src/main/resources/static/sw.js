@@ -4,7 +4,7 @@
 // - Static (/css /js /icons /images /manifest): cache-first + refresh nền; lưu cả key có query.
 // - API (/api): network-first, fallback cache hoặc JSON báo offline.
 // Bump CACHE_NAME mỗi khi phát hành bản thay đổi shell/app.js để người dùng nhận bản mới.
-const CACHE_NAME = 'foodx-v3';
+const CACHE_NAME = 'foodx-v4';
 const PRECACHE_URLS = [
   '/',
   '/index.html',

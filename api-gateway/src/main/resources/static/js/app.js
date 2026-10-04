@@ -2199,6 +2199,24 @@ window.handleHeroCtaClick = handleHeroCtaClick;
 
 
 
+const VIEW_TITLES = {
+    home: "Trang chủ",
+    fridge: "Tủ lạnh",
+    recipes: "Công thức",
+    recipe: "Chi tiết món",
+    plan: "Kế hoạch bữa ăn",
+    favorites: "Yêu thích",
+    shopping: "Danh sách mua",
+    social: "Cộng đồng",
+    admin: "Quản trị"
+};
+
+function syncTopbarTitle(name) {
+    const titleEl = document.getElementById("topbarTitle");
+    if (!titleEl) return;
+    titleEl.textContent = VIEW_TITLES[name] || "FoodX";
+}
+
 function openView(name) {
     if (!name) name = "home";
     if (name === "stats") name = "home";
@@ -2234,6 +2252,7 @@ function openView(name) {
     if (typeof state !== "undefined" && state) {
         state.activeView = name;
     }
+    syncTopbarTitle(name);
     try {
         localStorage.setItem("foodx_active_view", name);
         if (window.history && window.history.replaceState) {

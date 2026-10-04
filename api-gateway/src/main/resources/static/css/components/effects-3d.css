@@ -7,7 +7,6 @@
    ========================================================== */
 
 /* --- 1. 3D Spatial Viewport & Transitions --- */
-.main,
 .view-container,
 .app-content {
     perspective: 1400px;

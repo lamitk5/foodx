@@ -24,6 +24,8 @@
     display: flex;
     flex-direction: column;
 
+    overflow: hidden;
+
     transition:
             background .3s,
             border .3s;
@@ -65,11 +67,18 @@ body.dark .logo {
 
     background: var(--grad-green);
 
+    color: #fff;
+
     font-size: 22px;
 
     box-shadow: var(--shadow-green);
 
     transition: transform .3s;
+}
+
+.logo-icon .icon {
+    width: 22px;
+    height: 22px;
 }
 
 .logo:hover .logo-icon {
@@ -81,7 +90,17 @@ body.dark .logo {
     display: flex;
     flex-direction: column;
 
+    flex: 1;
+    min-height: 0;
+
     gap: 8px;
+
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+
+.menu::-webkit-scrollbar {
+    display: none;
 }
 
 
@@ -150,11 +169,11 @@ body.dark .logo {
 
 
 .sidebar-card {
-    position: absolute;
+    position: relative;
 
-    left: 20px;
-    right: 20px;
-    bottom: 28px;
+    flex-shrink: 0;
+
+    margin-top: 16px;
 
     padding: 20px 16px;
 
@@ -222,6 +241,11 @@ body.dark .sidebar-card h3 {
     padding:
             0 32px
             70px;
+
+    background:
+            radial-gradient(880px 340px at 100% -40px, rgba(16, 185, 129, .10), transparent 58%),
+            radial-gradient(640px 280px at -80px 80px, rgba(245, 158, 11, .06), transparent 55%),
+            var(--bg);
 }
 
 
@@ -230,17 +254,52 @@ body.dark .sidebar-card h3 {
 ========================================================== */
 
 .topbar {
-    position: relative;
+    position: sticky;
+    top: 0;
 
-    height: 78px;
+    height: 72px;
 
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
     align-items: center;
 
     gap: 11px;
 
+    margin: 0 -32px 18px;
+    padding: 0 32px;
+
     z-index: 100;
+}
+
+
+.topbar-lead {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    min-width: 0;
+    margin-right: auto;
+
+    line-height: 1.15;
+}
+
+
+.topbar-kicker {
+    color: var(--text-muted);
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+
+.topbar-lead strong {
+    color: var(--text);
+
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -.2px;
 }
 
 

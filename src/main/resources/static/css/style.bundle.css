@@ -211,6 +211,8 @@ img {
     display: flex;
     flex-direction: column;
 
+    overflow: hidden;
+
     transition:
             background .3s,
             border .3s;
@@ -252,11 +254,18 @@ body.dark .logo {
 
     background: var(--grad-green);
 
+    color: #fff;
+
     font-size: 22px;
 
     box-shadow: var(--shadow-green);
 
     transition: transform .3s;
+}
+
+.logo-icon .icon {
+    width: 22px;
+    height: 22px;
 }
 
 .logo:hover .logo-icon {
@@ -268,7 +277,17 @@ body.dark .logo {
     display: flex;
     flex-direction: column;
 
+    flex: 1;
+    min-height: 0;
+
     gap: 8px;
+
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+
+.menu::-webkit-scrollbar {
+    display: none;
 }
 
 
@@ -337,11 +356,11 @@ body.dark .logo {
 
 
 .sidebar-card {
-    position: absolute;
+    position: relative;
 
-    left: 20px;
-    right: 20px;
-    bottom: 28px;
+    flex-shrink: 0;
+
+    margin-top: 16px;
 
     padding: 20px 16px;
 
@@ -409,6 +428,11 @@ body.dark .sidebar-card h3 {
     padding:
             0 32px
             70px;
+
+    background:
+            radial-gradient(880px 340px at 100% -40px, rgba(16, 185, 129, .10), transparent 58%),
+            radial-gradient(640px 280px at -80px 80px, rgba(245, 158, 11, .06), transparent 55%),
+            var(--bg);
 }
 
 
@@ -417,17 +441,52 @@ body.dark .sidebar-card h3 {
 ========================================================== */
 
 .topbar {
-    position: relative;
+    position: sticky;
+    top: 0;
 
-    height: 78px;
+    height: 72px;
 
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
     align-items: center;
 
     gap: 11px;
 
+    margin: 0 -32px 18px;
+    padding: 0 32px;
+
     z-index: 100;
+}
+
+
+.topbar-lead {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    min-width: 0;
+    margin-right: auto;
+
+    line-height: 1.15;
+}
+
+
+.topbar-kicker {
+    color: var(--text-muted);
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+
+.topbar-lead strong {
+    color: var(--text);
+
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -.2px;
 }
 
 
@@ -2732,7 +2791,6 @@ body.dark .auth-brand-icon {
    ========================================================== */
 
 /* --- 1. 3D Spatial Viewport & Transitions --- */
-.main,
 .view-container,
 .app-content {
     perspective: 1400px;
@@ -4176,9 +4234,30 @@ body.dark .hero-overlay {
 
 
 .stat-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-2px);
 
     box-shadow: var(--shadow);
+}
+
+.stat-icon {
+    color: var(--green-dark);
+}
+
+.stat-icon .icon {
+    width: 22px;
+    height: 22px;
+}
+
+.stat-icon.orange {
+    color: #C2410C;
+}
+
+.stat-icon.purple {
+    color: var(--purple);
+}
+
+.stat-icon.green {
+    color: var(--green-dark);
 }
 
 
@@ -4256,7 +4335,7 @@ body.dark .hero-overlay {
 
 .search-card,
 .recipe-section {
-    min-height: 510px;
+    min-height: 280px;
 
     padding: 21px;
 }
@@ -4267,18 +4346,27 @@ body.dark .hero-overlay {
 ========================================================= */
 .slogan-hero-clean {
   position: relative;
-  border-radius: 24px;
-  padding: 36px 40px;
-  margin-bottom: 24px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
-  display: flex;
+  border-radius: 28px;
+  padding: 28px 28px 28px 36px;
+  margin-bottom: 8px;
+  background:
+    radial-gradient(520px 220px at 92% 0%, rgba(52, 211, 153, .18), transparent 62%),
+    linear-gradient(145deg, #f3fbf6 0%, #ffffff 46%, #ecfdf5 100%);
+  border: 1px solid rgba(5, 150, 105, .14);
+  box-shadow: var(--shadow);
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(240px, .9fr);
   align-items: center;
-  justify-content: space-between;
-  gap: 24px;
+  gap: 28px;
   overflow: hidden;
-  min-height: 240px;
+  min-height: 268px;
+}
+
+body.dark .slogan-hero-clean {
+  background:
+    radial-gradient(520px 220px at 92% 0%, rgba(52, 211, 153, .16), transparent 62%),
+    linear-gradient(145deg, #10241c 0%, #162720 52%, #0e2a22 100%);
+  border-color: var(--border);
 }
 
 .shc-content {
@@ -4341,39 +4429,55 @@ body.dark .hero-overlay {
   box-shadow: 0 12px 26px rgba(0, 102, 51, 0.35);
 }
 
-.shc-image-wrap {
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 45%;
+.shc-visual {
+  position: relative;
+  height: 228px;
+  border-radius: 22px;
   overflow: hidden;
-  pointer-events: none;
-  mask-image: linear-gradient(to right, transparent 0%, black 35%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 35%);
+  background:
+    radial-gradient(140px 140px at 88% 12%, rgba(255, 255, 255, .22), transparent 70%),
+    linear-gradient(155deg, #065f46 0%, #059669 58%, #6ee7b7 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22);
 }
 
 .shc-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center;
+  object-fit: contain;
+  object-position: center 62%;
+  transform: scale(1.22);
 }
 
-@media (max-width: 768px) {
+.shc-chip {
+  position: absolute;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .94);
+  color: #065f46;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: -.1px;
+  box-shadow: 0 8px 18px rgba(6, 78, 59, .16);
+}
+
+.shc-chip-a { top: 14px; left: 14px; }
+.shc-chip-b { right: 14px; bottom: 14px; }
+
+body.dark .shc-chip {
+  background: rgba(12, 26, 20, .88);
+  color: #d1fae5;
+}
+
+@media (max-width: 860px) {
   .slogan-hero-clean {
-    padding: 26px 20px;
-    flex-direction: column;
-    align-items: flex-start;
+    grid-template-columns: 1fr;
+    padding: 24px 20px;
   }
-  .shc-image-wrap {
-    position: relative;
-    width: 100%;
-    height: 160px;
-    border-radius: 16px;
-    margin-top: 16px;
-    mask-image: none;
-    -webkit-mask-image: none;
+  .shc-visual {
+    height: 180px;
   }
 }
 
@@ -4574,12 +4678,13 @@ body.dark .hero-overlay {
   height: 160px;
   min-height: 160px;
   overflow: hidden;
+  background: linear-gradient(160deg, #065f46, #34d399);
 }
 
 .blog-featured-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   transition: transform 0.35s ease;
 }
 
@@ -7650,31 +7755,34 @@ strong {
 }
 
 /* ==========================================================
-   GUEST HOME (CHƯA ĐĂNG NHẬP)
+   GUEST HOME (CHƯA ĐĂNG NHẬP) - MODERN UI
 ========================================================== */
 
 .guest-home-container {
     display: flex;
     flex-direction: column;
-    gap: 22px;
-    margin-bottom: 36px;
+    gap: 26px;
+    margin-bottom: 40px;
     animation: fadeIn 0.25s ease-in;
 }
 
 /* HERO BANNER */
 .guest-hero-banner {
     position: relative;
-    background: linear-gradient(135deg, rgba(6, 78, 59, 0.88) 0%, rgba(6, 95, 70, 0.80) 55%, rgba(4, 120, 87, 0.84) 100%),
-                url('https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat !important;
-    border-radius: 24px;
-    padding: 36px 34px;
+    background:
+        radial-gradient(420px 240px at 92% 0%, rgba(167, 243, 208, .28), transparent 62%),
+        radial-gradient(360px 260px at 0% 100%, rgba(6, 78, 59, .45), transparent 60%),
+        linear-gradient(135deg, #064e3b 0%, #047857 58%, #059669 100%);
+    border-radius: 28px;
+    padding: 40px 36px;
     color: #ffffff;
-    box-shadow: 0 12px 28px -6px rgba(5, 150, 105, 0.35), 0 8px 12px -6px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 16px 36px -12px rgba(5, 150, 105, 0.45);
     overflow: hidden;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 28px;
+    min-height: 280px;
 }
 
 .guest-hero-banner::before {
@@ -7713,12 +7821,13 @@ strong {
 }
 
 .guest-hero-text h1 {
-    font-size: 28px;
+    font-size: clamp(28px, 3vw, 40px);
     font-weight: 800;
     color: #ffffff;
     margin: 0 0 10px;
-    line-height: 1.28;
-    letter-spacing: -0.4px;
+    line-height: 1.18;
+    letter-spacing: -0.6px;
+    max-width: 12em;
 }
 
 .guest-hero-text p {
@@ -7976,7 +8085,7 @@ strong {
 .guest-ingredients-grid,
 .guest-social-feed {
     display: grid !important;
-    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
     gap: 16px !important;
 }
 
@@ -8353,14 +8462,6 @@ strong {
 }
 
 /* RESPONSIVE */
-@media (max-width: 1280px) {
-    .guest-recipes-grid,
-    .guest-ingredients-grid,
-    .guest-social-feed {
-        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-    }
-}
-
 @media (max-width: 1024px) {
     .guest-hero-banner {
         flex-direction: column;
@@ -8378,15 +8479,16 @@ strong {
     }
 }
 
-@media (max-width: 992px) {
-    .guest-recipes-grid,
-    .guest-ingredients-grid,
-    .guest-social-feed {
-        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    }
-}
-
 @media (max-width: 680px) {
+    .guest-hero-stats {
+        flex-direction: column;
+        overflow: visible;
+        width: 100%;
+    }
+    .guest-stat-pill {
+        width: 100%;
+        min-width: 0;
+    }
     .guest-recipes-grid,
     .guest-ingredients-grid,
     .guest-social-feed {
@@ -8417,9 +8519,10 @@ strong {
    DARK THEME SUPPORT FOR GUEST HOME
 ========================================================== */
 body.dark .guest-hero-banner {
-    /* Giữ nguyên nền ở banner này kết hợp hình nền thực phẩm cao cấp */
-    background: linear-gradient(135deg, rgba(6, 78, 59, 0.90) 0%, rgba(6, 95, 70, 0.84) 55%, rgba(4, 120, 87, 0.86) 100%),
-                url('https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat !important;
+    background:
+        radial-gradient(420px 240px at 92% 0%, rgba(52, 211, 153, .22), transparent 62%),
+        radial-gradient(360px 260px at 0% 100%, rgba(0, 0, 0, .28), transparent 60%),
+        linear-gradient(135deg, #022c22 0%, #064e3b 58%, #047857 100%);
     border-color: rgba(52, 211, 153, 0.25) !important;
     color: #ffffff !important;
 }
@@ -8587,6 +8690,9 @@ body.dark .guest-more-bottom-btn:hover {
     color: #34d399 !important;
     background: rgba(52, 211, 153, 0.1) !important;
 }
+
+
+
 
 /* --- views/plan.css --- */
 /* ==========================================================
@@ -10852,6 +10958,17 @@ body.dark
         padding:
                 0 18px
                 70px;
+    }
+
+    .topbar {
+        margin-left: -18px;
+        margin-right: -18px;
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .topbar-kicker {
+        display: none;
     }
 
     .stats {

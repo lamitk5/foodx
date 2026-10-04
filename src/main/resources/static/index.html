@@ -20,7 +20,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.bundle.css?v=20260923_ing_split_servings">
+    <link rel="stylesheet" href="/css/style.bundle.css?v=20261004_ui_polish">
 </head>
 
 <body>
@@ -81,7 +81,9 @@
     <aside class="sidebar">
 
         <div class="logo">
-            <div class="logo-icon">🌿</div>
+            <div class="logo-icon" aria-hidden="true">
+                <svg class="icon"><use href="#i-leaf"/></svg>
+            </div>
             <span>FoodX</span>
         </div>
 
@@ -208,6 +210,11 @@
                 <svg class="icon"><use href="#i-menu"/></svg>
 
             </button>
+
+            <div class="topbar-lead">
+                <span class="topbar-kicker">FoodX</span>
+                <strong id="topbarTitle">Trang chủ</strong>
+            </div>
 
             <button
                     type="button"
@@ -523,22 +530,21 @@
                 <div class="slogan-hero-clean">
                     <div class="shc-content">
                         <span class="shc-badge">Tận dụng nguyên liệu đang có</span>
-                        <h1 class="shc-title">
+                        <h2 class="shc-title">
                             Có gì nấu nấy<br>
                             <span class="shc-green">Giảm lãng phí thực phẩm</span>
-                        </h1>
+                        </h2>
                         <p class="shc-subtitle">
-                            Theo dõi tủ lạnh và ưu tiên những thực phẩm cần sử dụng sớm.
+                            Theo dõi tủ lạnh và ưu tiên những thực phẩm cần dùng sớm — nấu ngon mà không phải đoán.
                         </p>
                         <button type="button" class="shc-btn" onclick="handleHeroCtaClick()">
                             Xem món phù hợp &rarr;
                         </button>
                     </div>
-                    <div class="shc-image-wrap hero-3d-wrap">
-                        <img src="https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1200&q=80" alt="Thực phẩm tươi ngon" class="shc-img">
-                        <span class="floating-3d-badge badge-top-left">🥑 Tươi ngon mỗi ngày</span>
-                        <span class="floating-3d-badge badge-bottom-right">🥗 Cân bằng calo</span>
-                        <span class="floating-3d-badge badge-center-left">⏱️ Nấu nhanh 15p</span>
+                    <div class="shc-visual">
+                        <img src="/images/hero-kitchen.svg" alt="Đĩa nguyên liệu tươi" class="shc-img">
+                        <span class="shc-chip shc-chip-a">Tươi mỗi ngày</span>
+                        <span class="shc-chip shc-chip-b">Nấu nhanh 15 phút</span>
                     </div>
                 </div>
 
@@ -582,7 +588,7 @@
                 <div class="stat-card">
 
                     <div class="stat-icon">
-                        ❄
+                        <svg class="icon"><use href="#i-refrigerator"/></svg>
                     </div>
 
                     <div>
@@ -603,7 +609,7 @@
                 <div class="stat-card">
 
                     <div class="stat-icon orange">
-                        ◷
+                        <svg class="icon"><use href="#i-clock"/></svg>
                     </div>
 
                     <div>
@@ -624,7 +630,7 @@
                 <div class="stat-card">
 
                     <div class="stat-icon purple">
-                        ✦
+                        <svg class="icon"><use href="#i-sparkles"/></svg>
                     </div>
 
                     <div>
@@ -645,7 +651,7 @@
                 <div class="stat-card">
 
                     <div class="stat-icon green">
-                        ◎
+                        <svg class="icon"><use href="#i-flame"/></svg>
                     </div>
 
                     <div>
@@ -788,7 +794,7 @@
                 <!-- Featured Banner (nội dung thật của FoodX, không dùng số liệu demo giả) -->
                 <div class="blog-featured-card" id="blogFeaturedCard" style="cursor:pointer;" onclick="openView('recipes')">
                     <div class="blog-featured-img-wrap">
-                        <img class="blog-featured-img" src="/images/recipes/pho-bo.jpg" alt="Món ăn từ kho công thức FoodX" onerror="this.src='/images/recipes/default-recipe.jpg'">
+                        <img class="blog-featured-img" src="/images/hero-kitchen.svg" alt="Món ăn từ kho công thức FoodX">
                         <span class="blog-category-tag">⭐ Kho công thức FoodX</span>
                     </div>
                     <div class="blog-featured-content">
@@ -921,9 +927,9 @@
                 <!-- HERO INTRO -->
                 <div class="guest-hero-banner">
                     <div class="guest-hero-text">
-                        <span class="guest-hero-badge">✨ Nền tảng ẩm thực thông minh</span>
-                        <h1>Nấu Ngon Mỗi Ngày Cùng FoodX 🍲</h1>
-                        <p>Khám phá kho công thức món ăn phong phú, tra cứu định lượng dinh dưỡng chuẩn xác và kết nối cùng cộng đồng yêu bếp thực tế.</p>
+                        <span class="guest-hero-badge">Bếp thông minh</span>
+                        <h1>Nấu ngon từ những gì đang có trong tủ</h1>
+                        <p>Quản lý hạn dùng, gợi ý món đúng nguyên liệu và lên thực đơn theo mục tiêu dinh dưỡng của bạn.</p>
                         <div class="guest-hero-actions">
                             <button type="button" class="primary-button" id="guestBtnLogin" onclick="document.getElementById('loginModal')?.classList.add('show')">
                                 <svg class="icon"><use href="#i-user"/></svg> Đăng nhập để mở khóa Tủ Lạnh
@@ -935,24 +941,24 @@
                     </div>
                     <div class="guest-hero-stats">
                         <div class="guest-stat-pill">
-                            <span class="guest-stat-pill-icon">🍲</span>
+                            <span class="guest-stat-pill-icon">🧊</span>
                             <div>
-                                <div class="guest-stat-pill-num">500+ Món Ăn</div>
-                                <div class="guest-stat-pill-lbl">Chuẩn vị dinh dưỡng</div>
+                                <div class="guest-stat-pill-num">Tủ lạnh rõ ràng</div>
+                                <div class="guest-stat-pill-lbl">Biết món nào cần dùng sớm</div>
                             </div>
                         </div>
                         <div class="guest-stat-pill">
-                            <span class="guest-stat-pill-icon">🥦</span>
+                            <span class="guest-stat-pill-icon">🥗</span>
                             <div>
-                                <div class="guest-stat-pill-num">150+ Thực Phẩm</div>
-                                <div class="guest-stat-pill-lbl">Định lượng calo & hạn dùng</div>
+                                <div class="guest-stat-pill-num">Gợi ý đúng món</div>
+                                <div class="guest-stat-pill-lbl">Nấu từ nguyên liệu đang có</div>
                             </div>
                         </div>
                         <div class="guest-stat-pill">
-                            <span class="guest-stat-pill-icon">👨‍🍳</span>
+                            <span class="guest-stat-pill-icon">✨</span>
                             <div>
-                                <div class="guest-stat-pill-num">Cộng Đồng Bếp</div>
-                                <div class="guest-stat-pill-lbl">Chia sẻ bí quyết thực tế</div>
+                                <div class="guest-stat-pill-num">Trợ lý nấu ăn</div>
+                                <div class="guest-stat-pill-lbl">Thực đơn theo hồ sơ của bạn</div>
                             </div>
                         </div>
                     </div>
@@ -963,7 +969,7 @@
                     <div class="guest-section-header">
                         <div>
                             <span class="guest-section-badge">🔥 KHÁM PHÁ CÔNG THỨC</span>
-                            <h2>🍲 Các món ăn hấp dẫn</h2>
+                            <h2>Các món ăn hấp dẫn</h2>
                             <p>Kho công thức nấu ăn phong phú, chuẩn vị và giàu dinh dưỡng</p>
                         </div>
                         <button type="button" class="guest-more-btn" id="guestBtnMoreRecipes" onclick="toggleGuestMore('recipes')" title="Bấm để xem thêm món ăn">
@@ -1000,7 +1006,7 @@
                     <div class="guest-section-header">
                         <div>
                             <span class="guest-section-badge">🥦 KHO NGUYÊN LIỆU</span>
-                            <h2>🥦 Nguyên vật liệu tươi sạch</h2>
+                            <h2>Nguyên liệu tươi sạch</h2>
                             <p>Định lượng calo, nhóm dinh dưỡng & hạn dùng bảo quản tiêu chuẩn</p>
                         </div>
                         <button type="button" class="guest-more-btn" id="guestBtnMoreIngredients" onclick="toggleGuestMore('ingredients')" title="Bấm để xem thêm nguyên liệu">
@@ -1039,7 +1045,7 @@
                     <div class="guest-section-header">
                         <div>
                             <span class="guest-section-badge">📢 BẢNG TIN CỘNG ĐỒNG</span>
-                            <h2>📢 Chia sẻ công thức nấu ăn 👨‍🍳</h2>
+                            <h2>Chia sẻ công thức nấu ăn</h2>
                             <p>Những công thức gia đình & bí quyết thực tế từ các thành viên FoodX</p>
                         </div>
                         <button type="button" class="guest-more-btn" id="guestBtnMoreSocial" onclick="toggleGuestMore('social')" title="Bấm để xem thêm chia sẻ">
