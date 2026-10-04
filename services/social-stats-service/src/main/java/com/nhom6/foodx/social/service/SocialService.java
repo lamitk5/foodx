@@ -1,7 +1,9 @@
 package com.nhom6.foodx.social.service;
 
-import com.nhom6.foodx.auth.entity.User;
+import com.nhom6.foodx.common.client.UserServiceClient;
+import com.nhom6.foodx.common.dto.UserSummaryDto;
 import com.nhom6.foodx.common.exception.BusinessException;
+import com.nhom6.foodx.common.security.SecurityUtils;
 import com.nhom6.foodx.social.dto.CommentRequest;
 import com.nhom6.foodx.social.dto.CommentResponse;
 import com.nhom6.foodx.social.dto.LikeResponse;
@@ -17,47 +19,60 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Mạng xã hội chia sẻ công thức: feed, đăng bài (nháp/xuất bản), thích, bình luận.
+ *
+ * <p>Service chỉ sở hữu {@code recipe_posts}, {@code post_likes}, {@code post_comments};
+ * tên/avatar tác giả lấy qua {@link UserServiceClient} (gọi gom một lần cho cả feed để
+ * tránh N+1). Người dùng hiện tại chỉ được biết qua {@code userId} từ JWT.</p>
  */
 @Service
 @RequiredArgsConstructor
 public class SocialService {
 
+    /** Tên hiển thị khi user-service không trả về thông tin tác giả (user đã xoá / lỗi mạng). */
+    private static final String UNKNOWN_AUTHOR = "Người dùng ẩn";
+
     private final RecipePostRepository postRepository;
     private final PostLikeRepository likeRepository;
     private final PostCommentRepository commentRepository;
+    private final UserServiceClient userServiceClient;
 
     @Transactional(readOnly = true)
-    public List<PostResponse> feed(User me) {
-        return postRepository.findByStatusOrderByCreatedAtDesc(RecipePost.STATUS_PUBLISHED)
-                .stream()
-                .map(post -> toResponse(me, post))
+    public List<PostResponse> feed(Long meId) {
+        List<RecipePost> posts = postRepository.findByStatusOrderByCreatedAtDesc(RecipePost.STATUS_PUBLISHED);
+        Map<Long, UserSummaryDto> authors = loadAuthors(posts.stream().map(RecipePost::getAuthorId).toList());
+        return posts.stream()
+                .map(post -> toResponse(post, meId, authors.get(post.getAuthorId())))
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<PostResponse> myPosts(User me) {
-        return postRepository.findByAuthor_IdOrderByCreatedAtDesc(me.getId())
-                .stream()
-                .map(post -> toResponse(me, post))
+    public List<PostResponse> myPosts(Long meId) {
+        List<RecipePost> posts = postRepository.findByAuthorIdOrderByCreatedAtDesc(meId);
+        Map<Long, UserSummaryDto> authors = loadAuthors(posts.stream().map(RecipePost::getAuthorId).toList());
+        return posts.stream()
+                .map(post -> toResponse(post, meId, authors.get(post.getAuthorId())))
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public PostResponse getPost(User me, Long id) {
+    public PostResponse getPost(Long meId, Long id) {
         RecipePost post = findPost(id);
         if (RecipePost.STATUS_DRAFT.equals(post.getStatus())
-                && (me == null || !post.getAuthor().getId().equals(me.getId()))) {
+                && (meId == null || !post.getAuthorId().equals(meId))) {
             throw new BusinessException(404, "Không tìm thấy bài chia sẻ");
         }
-        return toResponse(me, post);
+        return toResponse(post, meId, loadAuthor(post.getAuthorId()));
     }
 
     @Transactional
-    public PostResponse create(User me, PostRequest request) {
+    public PostResponse create(Long meId, PostRequest request) {
         if (request.title() == null || request.title().isBlank()) {
             throw new BusinessException(400, "Tiêu đề không được để trống");
         }
@@ -69,7 +84,7 @@ public class SocialService {
         }
 
         RecipePost post = RecipePost.builder()
-                .author(me)
+                .authorId(meId)
                 .title(request.title().trim())
                 .description(request.description() == null ? "" : request.description().trim())
                 .ingredients(joinLines(request.ingredients()))
@@ -83,37 +98,37 @@ public class SocialService {
                 .difficulty(request.difficulty() == null ? null : request.difficulty().trim())
                 .status(status)
                 .build();
-        return toResponse(me, postRepository.save(post));
+        return toResponse(postRepository.save(post), meId, loadAuthor(meId));
     }
 
     /** Xuất bản một bản nháp. */
     @Transactional
-    public PostResponse publish(User me, Long id) {
+    public PostResponse publish(Long meId, Long id) {
         RecipePost post = findPost(id);
-        requireAuthor(post, me);
+        requireAuthor(post, meId);
         post.setStatus(RecipePost.STATUS_PUBLISHED);
-        return toResponse(me, postRepository.save(post));
+        return toResponse(postRepository.save(post), meId, loadAuthor(post.getAuthorId()));
     }
 
     @Transactional
-    public void delete(User me, Long id) {
+    public void delete(Long meId, Long id) {
         RecipePost post = findPost(id);
-        requireAuthor(post, me);
+        requireAuthor(post, meId);
         likeRepository.deleteByPost_Id(id);
         commentRepository.deleteByPost_Id(id);
         postRepository.delete(post);
     }
 
     @Transactional
-    public LikeResponse toggleLike(User me, Long postId) {
+    public LikeResponse toggleLike(Long meId, Long postId) {
         RecipePost post = findPost(postId);
         boolean liked;
-        if (likeRepository.existsByPost_IdAndUser_Id(postId, me.getId())) {
-            likeRepository.findByPost_IdAndUser_Id(postId, me.getId()).ifPresent(likeRepository::delete);
+        if (likeRepository.existsByPost_IdAndUserId(postId, meId)) {
+            likeRepository.findByPost_IdAndUserId(postId, meId).ifPresent(likeRepository::delete);
             liked = false;
         } else {
             likeRepository.save(PostLike.builder()
-                    .user(me)
+                    .userId(meId)
                     .post(post)
                     .build());
             liked = true;
@@ -124,31 +139,32 @@ public class SocialService {
     @Transactional(readOnly = true)
     public List<CommentResponse> comments(Long postId) {
         findPost(postId);
-        return commentRepository.findByPost_IdOrderByCreatedAtAsc(postId)
-                .stream()
-                .map(this::toCommentResponse)
+        List<PostComment> comments = commentRepository.findByPost_IdOrderByCreatedAtAsc(postId);
+        Map<Long, UserSummaryDto> authors = loadAuthors(comments.stream().map(PostComment::getUserId).toList());
+        return comments.stream()
+                .map(comment -> toCommentResponse(comment, authors.get(comment.getUserId())))
                 .toList();
     }
 
     @Transactional
-    public CommentResponse addComment(User me, Long postId, CommentRequest request) {
+    public CommentResponse addComment(Long meId, Long postId, CommentRequest request) {
         if (request.content() == null || request.content().isBlank()) {
             throw new BusinessException(400, "Nội dung bình luận không được để trống");
         }
         RecipePost post = findPost(postId);
         PostComment comment = PostComment.builder()
-                .user(me)
+                .userId(meId)
                 .post(post)
                 .content(request.content().trim())
                 .build();
-        return toCommentResponse(commentRepository.save(comment));
+        return toCommentResponse(commentRepository.save(comment), loadAuthor(meId));
     }
 
     @Transactional
-    public void deleteComment(User me, Long commentId) {
+    public void deleteComment(Long meId, Long commentId) {
         PostComment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new BusinessException(404, "Không tìm thấy bình luận"));
-        if (!comment.getUser().getId().equals(me.getId()) && me.getRole() != User.Role.ADMIN) {
+        if (!comment.getUserId().equals(meId) && !SecurityUtils.isAdmin()) {
             throw new BusinessException(403, "Bạn không có quyền xóa bình luận này");
         }
         commentRepository.delete(comment);
@@ -159,10 +175,40 @@ public class SocialService {
                 .orElseThrow(() -> new BusinessException(404, "Không tìm thấy bài chia sẻ"));
     }
 
-    private void requireAuthor(RecipePost post, User me) {
-        if (!post.getAuthor().getId().equals(me.getId()) && me.getRole() != User.Role.ADMIN) {
+    private void requireAuthor(RecipePost post, Long meId) {
+        if (!post.getAuthorId().equals(meId) && !SecurityUtils.isAdmin()) {
             throw new BusinessException(403, "Bạn không có quyền thực hiện thao tác này");
         }
+    }
+
+    /** Thông tin tác giả cho một bài/bình luận; rỗng nếu user-service không trả về. */
+    private UserSummaryDto loadAuthor(Long authorId) {
+        if (authorId == null) {
+            return null;
+        }
+        return userServiceClient.getUser(authorId).orElse(null);
+    }
+
+    /** Nạp thông tin nhiều tác giả trong MỘT lời gọi HTTP (tránh N+1 khi render danh sách). */
+    private Map<Long, UserSummaryDto> loadAuthors(Collection<Long> authorIds) {
+        if (authorIds == null || authorIds.isEmpty()) {
+            return Map.of();
+        }
+        return new LinkedHashMap<>(userServiceClient.getUsers(authorIds));
+    }
+
+    /** Tên hiển thị: ưu tiên họ tên, fallback tên đăng nhập, cuối cùng là "Người dùng ẩn". */
+    private String displayName(UserSummaryDto author) {
+        if (author == null) {
+            return UNKNOWN_AUTHOR;
+        }
+        if (author.fullName() != null && !author.fullName().isBlank()) {
+            return author.fullName();
+        }
+        if (author.username() != null && !author.username().isBlank()) {
+            return author.username();
+        }
+        return UNKNOWN_AUTHOR;
     }
 
     private String normalizeStatus(String status) {
@@ -193,16 +239,13 @@ public class SocialService {
                 .toList();
     }
 
-    private PostResponse toResponse(User me, RecipePost post) {
-        User author = post.getAuthor();
+    private PostResponse toResponse(RecipePost post, Long meId, UserSummaryDto author) {
         String stepsText = post.getSteps() != null ? post.getSteps() : post.getInstructions();
         return new PostResponse(
                 post.getId(),
-                author.getId(),
-                author.getFullName() == null || author.getFullName().isBlank()
-                        ? author.getUsername()
-                        : author.getFullName(),
-                author.getAvatarUrl(),
+                post.getAuthorId(),
+                displayName(author),
+                author == null ? null : author.avatarUrl(),
                 post.getTitle(),
                 post.getDescription(),
                 splitLines(post.getIngredients()),
@@ -216,22 +259,19 @@ public class SocialService {
                 post.getDifficulty(),
                 post.getStatus(),
                 likeRepository.countByPost_Id(post.getId()),
-                me != null && likeRepository.existsByPost_IdAndUser_Id(post.getId(), me.getId()),
+                meId != null && likeRepository.existsByPost_IdAndUserId(post.getId(), meId),
                 commentRepository.countByPost_Id(post.getId()),
                 post.getCreatedAt()
         );
     }
 
-    private CommentResponse toCommentResponse(PostComment comment) {
-        User author = comment.getUser();
+    private CommentResponse toCommentResponse(PostComment comment, UserSummaryDto author) {
         return new CommentResponse(
                 comment.getId(),
                 comment.getPost().getId(),
-                author.getId(),
-                author.getFullName() == null || author.getFullName().isBlank()
-                        ? author.getUsername()
-                        : author.getFullName(),
-                author.getAvatarUrl(),
+                comment.getUserId(),
+                displayName(author),
+                author == null ? null : author.avatarUrl(),
                 comment.getContent(),
                 comment.getCreatedAt()
         );

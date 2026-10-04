@@ -28,10 +28,16 @@ import java.util.concurrent.atomic.AtomicLong;
 @Component
 public class ApiRateLimitFilter extends OncePerRequestFilter {
 
+    /**
+     * Endpoint đắt tiền cần hạn chế tần suất.
+     *
+     * <p>Lưu ý: các tác vụ AI cho service khác (sinh văn bản, phân tích công thức) nay nằm ở
+     * {@code /internal/ai/**} của ai-service — cổng nội bộ không đi qua gateway nên không có
+     * mục nào ở đây. Chỉ còn endpoint AI phục vụ người dùng cuối.</p>
+     */
     private static final Set<String> LIMITED_PREFIXES = Set.of(
             "/api/ai/chat",
             "/api/ai/suggest",
-            "/api/ai/generate",
             "/api/chat",
             "/api/fridge/search-image",
             "/api/recipes/search-image",
@@ -42,11 +48,9 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
     private static final Set<String> AI_PREFIXES = Set.of(
             "/api/ai/chat",
             "/api/ai/suggest",
-            "/api/ai/generate",
             "/api/chat/sessions");
 
     private final RateLimitBackend backend;
-    private final String jwtSecret;
     private final int limitPerMinute;
     private final Semaphore aiBulkhead;
     private final AtomicLong rejectedByRateLimit = new AtomicLong();
@@ -55,11 +59,9 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
     public ApiRateLimitFilter(
             RateLimitBackend backend,
             @Value("${app.rate-limit-per-minute:120}") int limitPerMinute,
-            @Value("${app.ai.max-concurrent-global:24}") int maxAiConcurrentGlobal,
-            @Value("${app.jwt.secret:dev-super-secret-key-please-change-this-key-32bytes!!}") String jwtSecret) {
+            @Value("${app.ai.max-concurrent-global:24}") int maxAiConcurrentGlobal) {
         this.backend = backend;
         this.limitPerMinute = Math.max(1, limitPerMinute);
-        this.jwtSecret = jwtSecret;
         this.aiBulkhead = new Semaphore(Math.max(1, maxAiConcurrentGlobal), true);
     }
 
@@ -112,7 +114,13 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
         }
     }
 
-    /** Ưu tiên user từ JWT (nhiều user cùng NAT/IP vẫn fair); fallback IP. */
+    /**
+     * Ưu tiên user từ JWT (nhiều user cùng NAT/IP vẫn fair); fallback IP.
+     *
+     * <p>Chỉ đọc {@code sub} trong payload để lấy khoá rate-limit. Gateway <b>không</b> xác minh
+     * chữ ký — việc đó thuộc về từng service phía sau (chúng dùng chung khoá bí mật qua
+     * {@code foodx-common}). Nhờ vậy gateway không cần giữ bí mật JWT.</p>
+     */
     private String resolveRateKey(HttpServletRequest request) {
         String auth = request.getHeader("Authorization");
         if (auth != null && auth.startsWith("Bearer ")) {

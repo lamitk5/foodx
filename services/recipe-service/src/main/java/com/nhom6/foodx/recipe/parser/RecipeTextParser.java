@@ -3,20 +3,16 @@ package com.nhom6.foodx.recipe.parser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.nhom6.foodx.common.client.AiServiceClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
+import java.util.Optional;
 
 /**
  * Phân tích công thức từ văn bản thô.
- * Gọi AI Service qua REST (port 8085) hoặc dùng parser dự phòng regex.
+ * Gọi ai-service qua {@link AiServiceClient} (HTTP nội bộ) hoặc dùng parser dự phòng regex.
  */
 @Slf4j
 @Component
@@ -24,12 +20,7 @@ import java.time.Duration;
 public class RecipeTextParser {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final HttpClient httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(5))
-            .build();
-
-    @Value("${app.ai-service.url:http://localhost:8085}")
-    private String aiServiceUrl;
+    private final AiServiceClient aiServiceClient;
 
     public JsonNode parse(String rawText) {
         if (rawText == null || rawText.isBlank()) {
@@ -37,19 +28,11 @@ public class RecipeTextParser {
         }
 
         try {
-            String requestBody = objectMapper.writeValueAsString(java.util.Map.of("prompt", rawText));
-            HttpRequest req = HttpRequest.newBuilder()
-                    .uri(URI.create(aiServiceUrl + "/api/ai/parse-recipe"))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                    .timeout(Duration.ofSeconds(15))
-                    .build();
-
-            HttpResponse<String> res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
-            if (res.statusCode() == 200) {
-                JsonNode parsed = objectMapper.readTree(res.body());
-                if (parsed != null && (parsed.has("title") || parsed.has("ingredients"))) {
-                    return parsed;
+            Optional<String> json = aiServiceClient.parseRecipe(rawText);
+            if (json.isPresent()) {
+                JsonNode node = objectMapper.readTree(json.get());
+                if (node != null && (node.has("title") || node.has("ingredients"))) {
+                    return node;
                 }
             }
         } catch (Exception ex) {

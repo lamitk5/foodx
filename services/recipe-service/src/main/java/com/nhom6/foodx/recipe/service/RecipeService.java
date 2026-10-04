@@ -1,12 +1,13 @@
 package com.nhom6.foodx.recipe.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.nhom6.foodx.auth.entity.User;
+import com.nhom6.foodx.common.client.InventoryServiceClient;
+import com.nhom6.foodx.common.client.UserServiceClient;
+import com.nhom6.foodx.common.dto.IngredientRefDto;
+import com.nhom6.foodx.common.dto.UserSummaryDto;
 import com.nhom6.foodx.common.exception.ResourceNotFoundException;
+import com.nhom6.foodx.common.food.FoodImageSearchService;
 import com.nhom6.foodx.common.utils.StringUtils;
-import com.nhom6.foodx.fridge.repository.FridgeItemRepository;
-import com.nhom6.foodx.ingredient.entity.Ingredient;
-import com.nhom6.foodx.ingredient.repository.IngredientRepository;
 import com.nhom6.foodx.recipe.dto.RecipeIngredientItem;
 import com.nhom6.foodx.recipe.dto.RecipeMatchDto;
 import com.nhom6.foodx.recipe.dto.RecipeRequest;
@@ -24,9 +25,16 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,9 +42,10 @@ public class RecipeService {
 
     private final RecipeRepository recipeRepository;
     private final RecipeIngredientRepository recipeIngredientRepository;
-    private final IngredientRepository ingredientRepository;
-    private final FridgeItemRepository fridgeItemRepository;
-    private final com.nhom6.foodx.food.service.FoodImageSearchService foodImageSearchService;
+    /** Danh mục nguyên liệu & tủ lạnh thuộc inventory-service. */
+    private final InventoryServiceClient inventoryServiceClient;
+    /** Tên tác giả thuộc user-service. */
+    private final UserServiceClient userServiceClient;
 
     @Transactional(readOnly = true)
     public List<RecipeResponse> search(String keyword, String category, String cuisine) {
@@ -50,16 +59,16 @@ public class RecipeService {
         } else {
             recipes = recipeRepository.findAll();
         }
-        return recipes.stream().map(this::toResponse).toList();
+        return toResponses(recipes);
     }
 
     @Transactional(readOnly = true)
     public RecipeResponse getById(Long id) {
-        return toResponse(findEntity(id));
+        return toResponses(List.of(findEntity(id))).get(0);
     }
 
     @Transactional
-    public RecipeResponse create(RecipeRequest request, User author) {
+    public RecipeResponse create(RecipeRequest request, Long authorId) {
         Recipe recipe = new Recipe();
         applyRequest(recipe, request);
 
@@ -69,7 +78,7 @@ public class RecipeService {
             recipe.setImageUrl(localImageForTitle(recipe.getTitle()));
         }
 
-        recipe.setAuthor(author);
+        recipe.setAuthorId(authorId);
         recipe.setCreatedAt(LocalDateTime.now());
         recipe.setUpdatedAt(LocalDateTime.now());
         recipeRepository.save(recipe);
@@ -78,7 +87,7 @@ public class RecipeService {
             saveIngredients(recipe, request.getIngredients());
         }
         recipeRepository.save(recipe);
-        return toResponse(recipe);
+        return toResponses(List.of(recipe)).get(0);
     }
 
     @Transactional
@@ -98,7 +107,7 @@ public class RecipeService {
             saveIngredients(recipe, request.getIngredients());
         }
         recipeRepository.save(recipe);
-        return toResponse(recipe);
+        return toResponses(List.of(recipe)).get(0);
     }
 
     @Transactional
@@ -108,7 +117,7 @@ public class RecipeService {
     }
 
     @Transactional
-    public RecipeResponse createFromParsed(JsonNode parsed, User author) {
+    public RecipeResponse createFromParsed(JsonNode parsed, Long authorId) {
         RecipeRequest request = new RecipeRequest();
         request.setTitle(parsed.path("title").asText(parsed.path("name").asText("Không có tiêu đề")));
         request.setDescription(parsed.path("description").asText());
@@ -137,7 +146,7 @@ public class RecipeService {
             }
         }
         request.setIngredients(items);
-        return create(request, author);
+        return create(request, authorId);
     }
 
     private void applyRequest(Recipe recipe, RecipeRequest request) {
@@ -173,23 +182,21 @@ public class RecipeService {
         recipe.setSourceUrl(request.getSourceUrl());
     }
 
+    /**
+     * Lưu nguyên liệu của công thức. Danh mục nguyên liệu nay thuộc inventory-service:
+     * service này chỉ giữ lại {@code ingredientId} + {@code ingredientName}.
+     * inventory-service không sẵn sàng thì vẫn lưu tên, {@code ingredientId} để null.
+     */
     private void saveIngredients(Recipe recipe, List<RecipeIngredientItem> items) {
         for (RecipeIngredientItem item : items) {
             String ingName = item.getIngredientName() != null ? item.getIngredientName().trim() : "Nguyên liệu";
-            Ingredient ingredient = ingredientRepository.findByNameIgnoreCase(ingName)
-                    .orElseGet(() -> {
-                        Ingredient newIng = Ingredient.builder()
-                                .name(ingName)
-                                .category(recipe.getCategory())
-                                .createdAt(LocalDateTime.now())
-                                .updatedAt(LocalDateTime.now())
-                                .build();
-                        return ingredientRepository.save(newIng);
-                    });
+            Optional<IngredientRefDto> ref =
+                    inventoryServiceClient.ensureIngredient(ingName, recipe.getCategory());
 
             RecipeIngredient ri = RecipeIngredient.builder()
                     .recipe(recipe)
-                    .ingredient(ingredient)
+                    .ingredientId(ref.map(IngredientRefDto::id).orElse(null))
+                    .ingredientName(ref.map(IngredientRefDto::name).orElse(ingName))
                     .quantity(item.getQuantity() != null ? item.getQuantity() : 1.0)
                     .unit(item.getUnit() != null && !item.getUnit().isBlank() ? item.getUnit() : "phần")
                     .note(item.getNote())
@@ -204,11 +211,28 @@ public class RecipeService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy công thức id=" + id));
     }
 
-    private RecipeResponse toResponse(Recipe recipe) {
+    // =========================================================================
+    //  Ánh xạ entity -> DTO (tên tác giả lấy qua HTTP, gom một lời gọi cho cả danh sách)
+    // =========================================================================
+
+    /**
+     * Ánh xạ một danh sách công thức, gom {@code authorId} rồi hỏi user-service
+     * <b>một lần duy nhất</b> — tránh N+1 khi render danh sách.
+     */
+    public List<RecipeResponse> toResponses(List<Recipe> recipes) {
+        Map<Long, String> authorNames = resolveAuthorNames(recipes);
+        return recipes.stream()
+                .map(recipe -> toResponse(recipe, recipe.getAuthorId(),
+                        recipe.getAuthorId() == null ? null : authorNames.get(recipe.getAuthorId())))
+                .toList();
+    }
+
+    /** Ánh xạ một công thức khi đã biết sẵn tên tác giả (null nếu không tra được). */
+    public RecipeResponse toResponse(Recipe recipe, Long authorId, String authorName) {
         List<RecipeResponse.IngredientDto> ings = recipe.getIngredients().stream()
                 .map(ri -> RecipeResponse.IngredientDto.builder()
                         .id(ri.getId())
-                        .ingredientName(ri.getIngredient().getName())
+                        .ingredientName(ri.getIngredientName())
                         .quantity(ri.getQuantity())
                         .unit(ri.getUnit())
                         .note(ri.getNote())
@@ -250,16 +274,40 @@ public class RecipeService {
                 .mealSlots(recipe.getMealSlots())
                 .imageUrl(img)
                 .sourceUrl(recipe.getSourceUrl())
-                .authorId(recipe.getAuthor() != null ? recipe.getAuthor().getId() : null)
-                .authorName(recipe.getAuthor() != null ? recipe.getAuthor().getFullName() : null)
+                .authorId(authorId)
+                .authorName(authorName)
                 .ingredients(ings)
                 .createdAt(recipe.getCreatedAt())
                 .updatedAt(recipe.getUpdatedAt())
                 .build();
     }
 
+    /** Tra tên hiển thị của tác giả theo lô; không tra được thì trả map rỗng (authorName = null). */
+    private Map<Long, String> resolveAuthorNames(Collection<Recipe> recipes) {
+        Set<Long> authorIds = recipes.stream()
+                .map(Recipe::getAuthorId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        if (authorIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<Long, UserSummaryDto> users = userServiceClient.getUsers(authorIds);
+        Map<Long, String> names = new LinkedHashMap<>();
+        for (Map.Entry<Long, UserSummaryDto> entry : users.entrySet()) {
+            UserSummaryDto user = entry.getValue();
+            if (user == null) {
+                continue;
+            }
+            String name = (user.fullName() != null && !user.fullName().isBlank())
+                    ? user.fullName()
+                    : user.username();
+            names.put(entry.getKey(), name);
+        }
+        return names;
+    }
+
     // =========================================================================
-    // Ảnh local (không tải mạng trong vòng đọc/ghi dữ liệu)
+    //  Ảnh local (không tải mạng trong vòng đọc/ghi dữ liệu)
     // =========================================================================
 
     /** Ảnh người dùng cung cấp hợp lệ (không phải placeholder/default seed). */
@@ -280,7 +328,7 @@ public class RecipeService {
 
     /** Ảnh local có sẵn theo slug tên món; nếu không có thì dùng ảnh mặc định. */
     private String localImageForTitle(String title) {
-        String slug = com.nhom6.foodx.food.service.FoodImageSearchService.toSlug(title);
+        String slug = FoodImageSearchService.toSlug(title);
         String rel = "/images/foods/" + slug + ".jpg";
         try {
             if (new ClassPathResource("static" + rel).exists()) {
@@ -301,9 +349,8 @@ public class RecipeService {
      * nguyên liệu đã chuẩn hoá bỏ dấu.
      */
     @Transactional(readOnly = true)
-    public List<RecipeMatchDto> matchWithFridge(User user) {
-        List<String> fridgeNames = fridgeItemRepository.findByUser_IdOrderByIdAsc(user.getId()).stream()
-                .map(item -> item.getFood() != null ? item.getFood().getName() : null)
+    public List<RecipeMatchDto> matchWithFridge(Long userId) {
+        List<String> fridgeNames = inventoryServiceClient.getFridgeFoodNames(userId).stream()
                 .filter(Objects::nonNull)
                 .map(String::trim)
                 .filter(name -> !name.isEmpty())
@@ -313,11 +360,15 @@ public class RecipeService {
             return List.of();
         }
 
-        List<Long> ingredientIds = new ArrayList<>();
-        for (String name : fridgeNames) {
-            ingredientRepository.findByNameIgnoreCase(name)
-                    .ifPresent(ingredient -> ingredientIds.add(ingredient.getId()));
-        }
+        // Tra id nguyên liệu trong danh mục (một lời gọi); inventory chết thì coi như rỗng.
+        Map<String, IngredientRefDto> resolved = inventoryServiceClient.resolveIngredients(fridgeNames);
+        List<Long> ingredientIds = fridgeNames.stream()
+                .map(name -> resolved.get(name.toLowerCase()))
+                .filter(Objects::nonNull)
+                .map(IngredientRefDto::id)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
 
         List<Recipe> candidates;
         if (ingredientIds.isEmpty()) {
@@ -334,7 +385,7 @@ public class RecipeService {
                 .filter(key -> key.length() >= 3)
                 .toList();
 
-        List<RecipeMatchDto> result = new ArrayList<>();
+        List<MatchScore> scores = new ArrayList<>();
         for (Recipe recipe : candidates) {
             if (recipe.getIngredients() == null || recipe.getIngredients().isEmpty()) {
                 continue;
@@ -342,7 +393,7 @@ public class RecipeService {
             long total = recipe.getIngredients().size();
             long matched = recipe.getIngredients().stream()
                     .filter(ri -> {
-                        String key = StringUtils.searchable(ri.getIngredient().getName());
+                        String key = StringUtils.searchable(ri.getIngredientName());
                         if (key.length() < 3) {
                             return false;
                         }
@@ -352,13 +403,30 @@ public class RecipeService {
             if (matched == 0) {
                 continue;
             }
-            int percent = (int) Math.round(matched * 100.0 / total);
-            result.add(new RecipeMatchDto(toResponse(recipe), matched, total, percent));
+            scores.add(new MatchScore(recipe, matched, total));
         }
 
-        result.sort(Comparator
-                .comparingInt(RecipeMatchDto::matchPercent).reversed()
-                .thenComparing(Comparator.comparingLong(RecipeMatchDto::matchedIngredients).reversed()));
-        return result.stream().limit(20).toList();
+        scores.sort(Comparator
+                .comparingInt(MatchScore::percent).reversed()
+                .thenComparing(Comparator.comparingLong(MatchScore::matched).reversed()));
+        List<MatchScore> limited = scores.stream().limit(20).toList();
+
+        // Một lời gọi user-service cho toàn bộ kết quả trả về.
+        List<RecipeResponse> responses = toResponses(limited.stream().map(MatchScore::recipe).toList());
+
+        List<RecipeMatchDto> result = new ArrayList<>();
+        for (int i = 0; i < limited.size(); i++) {
+            MatchScore score = limited.get(i);
+            result.add(new RecipeMatchDto(responses.get(i), score.matched(), score.total(), score.percent()));
+        }
+        return result;
+    }
+
+    /** Điểm khớp tạm thời trước khi nạp tên tác giả theo lô. */
+    private record MatchScore(Recipe recipe, long matched, long total) {
+
+        int percent() {
+            return (int) Math.round(matched * 100.0 / total);
+        }
     }
 }

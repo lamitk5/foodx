@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
  * Mục yêu thích của người dùng.
  * Chỉ lưu ID tham chiếu (targetId + targetType) và userId — KHÔNG lưu khoá ngoại sang
  * recipe/ingredient, đúng nguyên tắc độc lập module: chi tiết hiển thị sẽ được lấy
- * qua Public API (RecipeFacade / IngredientFacade) khi render.
+ * từ RecipeRepository (bảng nội bộ) hoặc qua HTTP tới inventory-service khi render.
  */
 @Entity
 @Table(name = "favorites", uniqueConstraints = {

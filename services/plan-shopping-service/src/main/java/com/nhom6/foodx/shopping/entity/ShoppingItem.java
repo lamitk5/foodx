@@ -1,14 +1,10 @@
 package com.nhom6.foodx.shopping.entity;
 
-import com.nhom6.foodx.auth.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -22,6 +18,9 @@ import java.time.LocalDateTime;
 
 /**
  * Mục trong danh sách mua sắm (gộp từ giao diện dk-dn).
+ *
+ * <p>Chỉ giữ {@code userId} — bảng {@code users} thuộc user-service. Tên cột
+ * {@code user_id} giữ nguyên như bản cũ để không phải migrate schema.</p>
  */
 @Entity
 @Table(name = "shopping_items")
@@ -36,9 +35,8 @@ public class ShoppingItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Column(nullable = false, length = 150)
     private String name;

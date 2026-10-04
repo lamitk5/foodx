@@ -1,7 +1,9 @@
 package com.nhom6.foodx.fridge.service;
 
-import com.nhom6.foodx.auth.entity.User;
+import com.nhom6.foodx.common.dto.FridgeItemDto;
 import com.nhom6.foodx.common.exception.BusinessException;
+import com.nhom6.foodx.common.food.FoodImageSearchService;
+import com.nhom6.foodx.common.food.NutritionEstimateService;
 import com.nhom6.foodx.food.entity.Food;
 import com.nhom6.foodx.food.repository.FoodRepository;
 import com.nhom6.foodx.fridge.dto.FridgeItemRequest;
@@ -35,25 +37,56 @@ public class FridgeService {
 
     private final FoodRepository foodRepository;
     private final FridgeItemRepository fridgeItemRepository;
-    private final com.nhom6.foodx.food.service.FoodImageSearchService foodImageSearchService;
-    private final com.nhom6.foodx.food.service.NutritionEstimateService nutritionEstimateService;
+    private final FoodImageSearchService foodImageSearchService;
+    private final NutritionEstimateService nutritionEstimateService;
+    private final com.nhom6.foodx.common.client.AiServiceClient aiServiceClient;
 
     @Transactional(readOnly = true)
-    public List<FridgeItemResponse> getAll(User user) {
-        return fridgeItemRepository.findByUser_IdOrderByIdAsc(user.getId())
+    public List<FridgeItemResponse> getAll(Long userId) {
+        return fridgeItemRepository.findByUserIdOrderByIdAsc(userId)
                 .stream()
                 .map(this::toResponse)
                 .toList();
     }
 
+    /**
+     * Tủ lạnh dưới dạng DTO dùng chung cho các microservice khác
+     * ({@code GET /internal/fridge/{userId}/items}).
+     */
+    @Transactional(readOnly = true)
+    public List<FridgeItemDto> getItems(Long userId) {
+        return fridgeItemRepository.findByUserIdOrderByIdAsc(userId)
+                .stream()
+                .map(this::toCommonDto)
+                .toList();
+    }
+
+    /**
+     * Tên thực phẩm đang có trong tủ: bỏ trùng, giữ thứ tự thêm vào (theo id),
+     * cắt khoảng trắng, bỏ tên rỗng và giới hạn 40 phần tử
+     * ({@code GET /internal/fridge/{userId}/food-names}).
+     */
+    @Transactional(readOnly = true)
+    public List<String> getFoodNames(Long userId) {
+        return fridgeItemRepository.findByUserIdOrderByIdAsc(userId)
+                .stream()
+                .map(item -> item.getFood() != null ? item.getFood().getName() : null)
+                .filter(name -> name != null && !name.isBlank())
+                .map(String::trim)
+                .filter(name -> !name.isEmpty())
+                .distinct()
+                .limit(40)
+                .toList();
+    }
+
     @Transactional
-    public FridgeItemResponse add(User user, FridgeItemRequest request) {
+    public FridgeItemResponse add(Long userId, FridgeItemRequest request) {
         if (request.name() == null || request.name().isBlank()) {
             throw new BusinessException(400, "Tên thực phẩm không được để trống");
         }
         String cleanName = request.name().trim();
-        if (!cleanName.matches("^[\\p{L}\\s]+$")) {
-            throw new BusinessException(400, "Tên thực phẩm chỉ được chứa chữ cái");
+        if (!cleanName.matches("^[\\p{L}\\p{N}\\s,()\\-._#]+$")) {
+            throw new BusinessException(400, "Tên thực phẩm chứa ký tự không hợp lệ");
         }
         if (cleanName.length() > 100) {
             throw new BusinessException(400, "Tên thực phẩm không được vượt quá 100 ký tự");
@@ -135,9 +168,9 @@ public class FridgeService {
                 : LocalDate.now().plusDays(food.getDefaultExpiryDays() == null ? 7 : food.getDefaultExpiryDays());
 
         // 3. Tìm trong tủ lạnh người dùng xem đã có món này với CÙNG HẠN SỬ DỤNG chưa
-        List<FridgeItem> candidateItems = fridgeItemRepository.findByUser_IdAndFood_Id(user.getId(), food.getId());
+        List<FridgeItem> candidateItems = fridgeItemRepository.findByUserIdAndFood_Id(userId, food.getId());
         if (candidateItems.isEmpty()) {
-            candidateItems = fridgeItemRepository.findByUser_IdAndFood_NameIgnoreCase(user.getId(), cleanName);
+            candidateItems = fridgeItemRepository.findByUserIdAndFood_NameIgnoreCase(userId, cleanName);
         }
 
         Optional<FridgeItem> sameExpiryItem = candidateItems.stream()
@@ -161,7 +194,7 @@ public class FridgeService {
         } else {
             // Tách riêng bản ghi mới nếu khác hạn sử dụng hoặc chưa có
             fridgeItem = FridgeItem.builder()
-                    .user(user)
+                    .userId(userId)
                     .food(food)
                     .quantity(request.quantity() == null ? 1.0 : request.quantity())
                     .unit(request.unit() == null || request.unit().isBlank() ? (food.getUnit() != null ? food.getUnit() : "phần") : request.unit().trim())
@@ -174,8 +207,8 @@ public class FridgeService {
     }
 
     @Transactional
-    public FridgeItemResponse update(User user, Long id, FridgeItemUpdateRequest request) {
-        FridgeItem item = findFridgeItem(user, id);
+    public FridgeItemResponse update(Long userId, Long id, FridgeItemUpdateRequest request) {
+        FridgeItem item = findFridgeItem(userId, id);
 
         if (request.quantity() != null) {
             if (request.quantity() <= 0) {
@@ -202,8 +235,8 @@ public class FridgeService {
 
         if (request.name() != null && !request.name().isBlank()) {
             String updatedName = request.name().trim();
-            if (!updatedName.matches("^[\\p{L}\\s]+$")) {
-                throw new BusinessException(400, "Tên thực phẩm chỉ được chứa chữ cái");
+            if (!updatedName.matches("^[\\p{L}\\p{N}\\s,()\\-._#]+$")) {
+                throw new BusinessException(400, "Tên thực phẩm chứa ký tự không hợp lệ");
             }
             if (updatedName.length() > 100) {
                 throw new BusinessException(400, "Tên thực phẩm không được vượt quá 100 ký tự");
@@ -252,8 +285,8 @@ public class FridgeService {
     }
 
     @Transactional
-    public List<FridgeItemResponse> mergeDuplicates(User user) {
-        List<FridgeItem> allItems = fridgeItemRepository.findByUser_IdOrderByIdAsc(user.getId());
+    public List<FridgeItemResponse> mergeDuplicates(Long userId) {
+        List<FridgeItem> allItems = fridgeItemRepository.findByUserIdOrderByIdAsc(userId);
         var groups = allItems.stream()
                 .collect(Collectors.groupingBy(item -> {
                     String nameKey = item.getFood().getName().trim().toLowerCase();
@@ -277,7 +310,7 @@ public class FridgeService {
             }
         }
 
-        return getAll(user);
+        return getAll(userId);
     }
 
     private Food createFood(FridgeItemRequest request, String sourceKey, Double reqKcal, Double reqProtein, Double reqCarb, Double reqFat, String reqComponents, String reqBenefit) {
@@ -303,8 +336,8 @@ public class FridgeService {
     }
 
     @Transactional
-    public Optional<FridgeItemResponse> changeQuantity(User user, Long id, Double delta) {
-        FridgeItem item = findFridgeItem(user, id);
+    public Optional<FridgeItemResponse> changeQuantity(Long userId, Long id, Double delta) {
+        FridgeItem item = findFridgeItem(userId, id);
         double current = item.getQuantity() == null ? 0 : item.getQuantity();
         double change = delta == null ? 0 : delta;
         double newQuantity = current + change;
@@ -333,50 +366,57 @@ public class FridgeService {
     }
 
     @Transactional
-    public FridgeItemResponse updateExpiry(User user, Long id, LocalDate expiresAt) {
+    public FridgeItemResponse updateExpiry(Long userId, Long id, LocalDate expiresAt) {
         if (expiresAt == null) {
             throw new BusinessException(400, "Ngày hết hạn không được để trống");
         }
-        FridgeItem item = findFridgeItem(user, id);
+        FridgeItem item = findFridgeItem(userId, id);
         item.setExpiresAt(expiresAt);
         return toResponse(fridgeItemRepository.save(item));
     }
 
     @Transactional
-    public void delete(User user, Long id) {
-        fridgeItemRepository.delete(findFridgeItem(user, id));
+    public void delete(Long userId, Long id) {
+        fridgeItemRepository.delete(findFridgeItem(userId, id));
     }
 
     @Transactional
-    public void clearAll(User user) {
-        fridgeItemRepository.deleteByUser_Id(user.getId());
+    public void clearAll(Long userId) {
+        fridgeItemRepository.deleteByUserId(userId);
     }
 
+    /**
+     * Xoá toàn bộ dữ liệu tủ lạnh của một người dùng và trả về số dòng đã xoá
+     * ({@code DELETE /internal/users/{userId}/data}, phục vụ yêu cầu xoá dữ liệu
+     * người dùng của user-service).
+     *
+     * <p>Chỉ xoá bảng {@code fridge_stock} do service này sở hữu; {@code foods} và
+     * {@code ingredients} là danh mục dùng chung nên giữ nguyên.</p>
+     */
     @Transactional
-    public FridgeItemResponse addOrUpdateBoughtItem(User user, String name, String quantityStr, String category) {
-        if (name == null || name.isBlank()) return null;
-        String cleanName = name.trim();
+    public int purgeUserData(Long userId) {
+        return (int) fridgeItemRepository.deleteByUserId(userId);
+    }
 
-        // Parse quantity and unit from quantityStr (ví dụ: "500g", "2 quả", "1.5 kg", "1 phần")
-        double qty = 1.0;
-        String unit = "phần";
-        if (quantityStr != null && !quantityStr.isBlank()) {
-            try {
-                java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("^([0-9]+(?:[.,][0-9]+)?)\\s*(.*)$").matcher(quantityStr.trim());
-                if (matcher.find()) {
-                    qty = Double.parseDouble(matcher.group(1).replace(",", "."));
-                    String parsedUnit = matcher.group(2).trim();
-                    if (!parsedUnit.isBlank()) {
-                        unit = parsedUnit;
-                    }
-                }
-            } catch (Exception ignored) {
-                qty = 1.0;
-            }
+    /**
+     * Thêm một thực phẩm vào tủ theo tên + số lượng + đơn vị (nghiệp vụ của
+     * {@code POST /internal/fridge/{userId}/items}, dùng khi người dùng tích "đã mua"
+     * trong danh sách đi chợ).
+     *
+     * <p>Nếu đã có food cùng tên (không phân biệt hoa/thường) thì cộng dồn số lượng vào
+     * dòng đang có, ngược lại tạo {@link Food} mới rồi tạo {@link FridgeItem}.</p>
+     */
+    @Transactional
+    public FridgeItemResponse addItem(Long userId, String name, Double quantity, String unit) {
+        if (name == null || name.isBlank()) {
+            throw new BusinessException(400, "Tên thực phẩm không được để trống");
         }
+        String cleanName = name.trim();
+        double qty = (quantity == null || quantity <= 0) ? 1.0 : quantity;
+        String finalUnit = (unit == null || unit.isBlank()) ? "phần" : unit.trim();
 
         // Kiểm tra nguyên liệu đã có sẵn trong tủ lạnh chưa
-        Optional<FridgeItem> existing = fridgeItemRepository.findFirstByUser_IdAndFood_NameIgnoreCase(user.getId(), cleanName);
+        Optional<FridgeItem> existing = fridgeItemRepository.findFirstByUserIdAndFood_NameIgnoreCase(userId, cleanName);
         if (existing.isPresent()) {
             FridgeItem item = existing.get();
             double oldQty = item.getQuantity() == null ? 0 : item.getQuantity();
@@ -387,8 +427,6 @@ public class FridgeService {
             item.setNote("Đã cập nhật từ danh sách mua");
             return toResponse(fridgeItemRepository.save(item));
         }
-
-        final String finalUnit = unit;
 
         // Ước tính dinh dưỡng cho món mua
         var est = nutritionEstimateService.estimate(cleanName, qty, finalUnit);
@@ -416,7 +454,7 @@ public class FridgeService {
                         .build()));
 
         FridgeItem newItem = FridgeItem.builder()
-                .user(user)
+                .userId(userId)
                 .food(food)
                 .quantity(qty)
                 .unit(finalUnit)
@@ -427,8 +465,38 @@ public class FridgeService {
         return toResponse(fridgeItemRepository.save(newItem));
     }
 
-    private FridgeItem findFridgeItem(User user, Long id) {
-        return fridgeItemRepository.findByIdAndUser_Id(id, user.getId())
+    /**
+     * Biến thể cũ nhận chuỗi số lượng dạng "500g"/"2 quả" (được tách ra từ danh sách mua).
+     * Việc tách chuỗi giữ nguyên như trước, phần thêm vào tủ nay do {@link #addItem} lo.
+     */
+    @Transactional
+    public FridgeItemResponse addOrUpdateBoughtItem(Long userId, String name, String quantityStr, String category) {
+        if (name == null || name.isBlank()) return null;
+        String cleanName = name.trim();
+
+        // Parse quantity and unit from quantityStr (ví dụ: "500g", "2 quả", "1.5 kg", "1 phần")
+        double qty = 1.0;
+        String unit = "phần";
+        if (quantityStr != null && !quantityStr.isBlank()) {
+            try {
+                java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("^([0-9]+(?:[.,][0-9]+)?)\\s*(.*)$").matcher(quantityStr.trim());
+                if (matcher.find()) {
+                    qty = Double.parseDouble(matcher.group(1).replace(",", "."));
+                    String parsedUnit = matcher.group(2).trim();
+                    if (!parsedUnit.isBlank()) {
+                        unit = parsedUnit;
+                    }
+                }
+            } catch (Exception ignored) {
+                qty = 1.0;
+            }
+        }
+
+        return addItem(userId, cleanName, qty, unit);
+    }
+
+    private FridgeItem findFridgeItem(Long userId, Long id) {
+        return fridgeItemRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new BusinessException(404, "Không tìm thấy thực phẩm trong tủ lạnh"));
     }
 
@@ -481,15 +549,31 @@ public class FridgeService {
         return value == null ? 0.0 : value;
     }
 
+    /** Map entity sang DTO dùng chung (không kèm kcal/dinh dưỡng — chỉ service này cần). */
+    private FridgeItemDto toCommonDto(FridgeItem item) {
+        Food food = item.getFood();
+        return new FridgeItemDto(
+                item.getId(),
+                food != null ? food.getId() : null,
+                food != null ? food.getName() : null,
+                food != null ? food.getType() : null,
+                item.getQuantity(),
+                item.getUnit(),
+                item.getExpiresAt(),
+                item.getNote(),
+                food != null ? food.getImageUrl() : null
+        );
+    }
+
     @Transactional
-    public List<FridgeItemResponse> batchAdd(User user, List<FridgeItemRequest> requests) {
+    public List<FridgeItemResponse> batchAdd(Long userId, List<FridgeItemRequest> requests) {
         if (requests == null || requests.isEmpty()) {
             return List.of();
         }
         List<FridgeItemResponse> results = new ArrayList<>();
         for (FridgeItemRequest req : requests) {
             try {
-                results.add(add(user, req));
+                results.add(add(userId, req));
             } catch (Exception ex) {
                 log.warn("Lỗi khi thêm nguyên liệu '{}' trong batch: {}", req.name(), ex.getMessage());
             }
@@ -498,7 +582,7 @@ public class FridgeService {
     }
 
     @Transactional
-    public ScanResultDto scanAndProcessImage(User user, MultipartFile file, boolean autoSave) {
+    public ScanResultDto scanAndProcessImage(Long userId, MultipartFile file, boolean autoSave) {
         if (file == null || file.isEmpty()) {
             throw new BusinessException(400, "Vui lòng chọn ảnh chụp hoá đơn hoặc tủ lạnh");
         }
@@ -514,52 +598,26 @@ public class FridgeService {
         String base64 = java.util.Base64.getEncoder().encodeToString(bytes);
         String mimeType = (contentType != null && !contentType.isBlank()) ? contentType : "image/jpeg";
 
-        List<Map<String, Object>> detectedList = new ArrayList<>();
-        try {
-            String requestBody = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(
-                    Map.of("data", base64, "mimeType", mimeType));
-            java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder()
-                    .uri(java.net.URI.create("http://localhost:8085/api/ai/scan-food-image"))
-                    .header("Content-Type", "application/json")
-                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(requestBody))
-                    .timeout(java.time.Duration.ofSeconds(30))
-                    .build();
+        // Nhận diện thực phẩm qua ai-service (cổng nội bộ /internal/ai/scan-food-image).
+        // Trước refactor chỗ này hard-code http://localhost:8085/api/ai/scan-food-image.
+        List<com.nhom6.foodx.common.dto.ScanFoodImageItemDto> detectedList =
+                aiServiceClient.scanFoodImage(base64, mimeType);
 
-            java.net.http.HttpResponse<String> res = java.net.http.HttpClient.newHttpClient()
-                    .send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
-
-            if (res.statusCode() == 200 && res.body() != null && !res.body().isBlank()) {
-                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                detectedList = mapper.readValue(res.body(), mapper.getTypeFactory().constructCollectionType(List.class, Map.class));
-            }
-        } catch (Exception ex) {
-            log.warn("Gọi AI Service scan thất bại ({}), chuyển sang dữ liệu mẫu dự phòng.", ex.getMessage());
-        }
-
-        if (detectedList.isEmpty()) {
-            detectedList = List.of(
-                    Map.of("name", "Trứng gà", "quantity", 10.0, "unit", "quả", "category", "Trứng & Sữa", "estimatedExpiryDays", 14, "confidence", 0.95),
-                    Map.of("name", "Thịt ba chỉ heo", "quantity", 500.0, "unit", "g", "category", "Thịt", "estimatedExpiryDays", 3, "confidence", 0.92),
-                    Map.of("name", "Rau muống", "quantity", 1.0, "unit", "bó", "category", "Rau củ", "estimatedExpiryDays", 4, "confidence", 0.90),
-                    Map.of("name", "Cà chua", "quantity", 4.0, "unit", "quả", "category", "Rau củ", "estimatedExpiryDays", 7, "confidence", 0.88),
-                    Map.of("name", "Sữa tươi có đường", "quantity", 1.0, "unit", "hộp", "category", "Trứng & Sữa", "estimatedExpiryDays", 10, "confidence", 0.94)
-            );
+        if (detectedList == null || detectedList.isEmpty()) {
+            detectedList = fallbackScannedItems();
         }
 
         LocalDate today = LocalDate.now();
         List<ScanResultDto.ScannedItemDetail> details = new ArrayList<>();
         List<FridgeItemRequest> toAddRequests = new ArrayList<>();
 
-        for (Map<String, Object> item : detectedList) {
-            String name = String.valueOf(item.getOrDefault("name", "Thực phẩm"));
-            Number qNum = (Number) item.getOrDefault("quantity", 1.0);
-            Double quantity = qNum != null ? qNum.doubleValue() : 1.0;
-            String unit = String.valueOf(item.getOrDefault("unit", "phần"));
-            String category = String.valueOf(item.getOrDefault("category", "Khác"));
-            Number expDaysNum = (Number) item.getOrDefault("estimatedExpiryDays", 7);
-            int expiryDays = expDaysNum != null ? expDaysNum.intValue() : 7;
-            Number confNum = (Number) item.getOrDefault("confidence", 0.9);
-            Double confidence = confNum != null ? confNum.doubleValue() : 0.9;
+        for (com.nhom6.foodx.common.dto.ScanFoodImageItemDto item : detectedList) {
+            String name = item.name() != null ? item.name() : "Thực phẩm";
+            Double quantity = item.quantity() != null ? item.quantity() : 1.0;
+            String unit = item.unit() != null ? item.unit() : "phần";
+            String category = item.category() != null ? item.category() : "Khác";
+            int expiryDays = item.estimatedExpiryDays() != null ? item.estimatedExpiryDays() : 7;
+            Double confidence = item.confidence() != null ? item.confidence() : 0.9;
 
             LocalDate expiryDate = today.plusDays(expiryDays);
 
@@ -589,7 +647,7 @@ public class FridgeService {
 
         List<FridgeItemResponse> savedItems = new ArrayList<>();
         if (autoSave) {
-            savedItems = batchAdd(user, toAddRequests);
+            savedItems = batchAdd(userId, toAddRequests);
         }
 
         return ScanResultDto.builder()
@@ -599,5 +657,20 @@ public class FridgeService {
                 .detectedItems(details)
                 .savedFridgeItems(savedItems)
                 .build();
+    }
+
+    /**
+     * Dữ liệu mẫu khi ai-service không phản hồi (service chết hoặc chưa cấu hình Gemini).
+     *
+     * <p>Trước refactor danh sách này nằm ngay trong {@code scanAndProcessImage} cùng với
+     * một bản sao tương tự ở ai-service; nay mỗi bên chỉ giữ bản dự phòng của mình.</p>
+     */
+    private List<com.nhom6.foodx.common.dto.ScanFoodImageItemDto> fallbackScannedItems() {
+        return List.of(
+                new com.nhom6.foodx.common.dto.ScanFoodImageItemDto("Trứng gà", 10.0, "quả", "Trứng & Sữa", 14, 0.95),
+                new com.nhom6.foodx.common.dto.ScanFoodImageItemDto("Thịt ba chỉ heo", 500.0, "g", "Thịt", 3, 0.92),
+                new com.nhom6.foodx.common.dto.ScanFoodImageItemDto("Rau muống", 1.0, "bó", "Rau củ", 4, 0.90),
+                new com.nhom6.foodx.common.dto.ScanFoodImageItemDto("Cà chua", 4.0, "quả", "Rau củ", 7, 0.88),
+                new com.nhom6.foodx.common.dto.ScanFoodImageItemDto("Sữa tươi có đường", 1.0, "hộp", "Trứng & Sữa", 10, 0.94));
     }
 }

@@ -1,6 +1,5 @@
 package com.nhom6.foodx.fridge.entity;
 
-import com.nhom6.foodx.auth.entity.User;
 import com.nhom6.foodx.food.entity.Food;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,9 +38,13 @@ public class FridgeItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    /**
+     * ID người sở hữu tủ lạnh. Giữ đúng tên cột {@code user_id} như trước để
+     * {@code ddl-auto=update} không phải migrate schema; danh tính người dùng đến
+     * từ claims JWT chứ không truy vấn bảng {@code users}.
+     */
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "food_id", nullable = false)

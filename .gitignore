@@ -29,6 +29,7 @@ build/
 ### Logs, Dumps & Temp ###
 *.log
 hs_err_pid*.log
+replay_pid*.log
 *.tmp
 *.bak
 
@@ -36,13 +37,32 @@ hs_err_pid*.log
 uploads/
 /uploads/
 
+### Bí mật môi trường (chỉ commit .env.example) ###
+.env
+.env.local
+*.env
+!.env.example
+
+### Node / công cụ test tự động ###
+node_modules/
+package-lock.json
+.playwright-cli/
+
+### Bản sao lưu tạm của frontend & thư mục static trùng lặp ở gốc ###
+api-gateway/src/main/resources/static/js_backup/
+/static/
+
 ### Test scripts, outputs & screenshots ###
 *.py
 *.pyc
 __pycache__/
 test-reports/
+scratch_img/
+detail_paras.txt
+yellow_paras.txt
 *.png
-!src/main/resources/static/images/**
+!assets/**
+!**/static/images/**
 !dk-dn/shots/**
 
 ### AI Agents & Assistant Generated Files ###

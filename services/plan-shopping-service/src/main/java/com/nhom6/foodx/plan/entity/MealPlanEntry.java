@@ -1,14 +1,10 @@
 package com.nhom6.foodx.plan.entity;
 
-import com.nhom6.foodx.auth.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -23,6 +19,10 @@ import java.time.LocalDateTime;
 
 /**
  * Một bữa ăn trong kế hoạch tuần (gộp từ dk-dn): user + ngày + khung giờ + món.
+ *
+ * <p>Chỉ giữ {@code userId} — bảng {@code users} thuộc user-service nên service này
+ * không được có entity/repository của bảng đó. Tên cột {@code user_id} giữ nguyên
+ * như bản cũ để {@code ddl-auto=update} không phá dữ liệu hiện có.</p>
  */
 @Entity
 @Table(name = "meal_plan_entries", uniqueConstraints = {
@@ -39,9 +39,8 @@ public class MealPlanEntry {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Column(name = "plan_date", nullable = false)
     private LocalDate planDate;

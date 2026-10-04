@@ -3,11 +3,11 @@ package com.nhom6.foodx.profile.service;
 import com.nhom6.foodx.auth.entity.User;
 import com.nhom6.foodx.auth.repository.UserRepository;
 import com.nhom6.foodx.common.exception.BusinessException;
+import com.nhom6.foodx.common.security.SecurityUtils;
 import com.nhom6.foodx.profile.dto.ProfileRequest;
 import com.nhom6.foodx.profile.dto.ProfileResponse;
 import com.nhom6.foodx.profile.entity.UserProfile;
 import com.nhom6.foodx.profile.repository.UserProfileRepository;
-import com.nhom6.foodx.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +24,9 @@ import java.util.UUID;
 
 /**
  * Quản lý hồ sơ dinh dưỡng + avatar của người dùng (gộp từ dự án food-x).
+ *
+ * <p>Đây là package nghiệp vụ thuộc sở hữu của user-service; danh tính người dùng lấy từ
+ * JWT qua {@link SecurityUtils} thay vì nhận entity {@code User} từ tầng bảo mật dùng chung.</p>
  */
 @Slf4j
 @Service
@@ -32,42 +35,54 @@ public class ProfileService {
 
     private final UserRepository userRepository;
     private final UserProfileRepository profileRepository;
-    private final SecurityUtils securityUtils;
 
     private static final Path AVATAR_DIRECTORY = Paths.get("uploads", "avatars").toAbsolutePath().normalize();
     private static final long MAX_AVATAR_SIZE = 5L * 1024 * 1024;
     private static final Set<String> ALLOWED_TYPES = Set.of("image/jpeg", "image/png", "image/webp");
 
+    /** Người dùng của request hiện tại: định danh từ JWT, tra cứu cục bộ trong user-service. */
+    private User requireCurrentUser() {
+        Long userId = SecurityUtils.getCurrentUserId();
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(401, "Người dùng không tồn tại"));
+    }
+
     /** Lấy hoặc tạo mới hồ sơ mặc định cho user. */
     @Transactional
     public UserProfile getOrCreateProfile(User user) {
-        return profileRepository.findByUser_Id(user.getId())
-                .orElseGet(() -> {
-                    UserProfile profile = UserProfile.builder()
-                            .user(user)
-                            .gender("male")
-                            .age(21)
-                            .weight(53.0)
-                            .height(153.0)
-                            .targetWeight(53.0)
-                            .activity(1.2)
-                            .diet("Ăn linh tinh")
-                            .allergies("")
-                            .dislikes("")
-                            .build();
-                    return profileRepository.save(profile);
-                });
+        var existing = profileRepository.findByUser_Id(user.getId());
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+        try {
+            UserProfile profile = UserProfile.builder()
+                    .user(user)
+                    .gender("male")
+                    .age(21)
+                    .weight(53.0)
+                    .height(153.0)
+                    .targetWeight(53.0)
+                    .activity(1.2)
+                    .diet("Ăn linh tinh")
+                    .allergies("")
+                    .dislikes("")
+                    .build();
+            return profileRepository.saveAndFlush(profile);
+        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+            return profileRepository.findByUser_Id(user.getId())
+                    .orElseThrow(() -> new BusinessException(500, "Không thể lấy hồ sơ người dùng"));
+        }
     }
 
     @Transactional
     public ProfileResponse getProfile() {
-        User user = securityUtils.getCurrentUser();
+        User user = requireCurrentUser();
         return toResponse(user, getOrCreateProfile(user));
     }
 
     @Transactional
     public ProfileResponse updateProfile(ProfileRequest request) {
-        User user = securityUtils.getCurrentUser();
+        User user = requireCurrentUser();
         UserProfile profile = getOrCreateProfile(user);
 
         if (request.name() != null && !request.name().isBlank()) {
@@ -144,7 +159,7 @@ public class ProfileService {
             throw new BusinessException(500, "Không lưu được avatar");
         }
 
-        User user = securityUtils.getCurrentUser();
+        User user = requireCurrentUser();
         deleteOldAvatarFile(user.getAvatarUrl());
         user.setAvatarUrl("/uploads/avatars/" + fileName);
         userRepository.save(user);
@@ -154,7 +169,7 @@ public class ProfileService {
 
     @Transactional
     public ProfileResponse removeAvatar() {
-        User user = securityUtils.getCurrentUser();
+        User user = requireCurrentUser();
         deleteOldAvatarFile(user.getAvatarUrl());
         user.setAvatarUrl(null);
         userRepository.save(user);

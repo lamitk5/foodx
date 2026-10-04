@@ -2,6 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -15,6 +16,13 @@
     <packaging>pom</packaging>
     <name>foodx-parent</name>
     <description>FoodX Microservices Parent Aggregator</description>
+
+    <!--
+      Đây vừa là aggregator vừa là parent POM của mọi module.
+      Trước đây mỗi module tự khai báo <parent>spring-boot-starter-parent</parent>, tự lặp
+      lại properties, danh sách dependency và cấu hình compiler/boot plugin (~300 dòng
+      trùng lặp trên 8 pom). Nay mọi thứ dùng chung được khai báo một lần ở đây.
+    -->
 
     <properties>
         <java.version>17</java.version>
@@ -30,4 +38,56 @@
         <module>services/ai-service</module>
         <module>services/social-stats-service</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Thư viện dùng chung: module con khai báo không cần ghi version -->
+            <dependency>
+                <groupId>com.nhom6</groupId>
+                <artifactId>foodx-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- Mọi module đều có sẵn thư viện test của Spring Boot -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Health check (/actuator/health) cho Docker healthcheck & giám sát -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!-- Chỉ module chạy được (gateway + 6 service) khai báo plugin này -->
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <!-- Lombok annotation processor: cấu hình một lần cho cả 9 module -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

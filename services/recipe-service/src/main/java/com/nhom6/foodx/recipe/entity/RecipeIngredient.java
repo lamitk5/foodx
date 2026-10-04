@@ -1,6 +1,5 @@
 package com.nhom6.foodx.recipe.entity;
 
-import com.nhom6.foodx.ingredient.entity.Ingredient;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -36,9 +35,16 @@ public class RecipeIngredient {
     @JoinColumn(name = "recipe_id", nullable = false)
     private Recipe recipe;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ingredient_id", nullable = false)
-    private Ingredient ingredient;
+    /**
+     * ID nguyên liệu trong danh mục của inventory-service (nullable: tủ danh mục có thể
+     * không sẵn sàng, khi đó công thức vẫn lưu được tên nguyên liệu).
+     */
+    @Column(name = "ingredient_id")
+    private Long ingredientId;
+
+    /** Tên nguyên liệu (bản sao tại thời điểm tạo công thức). */
+    @Column(name = "ingredient_name", length = 100)
+    private String ingredientName;
 
     /** Số lượng. */
     @Column(nullable = false)

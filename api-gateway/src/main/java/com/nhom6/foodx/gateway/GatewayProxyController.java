@@ -90,8 +90,15 @@ public class GatewayProxyController {
 
             // Set method & body
             String method = request.getMethod();
-            HttpRequest.BodyPublisher publisher = (body != null && body.length > 0)
-                    ? HttpRequest.BodyPublishers.ofByteArray(body)
+            byte[] payload = body;
+            if ((payload == null || payload.length == 0) && request.getContentLengthLong() > 0) {
+                try {
+                    payload = request.getInputStream().readAllBytes();
+                } catch (Exception ignored) {
+                }
+            }
+            HttpRequest.BodyPublisher publisher = (payload != null && payload.length > 0)
+                    ? HttpRequest.BodyPublishers.ofByteArray(payload)
                     : HttpRequest.BodyPublishers.noBody();
             reqBuilder.method(method, publisher);
 
@@ -120,24 +127,23 @@ public class GatewayProxyController {
         }
     }
 
+    /**
+     * Tra service downstream theo bảng định tuyến khai báo trong cấu hình
+     * ({@code gateway.routes} ở {@code application.properties}).
+     *
+     * <p>Tiền tố dài nhất thắng, nên có thể thêm quy tắc cụ thể hơn mà không sợ bị quy tắc
+     * chung che mất. {@code /internal/**} không bao giờ được proxy ra ngoài: cổng nội bộ giữa
+     * các service chỉ tồn tại trong mạng của cụm.</p>
+     */
     private String resolveTargetService(String path) {
-        if (path.startsWith("/api/auth") || path.startsWith("/api/profile") || path.startsWith("/api/admin")) {
-            return properties.getUserService();
+        if (path.startsWith("/internal")) {
+            return null;
         }
-        if (path.startsWith("/api/fridge") || path.startsWith("/api/food") || path.startsWith("/api/ingredients") || path.startsWith("/api/upload")) {
-            return properties.getInventoryService();
-        }
-        if (path.startsWith("/api/recipes") || path.startsWith("/api/home") || path.startsWith("/api/favorites")) {
-            return properties.getRecipeService();
-        }
-        if (path.startsWith("/api/plan") || path.startsWith("/api/shopping")) {
-            return properties.getPlanShoppingService();
-        }
-        if (path.startsWith("/api/ai") || path.startsWith("/api/chat")) {
-            return properties.getAiService();
-        }
-        if (path.startsWith("/api/social") || path.startsWith("/api/stats")) {
-            return properties.getSocialStatsService();
+        for (GatewayProperties.Route route : properties.sortedRoutes()) {
+            String prefix = route.getPath();
+            if (prefix != null && !prefix.isBlank() && path.startsWith(prefix)) {
+                return route.getUri();
+            }
         }
         return null;
     }

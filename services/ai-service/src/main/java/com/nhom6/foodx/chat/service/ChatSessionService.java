@@ -6,7 +6,6 @@ import com.nhom6.foodx.ai.dto.ChatRequest;
 import com.nhom6.foodx.ai.dto.ChatResponse;
 import com.nhom6.foodx.ai.service.AiContextService;
 import com.nhom6.foodx.ai.service.ChatService;
-import com.nhom6.foodx.auth.entity.User;
 import com.nhom6.foodx.chat.dto.MessageResponse;
 import com.nhom6.foodx.chat.dto.SendMessageRequest;
 import com.nhom6.foodx.chat.dto.SessionCreateRequest;
@@ -40,17 +39,17 @@ public class ChatSessionService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional(readOnly = true)
-    public List<SessionResponse> list(User user) {
-        return sessionRepository.findByUser_IdOrderByUpdatedAtDesc(user.getId())
+    public List<SessionResponse> list(Long userId) {
+        return sessionRepository.findByUserIdOrderByUpdatedAtDesc(userId)
                 .stream()
                 .map(this::toSessionResponse)
                 .toList();
     }
 
     @Transactional
-    public SessionResponse create(User user, SessionCreateRequest request) {
+    public SessionResponse create(Long userId, SessionCreateRequest request) {
         ChatSession session = ChatSession.builder()
-                .user(user)
+                .userId(userId)
                 .title(request != null && request.title() != null && !request.title().isBlank()
                         ? request.title().trim()
                         : "Cuộc trò chuyện mới")
@@ -60,8 +59,8 @@ public class ChatSessionService {
     }
 
     @Transactional(readOnly = true)
-    public SessionDetailResponse get(User user, Long id) {
-        ChatSession session = findSession(user, id);
+    public SessionDetailResponse get(Long userId, Long id) {
+        ChatSession session = findSession(userId, id);
         List<MessageResponse> messages = messageRepository.findBySession_IdOrderByCreatedAtAsc(id)
                 .stream()
                 .map(this::toMessageResponse)
@@ -70,18 +69,18 @@ public class ChatSessionService {
     }
 
     @Transactional
-    public SessionResponse rename(User user, Long id, String title) {
+    public SessionResponse rename(Long userId, Long id, String title) {
         if (title == null || title.isBlank()) {
             throw new BusinessException(400, "Tiêu đề không được để trống");
         }
-        ChatSession session = findSession(user, id);
+        ChatSession session = findSession(userId, id);
         session.setTitle(title.trim());
         return toSessionResponse(sessionRepository.save(session));
     }
 
     @Transactional
-    public void delete(User user, Long id) {
-        ChatSession session = findSession(user, id);
+    public void delete(Long userId, Long id) {
+        ChatSession session = findSession(userId, id);
         messageRepository.deleteBySession_Id(id);
         sessionRepository.delete(session);
     }
@@ -91,20 +90,20 @@ public class ChatSessionService {
      * KHÔNG mở transaction quanh lời gọi LLM — giữ connection DB suốt 10–30s
      * sẽ làm cạn Hikari pool khi có vài user chat đồng thời.
      */
-    public ChatResponse send(User user, Long id, SendMessageRequest request) {
+    public ChatResponse send(Long userId, Long id, SendMessageRequest request) {
         if (request.message() == null || request.message().isBlank()) {
             throw new BusinessException(400, "Nội dung câu hỏi không được để trống");
         }
         if (request.message().length() > 2000) {
             throw new BusinessException(400, "Câu hỏi tối đa 2000 ký tự");
         }
-        ChatSession session = findSession(user, id);
+        ChatSession session = findSession(userId, id);
         String mode = request.mode() == null ? "chat" : request.mode();
         String message = request.message().trim();
 
         // ---- Bối cảnh: hồ sơ/tủ (cache) + 8 tin gần nhất, mỗi tin cắt 240 ký tự ----
         List<ChatMessage> recent = messageRepository.findTop8BySession_IdOrderByCreatedAtDesc(id);
-        StringBuilder context = new StringBuilder(aiContextService.buildContext(user));
+        StringBuilder context = new StringBuilder(aiContextService.buildContext(userId));
         if (!recent.isEmpty()) {
             context.append("\nLịch sử hội thoại gần đây trong phiên này:\n");
             for (int i = recent.size() - 1; i >= 0; i--) {
@@ -160,8 +159,27 @@ public class ChatSessionService {
         return ai;
     }
 
-    private ChatSession findSession(User user, Long id) {
-        return sessionRepository.findByIdAndUser_Id(id, user.getId())
+    /**
+     * Dọn toàn bộ dữ liệu trò chuyện của một người dùng (phục vụ xoá tài khoản).
+     *
+     * <p>Thứ tự bắt buộc: xoá {@code chat_messages} trước rồi mới xoá {@code chat_sessions},
+     * vì tin nhắn tham chiếu phiên qua khoá ngoại {@code session_id}.</p>
+     *
+     * @return tổng số dòng đã xoá (tin nhắn + phiên)
+     */
+    @Transactional
+    public int purgeUserData(Long userId) {
+        if (userId == null) {
+            return 0;
+        }
+        int messages = messageRepository.deleteByUserId(userId);
+        int sessions = sessionRepository.deleteByUserId(userId);
+        log.info("Đã dọn dữ liệu chat của người dùng {}: {} tin nhắn, {} phiên", userId, messages, sessions);
+        return messages + sessions;
+    }
+
+    private ChatSession findSession(Long userId, Long id) {
+        return sessionRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new BusinessException(404, "Không tìm thấy phiên trò chuyện"));
     }
 

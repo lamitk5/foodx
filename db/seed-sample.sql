@@ -1,3 +1,8 @@
+-- ============================================================================
+-- ⚠️ TÀI LIỆU CŨ — viết cho lược đồ MỘT database dùng chung (`foodx`).
+-- Sau refactor database-per-service, các bảng trong file này nằm rải ở 6 database
+-- khác nhau nên KHÔNG chạy trực tiếp được nữa. Xem db/README.md.
+-- ============================================================================
 SET NAMES utf8mb4;
 USE foodx;
 

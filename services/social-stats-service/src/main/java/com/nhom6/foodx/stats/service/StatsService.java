@@ -1,12 +1,11 @@
 package com.nhom6.foodx.stats.service;
 
-import com.nhom6.foodx.auth.entity.User;
+import com.nhom6.foodx.common.client.InventoryServiceClient;
+import com.nhom6.foodx.common.client.RecipeServiceClient;
+import com.nhom6.foodx.common.dto.ConsumeItemDto;
+import com.nhom6.foodx.common.dto.RecipeIngredientRefDto;
+import com.nhom6.foodx.common.dto.RecipeSummaryDto;
 import com.nhom6.foodx.common.exception.BusinessException;
-import com.nhom6.foodx.fridge.entity.FridgeItem;
-import com.nhom6.foodx.fridge.repository.FridgeItemRepository;
-import com.nhom6.foodx.recipe.entity.Recipe;
-import com.nhom6.foodx.recipe.entity.RecipeIngredient;
-import com.nhom6.foodx.recipe.repository.RecipeRepository;
 import com.nhom6.foodx.stats.dto.StatsResponse;
 import com.nhom6.foodx.stats.entity.CookHistory;
 import com.nhom6.foodx.stats.repository.CookHistoryRepository;
@@ -28,6 +27,10 @@ import java.util.stream.Collectors;
 /**
  * Thống kê nấu ăn + vòng tiêu thụ: khi người dùng nấu xong một món,
  * tự trừ nguyên liệu tương ứng trong tủ lạnh (theo khẩu phần đã nấu).
+ *
+ * <p>Service chỉ sở hữu bảng {@code cook_history}. Công thức lấy qua
+ * {@link RecipeServiceClient}; việc trừ tủ lạnh (quy đổi đơn vị, khớp tên) do
+ * inventory-service thực hiện qua {@link InventoryServiceClient}.</p>
  */
 @Slf4j
 @Service
@@ -35,174 +38,87 @@ import java.util.stream.Collectors;
 public class StatsService {
 
     private final CookHistoryRepository cookHistoryRepository;
-    private final RecipeRepository recipeRepository;
-    private final FridgeItemRepository fridgeItemRepository;
-
-    /** Nhóm đơn vị khối lượng (quy về g). */
-    private static final Map<String, Double> WEIGHT_UNITS = Map.of(
-            "g", 1.0, "gr", 1.0, "gam", 1.0, "gram", 1.0,
-            "kg", 1000.0, "kilogam", 1000.0, "ki-lo-gam", 1000.0);
-
-    /** Nhóm đơn vị thể tích (quy về ml). */
-    private static final Map<String, Double> VOLUME_UNITS = Map.of(
-            "ml", 1.0, "l", 1000.0, "lit", 1000.0, "lít", 1000.0);
+    private final RecipeServiceClient recipeServiceClient;
+    private final InventoryServiceClient inventoryServiceClient;
 
     @Transactional
-    public void recordCook(User user, Long recipeId, Integer servings) {
+    public void recordCook(Long userId, Long recipeId, Integer servings) {
         if (recipeId == null) {
             throw new BusinessException(400, "Thiếu công thức");
         }
-        Recipe recipe = recipeRepository.findById(recipeId)
+        RecipeSummaryDto recipe = recipeServiceClient.getRecipe(recipeId)
                 .orElseThrow(() -> new BusinessException(404, "Không tìm thấy công thức"));
 
         LocalDate today = LocalDate.now();
         // Chống ghi trùng do bấm đúp / gọi lại API
-        if (cookHistoryRepository.existsByUser_IdAndRecipeIdAndCookedAt(user.getId(), recipeId, today)) {
-            log.info("Món {} đã được ghi nhận hôm nay cho user {}, bỏ qua ghi trùng", recipeId, user.getUsername());
+        if (cookHistoryRepository.existsByUserIdAndRecipeIdAndCookedAt(userId, recipeId, today)) {
+            log.info("Món {} đã được ghi nhận hôm nay cho user {}, bỏ qua ghi trùng", recipeId, userId);
             return;
         }
 
         cookHistoryRepository.save(CookHistory.builder()
-                .user(user)
+                .userId(userId)
                 .recipeId(recipeId)
                 .cookedAt(today)
                 .build());
 
-        // Vòng tiêu thụ: trừ nguyên liệu khỏi tủ lạnh theo số khẩu phần đã nấu
-        int deducted = deductFridgeStock(user, recipe, servings);
+        // Vòng tiêu thụ: tính lượng nguyên liệu cần trừ theo số khẩu phần đã nấu
+        // rồi gửi sang inventory-service (nơi sở hữu tủ lạnh + nghiệp vụ quy đổi đơn vị).
+        List<ConsumeItemDto> consumeItems = buildConsumeItems(recipe, servings);
+        int deducted = inventoryServiceClient.consumeFridgeItems(userId, consumeItems);
         if (deducted > 0) {
             log.info("Đã trừ {} loại nguyên liệu khỏi tủ lạnh của user {} sau khi nấu '{}'",
-                    deducted, user.getUsername(), recipe.getTitle());
+                    deducted, userId, recipe.title());
         }
     }
 
     /**
-     * Trừ số lượng nguyên liệu trong tủ lạnh theo công thức đã nấu.
-     * Chỉ trừ khi tên & đơn vị tương thích (tránh trừ nhầm hàng tồn).
+     * Quy đổi định lượng của công thức gốc theo số khẩu phần thực nấu.
+     *
+     * <p>Giữ đúng công thức scale cũ: {@code scale = servings / recipeServings}, kẹp trong
+     * khoảng 0.05–20.0 (khẩu phần trống/không hợp lệ thì dùng hệ số 1.0). Nguyên liệu có
+     * tên rỗng hoặc lượng <= 0 bị bỏ qua.</p>
      */
-    private int deductFridgeStock(User user, Recipe recipe, Integer servings) {
-        if (recipe.getIngredients() == null || recipe.getIngredients().isEmpty()) {
-            return 0;
+    private List<ConsumeItemDto> buildConsumeItems(RecipeSummaryDto recipe, Integer servings) {
+        List<RecipeIngredientRefDto> ingredients = recipe.ingredients();
+        if (ingredients == null || ingredients.isEmpty()) {
+            return List.of();
         }
-        int recipeServings = recipe.getServings() != null && recipe.getServings() > 0
-                ? recipe.getServings() : 1;
+        int recipeServings = recipe.servings() != null && recipe.servings() > 0 ? recipe.servings() : 1;
         double scale = (servings == null || servings <= 0)
                 ? 1.0
                 : Math.max(0.05, Math.min(20.0, (double) servings / recipeServings));
 
-        List<FridgeItem> fridge = fridgeItemRepository.findByUser_IdOrderByIdAsc(user.getId());
-        if (fridge.isEmpty()) {
-            return 0;
-        }
-
-        int deducted = 0;
-        for (RecipeIngredient ri : recipe.getIngredients()) {
-            if (ri.getIngredient() == null) {
+        List<ConsumeItemDto> items = new ArrayList<>();
+        for (RecipeIngredientRefDto ri : ingredients) {
+            if (ri == null || ri.name() == null || ri.name().isBlank() || ri.quantity() == null) {
                 continue;
             }
-            String target = normalizeKey(ri.getIngredient().getName());
-            if (target.length() < 2) {
-                continue;
-            }
-            // Tìm món trong tủ khớp tên (chuỗi con hai chiều, không nhạy dấu)
-            FridgeItem matched = null;
-            for (FridgeItem item : fridge) {
-                if (item.getFood() == null || item.getFood().getName() == null) {
-                    continue;
-                }
-                String key = normalizeKey(item.getFood().getName());
-                if (key.length() < 2) {
-                    continue;
-                }
-                if (key.equals(target) || key.contains(target) || target.contains(key)) {
-                    matched = item;
-                    break;
-                }
-            }
-            if (matched == null) {
-                continue;
-            }
-
-            double amount = ri.getQuantity() != null ? ri.getQuantity() * scale : 0;
+            double amount = ri.quantity() * scale;
             if (amount <= 0) {
                 continue;
             }
-            double remaining = subtractAmount(matched.getQuantity(), matched.getUnit(), amount, ri.getUnit());
-            if (remaining == matched.getQuantity()) {
-                continue; // đơn vị không tương thích — không trừ nhầm
-            }
-            if (remaining <= 0.001) {
-                fridgeItemRepository.delete(matched);
-                fridge.remove(matched);
-                log.debug("Đã xoá '{}' khỏi tủ (dùng hết)", matched.getFood().getName());
-            } else {
-                matched.setQuantity(remaining);
-                fridgeItemRepository.save(matched);
-            }
-            deducted++;
+            items.add(new ConsumeItemDto(ri.name(), amount, ri.unit()));
         }
-        return deducted;
-    }
-
-    /** Trừ amount (đơn vị srcUnit) khỏi stock hiện tại (đơn vị stockUnit); không tương thích → trả về stock cũ. */
-    private double subtractAmount(double stock, String stockUnit, double amount, String srcUnit) {
-        String su = unitKey(stockUnit);
-        String au = unitKey(srcUnit);
-        if (su.isEmpty() || au.isEmpty()) {
-            return stock;
-        }
-        if (su.equals(au)) {
-            return stock - amount;
-        }
-        // Đổi qua đơn vị cơ sở cùng nhóm (g/gr/kg... hoặc ml/l...)
-        Double suBase = weightOrVolumeBase(su);
-        Double auBase = weightOrVolumeBase(au);
-        if (suBase != null && auBase != null) {
-            double amountInStockUnit = amount * auBase / suBase;
-            return stock - amountInStockUnit;
-        }
-        return stock;
-    }
-
-    private Double weightOrVolumeBase(String unit) {
-        Double w = WEIGHT_UNITS.get(unit);
-        if (w != null) {
-            return w;
-        }
-        return VOLUME_UNITS.get(unit);
-    }
-
-    private String unitKey(String unit) {
-        return unit == null ? "" : unit.trim().toLowerCase();
-    }
-
-    /** Bỏ dấu tiếng Việt + lowercase để so khớp tên. */
-    private String normalizeKey(String value) {
-        if (value == null) {
-            return "";
-        }
-        String v = value.trim().toLowerCase();
-        String nfd = java.text.Normalizer.normalize(v, java.text.Normalizer.Form.NFD);
-        return nfd.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").replace("đ", "d");
+        return items;
     }
 
     @Transactional(readOnly = true)
-    public StatsResponse getStats(User user) {
+    public StatsResponse getStats(Long userId) {
         LocalDate today = LocalDate.now();
-        long total = cookHistoryRepository.countByUser_Id(user.getId());
-        long week = cookHistoryRepository.countByUser_IdAndCookedAtBetween(user.getId(), today.minusDays(6), today);
-        long month = cookHistoryRepository.countByUser_IdAndCookedAtBetween(user.getId(), today.minusDays(29), today);
+        long total = cookHistoryRepository.countByUserId(userId);
+        long week = cookHistoryRepository.countByUserIdAndCookedAtBetween(userId, today.minusDays(6), today);
+        long month = cookHistoryRepository.countByUserIdAndCookedAtBetween(userId, today.minusDays(29), today);
 
-        List<CookHistory> history = cookHistoryRepository.findByUser_IdOrderByCookedAtDesc(user.getId());
+        List<CookHistory> history = cookHistoryRepository.findByUserIdOrderByCookedAtDesc(userId);
 
         // Nạp công thức một lần (tránh N+1)
         Set<Long> recipeIds = history.stream()
                 .map(CookHistory::getRecipeId)
                 .collect(Collectors.toSet());
-        Map<Long, Recipe> recipeMap = recipeIds.isEmpty()
+        Map<Long, RecipeSummaryDto> recipeMap = recipeIds.isEmpty()
                 ? Map.of()
-                : recipeRepository.findAllById(recipeIds).stream()
-                        .collect(Collectors.toMap(Recipe::getId, r -> r, (a, b) -> a));
+                : recipeServiceClient.getRecipes(recipeIds);
 
         // Calo theo ngày (14 ngày gần nhất)
         Map<LocalDate, Long> kcalByDay = new LinkedHashMap<>();
@@ -216,8 +132,8 @@ public class StatsService {
             if (day != null) {
                 cookedDays.add(day);
                 if (kcalByDay.containsKey(day)) {
-                    Recipe r = recipeMap.get(c.getRecipeId());
-                    int kcal = r != null && r.getKcal() != null ? r.getKcal() : 0;
+                    RecipeSummaryDto r = recipeMap.get(c.getRecipeId());
+                    int kcal = r != null && r.kcal() != null ? r.kcal() : 0;
                     kcalByDay.put(day, kcalByDay.get(day) + kcal);
                 }
             }
@@ -232,9 +148,9 @@ public class StatsService {
                 .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
                 .limit(5)
                 .map(e -> {
-                    Recipe r = recipeMap.get(e.getKey());
+                    RecipeSummaryDto r = recipeMap.get(e.getKey());
                     return new StatsResponse.TopRecipe(e.getKey(),
-                            r != null ? r.getTitle() : "Đã xoá",
+                            r != null ? r.title() : "Đã xoá",
                             e.getValue());
                 })
                 .toList();

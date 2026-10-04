@@ -6,7 +6,8 @@ import com.nhom6.foodx.auth.dto.RegisterRequest;
 import com.nhom6.foodx.auth.entity.User;
 import com.nhom6.foodx.auth.repository.UserRepository;
 import com.nhom6.foodx.common.exception.BusinessException;
-import com.nhom6.foodx.security.JwtTokenProvider;
+import com.nhom6.foodx.common.security.JwtTokenProvider;
+import com.nhom6.foodx.common.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,6 +23,7 @@ import java.time.LocalDateTime;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final com.nhom6.foodx.profile.repository.UserProfileRepository userProfileRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
@@ -45,6 +47,20 @@ public class AuthService {
                 .updatedAt(LocalDateTime.now())
                 .build();
         userRepository.save(user);
+
+        com.nhom6.foodx.profile.entity.UserProfile profile = com.nhom6.foodx.profile.entity.UserProfile.builder()
+                .user(user)
+                .gender("male")
+                .age(21)
+                .weight(53.0)
+                .height(153.0)
+                .targetWeight(53.0)
+                .activity(1.2)
+                .diet("Ăn linh tinh")
+                .allergies("")
+                .dislikes("")
+                .build();
+        userProfileRepository.save(profile);
 
         return buildAuthResponse(user);
     }
@@ -78,6 +94,11 @@ public class AuthService {
     }
 
     @Transactional
+    public void changePassword(String oldPassword, String newPassword) {
+        changePassword(requireCurrentUser(), oldPassword, newPassword);
+    }
+
+    @Transactional
     public void changePassword(User user, String oldPassword, String newPassword) {
         // Bắt buộc xác minh mật khẩu cũ khi đổi mật khẩu của tài khoản đang đăng nhập
         if (oldPassword == null || oldPassword.isBlank()) {
@@ -98,6 +119,28 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(newPassword));
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
+    }
+
+    /** Người dùng của request hiện tại (danh tính lấy từ JWT, tra cứu cục bộ trong user-service). */
+    @Transactional(readOnly = true)
+    public User requireCurrentUser() {
+        Long userId = SecurityUtils.getCurrentUserId();
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(401, "Người dùng không tồn tại"));
+    }
+
+    /** Thông tin người dùng đang đăng nhập (không kèm access token mới). */
+    @Transactional(readOnly = true)
+    public AuthResponse currentUserInfo() {
+        User user = requireCurrentUser();
+        return AuthResponse.builder()
+                .userId(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .role(user.getRole().name())
+                .fullName(user.getFullName())
+                .avatarUrl(user.getAvatarUrl())
+                .build();
     }
 
     private AuthResponse buildAuthResponse(User user) {

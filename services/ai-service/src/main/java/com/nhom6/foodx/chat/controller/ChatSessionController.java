@@ -7,7 +7,7 @@ import com.nhom6.foodx.chat.dto.SessionDetailResponse;
 import com.nhom6.foodx.chat.dto.SessionResponse;
 import com.nhom6.foodx.chat.service.ChatSessionService;
 import com.nhom6.foodx.common.response.ApiResponse;
-import com.nhom6.foodx.security.SecurityUtils;
+import com.nhom6.foodx.common.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,36 +30,35 @@ import java.util.Map;
 public class ChatSessionController {
 
     private final ChatSessionService chatSessionService;
-    private final SecurityUtils securityUtils;
 
     @GetMapping
     public ApiResponse<List<SessionResponse>> list() {
-        return ApiResponse.success(chatSessionService.list(securityUtils.getCurrentUser()), "Danh sách phiên trò chuyện");
+        return ApiResponse.success(chatSessionService.list(SecurityUtils.getCurrentUserId()), "Danh sách phiên trò chuyện");
     }
 
     @PostMapping
     public ApiResponse<SessionResponse> create(@RequestBody(required = false) SessionCreateRequest request) {
-        return ApiResponse.success(chatSessionService.create(securityUtils.getCurrentUser(), request), "Đã tạo phiên trò chuyện");
+        return ApiResponse.success(chatSessionService.create(SecurityUtils.getCurrentUserId(), request), "Đã tạo phiên trò chuyện");
     }
 
     @GetMapping("/{id}")
     public ApiResponse<SessionDetailResponse> get(@PathVariable Long id) {
-        return ApiResponse.success(chatSessionService.get(securityUtils.getCurrentUser(), id), "Chi tiết phiên trò chuyện");
+        return ApiResponse.success(chatSessionService.get(SecurityUtils.getCurrentUserId(), id), "Chi tiết phiên trò chuyện");
     }
 
     @PatchMapping("/{id}")
     public ApiResponse<SessionResponse> rename(@PathVariable Long id, @RequestBody Map<String, String> body) {
-        return ApiResponse.success(chatSessionService.rename(securityUtils.getCurrentUser(), id, body.get("title")), "Đã đổi tên phiên");
+        return ApiResponse.success(chatSessionService.rename(SecurityUtils.getCurrentUserId(), id, body.get("title")), "Đã đổi tên phiên");
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable Long id) {
-        chatSessionService.delete(securityUtils.getCurrentUser(), id);
+        chatSessionService.delete(SecurityUtils.getCurrentUserId(), id);
         return ApiResponse.success(null, "Đã xóa phiên trò chuyện");
     }
 
     @PostMapping("/{id}/messages")
     public ApiResponse<ChatResponse> send(@PathVariable Long id, @RequestBody SendMessageRequest request) {
-        return ApiResponse.success(chatSessionService.send(securityUtils.getCurrentUser(), id, request), "Trợ lý AI phản hồi");
+        return ApiResponse.success(chatSessionService.send(SecurityUtils.getCurrentUserId(), id, request), "Trợ lý AI phản hồi");
     }
 }

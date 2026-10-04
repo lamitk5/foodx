@@ -2,11 +2,13 @@ package com.nhom6.foodx.plan.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nhom6.foodx.ai.service.AiProviderService;
-import com.nhom6.foodx.auth.entity.User;
+import com.nhom6.foodx.common.client.AiServiceClient;
+import com.nhom6.foodx.common.client.InventoryServiceClient;
+import com.nhom6.foodx.common.client.RecipeServiceClient;
+import com.nhom6.foodx.common.dto.RecipeDraftDto;
+import com.nhom6.foodx.common.dto.RecipeSummaryDto;
 import com.nhom6.foodx.common.exception.BusinessException;
 import com.nhom6.foodx.common.utils.StringUtils;
-import com.nhom6.foodx.fridge.facade.FridgeFacade;
 import com.nhom6.foodx.plan.dto.CustomSlotRequest;
 import com.nhom6.foodx.plan.dto.EstimateDishRequest;
 import com.nhom6.foodx.plan.dto.EstimateDishResponse;
@@ -16,10 +18,6 @@ import com.nhom6.foodx.plan.dto.PlanSummaryResponse;
 import com.nhom6.foodx.plan.dto.SuggestSlotRequest;
 import com.nhom6.foodx.plan.entity.MealPlanEntry;
 import com.nhom6.foodx.plan.repository.MealPlanEntryRepository;
-import com.nhom6.foodx.profile.facade.ProfileFacade;
-import com.nhom6.foodx.recipe.facade.RecipeCreateSpec;
-import com.nhom6.foodx.recipe.facade.RecipeFacade;
-import com.nhom6.foodx.recipe.facade.RecipeSummary;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -39,9 +37,10 @@ import java.util.stream.Collectors;
 
 /**
  * Kế hoạch bữa ăn theo tuần thông minh:
- * - Tích hợp AI (Groq/Gemini) lên thực đơn cá nhân hóa theo hồ sơ và tủ lạnh.
- * - Giao tiếp liên module TUÂN THỦ nguyên tắc Modular Monolith: chỉ gọi qua
- *   RecipeFacade / FridgeFacade / ProfileFacade, KHÔNG gọi trực tiếp repository của module khác.
+ * - Tích hợp AI (qua ai-service) lên thực đơn cá nhân hóa theo hồ sơ và tủ lạnh.
+ * - Giao tiếp liên service TUÂN THỦ nguyên tắc microservice: chỉ gọi qua HTTP client dùng chung
+ *   (RecipeServiceClient / InventoryServiceClient / UserServiceClient qua ProfileLookupService /
+ *   AiServiceClient), KHÔNG truy cập bảng DB của service khác.
  * - Luôn trả về dữ liệu an toàn (không bao giờ null gây NPE ở controller/template).
  */
 @Slf4j
@@ -50,16 +49,16 @@ import java.util.stream.Collectors;
 public class PlanService {
 
     private final MealPlanEntryRepository planRepository;
-    private final RecipeFacade recipeFacade;
-    private final ProfileFacade profileFacade;
-    private final FridgeFacade fridgeFacade;
-    private final AiProviderService aiProviderService;
+    private final RecipeServiceClient recipeServiceClient;
+    private final InventoryServiceClient inventoryServiceClient;
+    private final ProfileLookupService profileLookupService;
+    private final AiServiceClient aiServiceClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional(readOnly = true)
-    public List<PlanEntryResponse> getRange(User user, LocalDate start, LocalDate end) {
+    public List<PlanEntryResponse> getRange(Long userId, LocalDate start, LocalDate end) {
         List<MealPlanEntry> entries = planRepository
-                .findByUser_IdAndPlanDateBetweenOrderByPlanDateAsc(user.getId(), start, end);
+                .findByUserIdAndPlanDateBetweenOrderByPlanDateAsc(userId, start, end);
         if (entries.isEmpty()) {
             return List.of();
         }
@@ -67,8 +66,8 @@ public class PlanService {
                 .map(MealPlanEntry::getRecipeId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-        Map<Long, RecipeSummary> summaries = recipeFacade.getSummaries(recipeIds);
-        Set<String> fridgeNames = fridgeFacade.getFoodNames(user.getId());
+        Map<Long, RecipeSummaryDto> summaries = recipeServiceClient.getRecipes(recipeIds);
+        Set<String> fridgeNames = fridgeFoodNames(userId);
 
         return entries.stream()
                 .map(e -> toResponse(e, summaries.get(e.getRecipeId()), fridgeNames))
@@ -77,91 +76,112 @@ public class PlanService {
 
     /** Tổng hợp tuần (goal + tổng calo) cho widget đo dinh dưỡng. */
     @Transactional(readOnly = true)
-    public PlanSummaryResponse getSummary(User user, LocalDate start, LocalDate end) {
+    public PlanSummaryResponse getSummary(Long userId, LocalDate start, LocalDate end) {
         List<MealPlanEntry> entries = planRepository
-                .findByUser_IdAndPlanDateBetweenOrderByPlanDateAsc(user.getId(), start, end);
+                .findByUserIdAndPlanDateBetweenOrderByPlanDateAsc(userId, start, end);
         Set<Long> recipeIds = entries.stream()
                 .map(MealPlanEntry::getRecipeId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-        Map<Long, RecipeSummary> summaries = recipeFacade.getSummaries(recipeIds);
+        Map<Long, RecipeSummaryDto> summaries = recipeServiceClient.getRecipes(recipeIds);
         int totalKcal = entries.stream()
                 .mapToInt(e -> {
-                    RecipeSummary s = summaries.get(e.getRecipeId());
+                    RecipeSummaryDto s = summaries.get(e.getRecipeId());
                     return s != null && s.kcal() != null ? s.kcal() : 0;
                 })
                 .sum();
         return new PlanSummaryResponse(
                 start,
                 end,
-                profileFacade.getDailyKcalGoal(user.getId()),
+                profileLookupService.getDailyKcalGoal(userId),
                 entries.size(),
                 totalKcal
         );
     }
 
     @Transactional
-    public PlanEntryResponse setSlot(User user, PlanEntryRequest request) {
+    public PlanEntryResponse setSlot(Long userId, PlanEntryRequest request) {
         if (request.planDate() == null || request.slot() == null || request.recipeId() == null) {
             throw new BusinessException(400, "Thiếu thông tin kế hoạch");
         }
         if (!List.of("morning", "lunch", "dinner").contains(request.slot())) {
             throw new BusinessException(400, "Khung giờ không hợp lệ");
         }
-        RecipeSummary recipe = recipeFacade.getSummary(request.recipeId());
+        RecipeSummaryDto recipe = recipeServiceClient.getRecipe(request.recipeId()).orElse(null);
         if (recipe == null) {
             throw new BusinessException(404, "Không tìm thấy công thức");
         }
 
         MealPlanEntry entry = planRepository
-                .findByUser_IdAndPlanDateAndSlot(user.getId(), request.planDate(), request.slot())
+                .findByUserIdAndPlanDateAndSlot(userId, request.planDate(), request.slot())
                 .orElseGet(() -> MealPlanEntry.builder()
-                        .user(user)
+                        .userId(userId)
                         .planDate(request.planDate())
                         .slot(request.slot())
                         .build());
         entry.setRecipeId(request.recipeId());
-        return toResponse(planRepository.save(entry), recipe, fridgeFacade.getFoodNames(user.getId()));
-    }
-
-    @Transactional
-    public void removeSlot(User user, LocalDate planDate, String slot) {
-        planRepository.deleteByUser_IdAndPlanDateAndSlot(user.getId(), planDate, slot);
-    }
-
-    @Transactional
-    public int autoFill(User user, LocalDate start, LocalDate end) {
-        if (!aiProviderService.isMockMode()) {
-            try {
-                int aiResult = autoFillWithAi(user, start, end);
-                if (aiResult > 0) {
-                    log.info("AI đã lên thành công {} bữa ăn cho người dùng {}", aiResult, user.getUsername());
-                    return aiResult;
-                }
-            } catch (Exception ex) {
-                log.warn("AI lên kế hoạch gặp lỗi ({}), tự động dùng thuật toán dự phòng thông minh.", ex.getMessage());
-            }
+        try {
+            entry = planRepository.saveAndFlush(entry);
+        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+            entry = planRepository.findByUserIdAndPlanDateAndSlot(userId, request.planDate(), request.slot())
+                    .orElse(entry);
+            entry.setRecipeId(request.recipeId());
+            entry = planRepository.save(entry);
         }
-        return autoFillWithSmartFallback(user, start, end);
+        return toResponse(entry, recipe, fridgeFoodNames(userId));
     }
 
-    private int autoFillWithAi(User user, LocalDate start, LocalDate end) {
-        Long userId = user.getId();
-        String diet = profileFacade.getDiet(userId);
+    @Transactional
+    public void removeSlot(Long userId, LocalDate planDate, String slot) {
+        planRepository.deleteByUserIdAndPlanDateAndSlot(userId, planDate, slot);
+    }
+
+    /**
+     * Dọn toàn bộ kế hoạch bữa ăn của một người dùng — phục vụ endpoint nội bộ
+     * {@code DELETE /internal/users/{userId}/data} khi admin xoá tài khoản.
+     *
+     * @return số dòng {@code meal_plan_entries} đã xoá
+     */
+    @Transactional
+    public int purgeUserData(Long userId) {
+        if (userId == null) {
+            return 0;
+        }
+        return (int) planRepository.deleteByUserId(userId);
+    }
+
+    @Transactional
+    public int autoFill(Long userId, LocalDate start, LocalDate end) {
+        // ai-service chết thì AiServiceClient trả Optional.empty() — tương đương generateText trả null
+        // trước đây, nên luồng dự phòng thuật toán bên dưới vẫn chạy y như cũ.
+        try {
+            int aiResult = autoFillWithAi(userId, start, end);
+            if (aiResult > 0) {
+                log.info("AI đã lên thành công {} bữa ăn cho người dùng {}", aiResult, userId);
+                return aiResult;
+            }
+        } catch (Exception ex) {
+            log.warn("AI lên kế hoạch gặp lỗi ({}), tự động dùng thuật toán dự phòng thông minh.", ex.getMessage());
+        }
+        return autoFillWithSmartFallback(userId, start, end);
+    }
+
+    private int autoFillWithAi(Long userId, LocalDate start, LocalDate end) {
+        String diet = profileLookupService.getDiet(userId);
         if (diet.isBlank()) diet = "Bình thường, cân bằng dinh dưỡng";
-        String allergies = profileFacade.getAllergies(userId);
+        String allergies = profileLookupService.getAllergies(userId);
         if (allergies.isBlank()) allergies = "Không có";
-        String dislikes = profileFacade.getDislikes(userId);
+        String dislikes = profileLookupService.getDislikes(userId);
         if (dislikes.isBlank()) dislikes = "Không có";
 
-        Set<String> fridgeNames = fridgeFacade.getFoodNames(userId);
+        Set<String> fridgeNames = fridgeFoodNames(userId);
         String fridgeList = fridgeNames.stream().sorted().collect(Collectors.joining(", "));
         if (fridgeList.isBlank()) {
             fridgeList = "Trứng, thịt bò, thịt gà, rau củ, cà chua, bông cải xanh, gia vị";
         }
 
-        String existingTitles = recipeFacade.getAllSummaries().stream()
-                .map(RecipeSummary::title)
+        String existingTitles = recipeServiceClient.getAllRecipes().stream()
+                .map(RecipeSummaryDto::title)
                 .filter(Objects::nonNull)
                 .limit(20)
                 .collect(Collectors.joining(", "));
@@ -198,7 +218,7 @@ public class PlanService {
                 ]
                 """, start, end, diet, allergies, dislikes, fridgeList, existingTitles);
 
-        String rawJson = aiProviderService.generateText(prompt, "application/json");
+        String rawJson = aiServiceClient.generate(prompt, "application/json").orElse(null);
         if (rawJson == null || rawJson.isBlank()) {
             return 0;
         }
@@ -231,7 +251,7 @@ public class PlanService {
                 continue;
             }
 
-            RecipeSummary recipe = recipeFacade.ensureRecipe(new RecipeCreateSpec(
+            RecipeSummaryDto recipe = recipeServiceClient.ensureRecipe(new RecipeDraftDto(
                     item.getRecipeTitle().trim(),
                     item.getDescription(),
                     item.getInstructions(),
@@ -241,14 +261,14 @@ public class PlanService {
                     item.getFat(),
                     item.getDifficulty(),
                     item.getSlot()
-            ));
+            )).orElse(null);
             if (recipe == null) {
                 continue;
             }
 
-            MealPlanEntry entry = planRepository.findByUser_IdAndPlanDateAndSlot(userId, planDate, item.getSlot())
+            MealPlanEntry entry = planRepository.findByUserIdAndPlanDateAndSlot(userId, planDate, item.getSlot())
                     .orElseGet(() -> MealPlanEntry.builder()
-                            .user(user)
+                            .userId(userId)
                             .planDate(planDate)
                             .slot(item.getSlot())
                             .build());
@@ -259,15 +279,15 @@ public class PlanService {
         return added;
     }
 
-    private int autoFillWithSmartFallback(User user, LocalDate start, LocalDate end) {
-        List<RecipeSummary> recipes = recipeFacade.getAllSummaries();
+    private int autoFillWithSmartFallback(Long userId, LocalDate start, LocalDate end) {
+        List<RecipeSummaryDto> recipes = recipeServiceClient.getAllRecipes();
         if (recipes.isEmpty()) {
             return 0;
         }
 
-        List<RecipeSummary> morningPool = filterBySlot(recipes, "morning");
-        List<RecipeSummary> lunchPool = filterBySlot(recipes, "lunch");
-        List<RecipeSummary> dinnerPool = filterBySlot(recipes, "dinner");
+        List<RecipeSummaryDto> morningPool = filterBySlot(recipes, "morning");
+        List<RecipeSummaryDto> lunchPool = filterBySlot(recipes, "lunch");
+        List<RecipeSummaryDto> dinnerPool = filterBySlot(recipes, "dinner");
 
         int added = 0;
         LocalDate day = start;
@@ -276,16 +296,16 @@ public class PlanService {
         while (!day.isAfter(end)) {
             Set<Long> usedTodayRecipeIds = new HashSet<>();
 
-            RecipeSummary morningRecipe = pickRecipeWithoutDuplicate(morningPool, dayIndex, usedTodayRecipeIds);
-            saveSlotIfAbsent(user, day, "morning", morningRecipe);
+            RecipeSummaryDto morningRecipe = pickRecipeWithoutDuplicate(morningPool, dayIndex, usedTodayRecipeIds);
+            saveSlotIfAbsent(userId, day, "morning", morningRecipe);
             if (morningRecipe != null) usedTodayRecipeIds.add(morningRecipe.id());
 
-            RecipeSummary lunchRecipe = pickRecipeWithoutDuplicate(lunchPool, dayIndex + 2, usedTodayRecipeIds);
-            saveSlotIfAbsent(user, day, "lunch", lunchRecipe);
+            RecipeSummaryDto lunchRecipe = pickRecipeWithoutDuplicate(lunchPool, dayIndex + 2, usedTodayRecipeIds);
+            saveSlotIfAbsent(userId, day, "lunch", lunchRecipe);
             if (lunchRecipe != null) usedTodayRecipeIds.add(lunchRecipe.id());
 
-            RecipeSummary dinnerRecipe = pickRecipeWithoutDuplicate(dinnerPool, dayIndex + 5, usedTodayRecipeIds);
-            saveSlotIfAbsent(user, day, "dinner", dinnerRecipe);
+            RecipeSummaryDto dinnerRecipe = pickRecipeWithoutDuplicate(dinnerPool, dayIndex + 5, usedTodayRecipeIds);
+            saveSlotIfAbsent(userId, day, "dinner", dinnerRecipe);
 
             added += 3;
             day = day.plusDays(1);
@@ -294,17 +314,17 @@ public class PlanService {
         return added;
     }
 
-    private List<RecipeSummary> filterBySlot(List<RecipeSummary> recipes, String slot) {
-        List<RecipeSummary> pool = recipes.stream()
+    private List<RecipeSummaryDto> filterBySlot(List<RecipeSummaryDto> recipes, String slot) {
+        List<RecipeSummaryDto> pool = recipes.stream()
                 .filter(r -> r.mealSlots() != null && r.mealSlots().contains(slot))
                 .toList();
         return pool.isEmpty() ? recipes : pool;
     }
 
-    private RecipeSummary pickRecipeWithoutDuplicate(List<RecipeSummary> pool, int seed, Set<Long> usedIds) {
+    private RecipeSummaryDto pickRecipeWithoutDuplicate(List<RecipeSummaryDto> pool, int seed, Set<Long> usedIds) {
         if (pool.isEmpty()) return null;
         for (int i = 0; i < pool.size(); i++) {
-            RecipeSummary r = pool.get((Math.abs(seed) + i) % pool.size());
+            RecipeSummaryDto r = pool.get((Math.abs(seed) + i) % pool.size());
             if (!usedIds.contains(r.id())) {
                 return r;
             }
@@ -313,7 +333,7 @@ public class PlanService {
     }
 
     @Transactional
-    public PlanEntryResponse suggestSlot(User user, SuggestSlotRequest request) {
+    public PlanEntryResponse suggestSlot(Long userId, SuggestSlotRequest request) {
         if (request.planDate() == null || request.slot() == null) {
             throw new BusinessException(400, "Thiếu ngày hoặc bữa ăn cần gợi ý");
         }
@@ -321,24 +341,23 @@ public class PlanService {
             throw new BusinessException(400, "Khung giờ không hợp lệ");
         }
 
-        List<MealPlanEntry> dayEntries = planRepository.findByUser_IdAndPlanDateBetweenOrderByPlanDateAsc(
-                user.getId(), request.planDate(), request.planDate());
+        List<MealPlanEntry> dayEntries = planRepository.findByUserIdAndPlanDateBetweenOrderByPlanDateAsc(
+                userId, request.planDate(), request.planDate());
         String otherMealsToday = dayEntries.stream()
                 .filter(e -> !e.getSlot().equals(request.slot()))
                 .map(e -> {
-                    RecipeSummary r = recipeFacade.getSummary(e.getRecipeId());
+                    RecipeSummaryDto r = recipeServiceClient.getRecipe(e.getRecipeId()).orElse(null);
                     return r != null ? r.title() : "";
                 })
                 .filter(s -> !s.isBlank())
                 .collect(Collectors.joining(", "));
 
-        Long userId = user.getId();
-        String diet = profileFacade.getDiet(userId);
+        String diet = profileLookupService.getDiet(userId);
         if (diet.isBlank()) diet = "Cân bằng dinh dưỡng";
-        String allergies = profileFacade.getAllergies(userId);
+        String allergies = profileLookupService.getAllergies(userId);
         if (allergies.isBlank()) allergies = "Không có";
 
-        Set<String> fridgeNames = fridgeFacade.getFoodNames(userId);
+        Set<String> fridgeNames = fridgeFoodNames(userId);
         String fridgeList = fridgeNames.stream().sorted().collect(Collectors.joining(", "));
 
         String slotVi = switch (request.slot()) {
@@ -378,9 +397,9 @@ public class PlanService {
                 }
                 """, slotVi, request.planDate(), userPrompt, targetKcal, diet, allergies, otherMealsToday, fridgeList, targetKcal);
 
-        RecipeSummary recipe = null;
+        RecipeSummaryDto recipe = null;
         try {
-            String rawJson = aiProviderService.generateText(prompt, "application/json");
+            String rawJson = aiServiceClient.generate(prompt, "application/json").orElse(null);
             if (rawJson != null && !rawJson.isBlank()) {
                 String clean = cleanJson(rawJson);
                 int f = clean.indexOf('{'), l = clean.lastIndexOf('}');
@@ -388,7 +407,7 @@ public class PlanService {
 
                 AiMealPlanItem item = objectMapper.readValue(clean, AiMealPlanItem.class);
                 if (item != null && item.getRecipeTitle() != null && !item.getRecipeTitle().isBlank()) {
-                    recipe = recipeFacade.ensureRecipe(new RecipeCreateSpec(
+                    recipe = recipeServiceClient.ensureRecipe(new RecipeDraftDto(
                             item.getRecipeTitle().trim(),
                             item.getDescription(),
                             item.getInstructions(),
@@ -398,7 +417,7 @@ public class PlanService {
                             item.getFat(),
                             item.getDifficulty(),
                             request.slot()
-                    ));
+                    )).orElse(null);
                 }
             }
         } catch (Exception e) {
@@ -406,7 +425,7 @@ public class PlanService {
         }
 
         if (recipe == null) {
-            List<RecipeSummary> pool = filterBySlot(recipeFacade.getAllSummaries(), request.slot());
+            List<RecipeSummaryDto> pool = filterBySlot(recipeServiceClient.getAllRecipes(), request.slot());
             if (!pool.isEmpty()) {
                 recipe = pool.get(new Random().nextInt(pool.size()));
             }
@@ -416,14 +435,14 @@ public class PlanService {
             throw new BusinessException(500, "Không thể tạo gợi ý món ăn lúc này");
         }
 
-        MealPlanEntry entry = planRepository.findByUser_IdAndPlanDateAndSlot(userId, request.planDate(), request.slot())
+        MealPlanEntry entry = planRepository.findByUserIdAndPlanDateAndSlot(userId, request.planDate(), request.slot())
                 .orElseGet(() -> MealPlanEntry.builder()
-                        .user(user)
+                        .userId(userId)
                         .planDate(request.planDate())
                         .slot(request.slot())
                         .build());
         entry.setRecipeId(recipe.id());
-        return toResponse(planRepository.save(entry), recipe, fridgeFacade.getFoodNames(userId));
+        return toResponse(planRepository.save(entry), recipe, fridgeFoodNames(userId));
     }
 
     public EstimateDishResponse estimateDish(EstimateDishRequest request) {
@@ -446,7 +465,7 @@ public class PlanService {
                 """, dish, request.slot() != null ? request.slot() : "bữa ăn chính", dish);
 
         try {
-            String rawJson = aiProviderService.generateText(prompt, "application/json");
+            String rawJson = aiServiceClient.generate(prompt, "application/json").orElse(null);
             if (rawJson != null && !rawJson.isBlank()) {
                 String clean = cleanJson(rawJson);
                 int f = clean.indexOf('{'), l = clean.lastIndexOf('}');
@@ -461,7 +480,7 @@ public class PlanService {
     }
 
     @Transactional
-    public PlanEntryResponse setCustomSlot(User user, CustomSlotRequest request) {
+    public PlanEntryResponse setCustomSlot(Long userId, CustomSlotRequest request) {
         if (request.planDate() == null || request.slot() == null || request.title() == null || request.title().isBlank()) {
             throw new BusinessException(400, "Thiếu thông tin ngày, bữa ăn hoặc tên món");
         }
@@ -472,7 +491,7 @@ public class PlanService {
         double carb = request.carb() != null ? request.carb() : 50.0;
         double fat = request.fat() != null ? request.fat() : 12.0;
 
-        RecipeSummary recipe = recipeFacade.ensureRecipe(new RecipeCreateSpec(
+        RecipeSummaryDto recipe = recipeServiceClient.ensureRecipe(new RecipeDraftDto(
                 title,
                 request.description() != null && !request.description().isBlank()
                         ? request.description() : "Món ăn do bạn thêm vào kế hoạch.",
@@ -483,23 +502,27 @@ public class PlanService {
                 fat,
                 "Dễ",
                 request.slot()
-        ));
+        )).orElse(null);
 
-        MealPlanEntry entry = planRepository.findByUser_IdAndPlanDateAndSlot(user.getId(), request.planDate(), request.slot())
+        if (recipe == null) {
+            throw new BusinessException(500, "Không thể tạo món ăn lúc này");
+        }
+
+        MealPlanEntry entry = planRepository.findByUserIdAndPlanDateAndSlot(userId, request.planDate(), request.slot())
                 .orElseGet(() -> MealPlanEntry.builder()
-                        .user(user)
+                        .userId(userId)
                         .planDate(request.planDate())
                         .slot(request.slot())
                         .build());
         entry.setRecipeId(recipe.id());
-        return toResponse(planRepository.save(entry), recipe, fridgeFacade.getFoodNames(user.getId()));
+        return toResponse(planRepository.save(entry), recipe, fridgeFoodNames(userId));
     }
 
-    private void saveSlotIfAbsent(User user, LocalDate day, String slot, RecipeSummary recipe) {
+    private void saveSlotIfAbsent(Long userId, LocalDate day, String slot, RecipeSummaryDto recipe) {
         if (recipe == null) return;
-        MealPlanEntry entry = planRepository.findByUser_IdAndPlanDateAndSlot(user.getId(), day, slot)
+        MealPlanEntry entry = planRepository.findByUserIdAndPlanDateAndSlot(userId, day, slot)
                 .orElseGet(() -> MealPlanEntry.builder()
-                        .user(user)
+                        .userId(userId)
                         .planDate(day)
                         .slot(slot)
                         .build());
@@ -507,7 +530,15 @@ public class PlanService {
         planRepository.save(entry);
     }
 
-    private PlanEntryResponse toResponse(MealPlanEntry entry, RecipeSummary recipe, Set<String> fridgeNames) {
+    /** Tên thực phẩm trong tủ lạnh — nay hỏi inventory-service qua HTTP nội bộ. */
+    private Set<String> fridgeFoodNames(Long userId) {
+        if (userId == null) {
+            return Set.of();
+        }
+        return new HashSet<>(inventoryServiceClient.getFridgeFoodNames(userId));
+    }
+
+    private PlanEntryResponse toResponse(MealPlanEntry entry, RecipeSummaryDto recipe, Set<String> fridgeNames) {
         List<PlanEntryResponse.IngredientTag> tags = List.of();
         if (recipe != null && recipe.ingredientNames() != null) {
             tags = recipe.ingredientNames().stream()
