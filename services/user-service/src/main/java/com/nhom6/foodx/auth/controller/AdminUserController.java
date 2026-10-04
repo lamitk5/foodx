@@ -4,13 +4,14 @@ import com.nhom6.foodx.auth.dto.AdminUserRequest;
 import com.nhom6.foodx.auth.dto.AdminUserResponse;
 import com.nhom6.foodx.auth.entity.User;
 import com.nhom6.foodx.auth.repository.UserRepository;
+import com.nhom6.foodx.common.client.UserPurgeClient;
 import com.nhom6.foodx.common.exception.BusinessException;
 import com.nhom6.foodx.common.exception.ResourceNotFoundException;
 import com.nhom6.foodx.common.response.ApiResponse;
-import com.nhom6.foodx.security.SecurityUtils;
+import com.nhom6.foodx.common.security.SecurityUtils;
+import com.nhom6.foodx.profile.repository.UserProfileRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,22 +26,30 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Quản trị người dùng (chỉ ADMIN).
+ *
+ * <p>Khi xoá tài khoản, user-service chỉ xoá bảng do mình sở hữu ({@code profiles}, {@code users});
+ * 5 service còn lại tự dọn dữ liệu của họ qua {@code DELETE /internal/users/{userId}/data}
+ * (xem {@link UserPurgeClient}). Trước đây lớp này chạy {@code DELETE}/{@code UPDATE} bằng
+ * {@code JdbcTemplate} xuyên qua bảng của 5 service khác — đúng kiểu "distributed monolith".</p>
+ */
 @RestController
 @RequestMapping("/api/admin/users")
 @RequiredArgsConstructor
 public class AdminUserController {
 
     private final UserRepository userRepository;
-    private final SecurityUtils securityUtils;
+    private final UserProfileRepository userProfileRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JdbcTemplate jdbcTemplate;
+    private final UserPurgeClient userPurgeClient;
 
-    private User requireAdmin() {
-        User current = securityUtils.getCurrentUser();
-        if (current == null || current.getRole() != User.Role.ADMIN) {
+    /** Vai trò lấy từ JWT (không truy vấn DB chỉ để kiểm tra quyền). */
+    private Long requireAdmin() {
+        if (!SecurityUtils.isAdmin()) {
             throw new BusinessException(403, "Chỉ tài khoản Quản trị viên (ADMIN) mới có quyền truy cập");
         }
-        return current;
+        return SecurityUtils.getCurrentUserId();
     }
 
     @GetMapping
@@ -115,10 +124,9 @@ public class AdminUserController {
     }
 
     @DeleteMapping("/{id}")
-    @Transactional
     public ApiResponse<Void> deleteUser(@PathVariable Long id) {
-        User admin = requireAdmin();
-        if (admin.getId().equals(id)) {
+        Long adminId = requireAdmin();
+        if (adminId.equals(id)) {
             throw new BusinessException(400, "Không thể xóa chính tài khoản đang đăng nhập");
         }
         if (!userRepository.existsById(id)) {
@@ -130,29 +138,18 @@ public class AdminUserController {
         return ApiResponse.success(null, "Đã xóa người dùng thành công");
     }
 
+    /**
+     * Dọn dữ liệu của người dùng trước khi xoá tài khoản.
+     *
+     * <p>Không đặt {@code @Transactional} ở đây vì bước 1 là gọi HTTP sang 5 service khác —
+     * giữ transaction DB trong lúc chờ mạng sẽ làm chậm và dễ nghẽn connection pool.</p>
+     */
     private void cleanUserData(Long userId) {
-        tryExecute("DELETE FROM post_comments WHERE post_id IN (SELECT id FROM recipe_posts WHERE author_id = ?)", userId);
-        tryExecute("DELETE FROM post_likes WHERE post_id IN (SELECT id FROM recipe_posts WHERE author_id = ?)", userId);
-        tryExecute("DELETE FROM recipe_posts WHERE author_id = ?", userId);
-        tryExecute("DELETE FROM post_comments WHERE user_id = ?", userId);
-        tryExecute("DELETE FROM post_likes WHERE user_id = ?", userId);
-        tryExecute("DELETE FROM chat_messages WHERE session_id IN (SELECT id FROM chat_sessions WHERE user_id = ?)", userId);
-        tryExecute("DELETE FROM chat_sessions WHERE user_id = ?", userId);
-        tryExecute("DELETE FROM fridge_stock WHERE user_id = ?", userId);
-        tryExecute("DELETE FROM meal_plan_entries WHERE user_id = ?", userId);
-        tryExecute("DELETE FROM shopping_items WHERE user_id = ?", userId);
-        tryExecute("DELETE FROM cook_history WHERE user_id = ?", userId);
-        tryExecute("DELETE FROM favorites WHERE user_id = ?", userId);
-        tryExecute("DELETE FROM saved_recipes WHERE user_id = ?", userId);
-        tryExecute("DELETE FROM profiles WHERE user_id = ?", userId);
-        tryExecute("UPDATE recipes SET author_id = NULL WHERE author_id = ?", userId);
-    }
+        // 1) Các service khác tự dọn bảng của họ (best effort, có log cảnh báo nếu service chết).
+        userPurgeClient.purgeUserData(userId);
 
-    private void tryExecute(String sql, Long param) {
-        try {
-            jdbcTemplate.update(sql, param);
-        } catch (Exception ignored) {
-        }
+        // 2) Bảng do user-service sở hữu.
+        userProfileRepository.deleteByUser_Id(userId);
     }
 
     private AdminUserResponse toResponse(User u) {

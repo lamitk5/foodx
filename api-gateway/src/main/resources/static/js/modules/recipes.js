@@ -1,7 +1,25 @@
-var recipesCache = (typeof window !== 'undefined' && window.recipesCache) ? window.recipesCache : [];
-var curRecipe = (typeof window !== 'undefined' && window.curRecipe) ? window.curRecipe : null;
-var previousViewBeforeRecipe = (typeof window !== 'undefined' && window.previousViewBeforeRecipe) ? window.previousViewBeforeRecipe : 'recipes';
-var recipes = (typeof window !== 'undefined' && window.recipes) ? window.recipes : [];
+/**
+ * FoodX - Recipes & Cooking Module (recipes.js)
+ * Hiển thị món ăn, tính toán khớp tủ lạnh, chi tiết công thức, chế độ nấu thông minh (Cooking Mode) và chia sẻ công thức cộng đồng
+ */
+
+/* =========================================================
+   1. RECIPE MATCHING & NUTRITION/SAFETY SCORING
+========================================================= */
+
+function normalizeIngredientList(ingredients) {
+    if (!ingredients) return [];
+    if (Array.isArray(ingredients)) return ingredients;
+    if (typeof ingredients === 'string') {
+        try {
+            const parsed = JSON.parse(ingredients);
+            if (Array.isArray(parsed)) return parsed;
+        } catch (_) {
+            return ingredients.split(',').map(s => s.trim()).filter(Boolean);
+        }
+    }
+    return [];
+}
 
 function hasIngredientInFridge(ingredient) {
     if (!state || !Array.isArray(state.fridge) || !state.fridge.length) return false;
@@ -16,7 +34,6 @@ function hasIngredientInFridge(ingredient) {
         const rawName = (item.name || (item.food && item.food.name) || '');
         const val = normalize(rawName);
         if (!val || val.length < 2) return false;
-
         if (cleanedTarget === val || target === val) return true;
         if (val.length >= 3 && cleanedTarget.includes(val)) return true;
         if (cleanedTarget.length >= 3 && val.includes(cleanedTarget)) return true;
@@ -24,62 +41,23 @@ function hasIngredientInFridge(ingredient) {
     });
 }
 
-
 function isRecipeSafeForProfile(recipe) {
+    if (!state.profile || !state.profile.allergies) return true;
+    const allergies = normalize(state.profile.allergies).split(',').map(s => s.trim()).filter(Boolean);
+    if (!allergies.length) return true;
 
-    const allergies =
-        normalize(
-            state.profile.allergies
-        )
-            .split(",")
-            .map(
-                value =>
-                    value.trim()
-            )
-            .filter(
-                Boolean
-            );
-
-
-    if (
-        !allergies.length
-    ) {
-
-        return true;
-    }
-
-
-    const text =
-        normalize(
-            recipe.ingredients
-                .join(" ")
-        );
-
-
-    return !allergies.some(
-        allergy =>
-            text.includes(
-                allergy
-            )
-    );
+    const ings = normalizeIngredientList(recipe.ingredients).map(i => typeof i === 'string' ? i : (i.ingredientName || i.name || ''));
+    const text = normalize(ings.join(' '));
+    return !allergies.some(allergy => text.includes(allergy));
 }
 
-
 function recipeScore(recipe) {
-    const fridgeIngredients =
-        (state.fridge || [])
-            .flatMap(item => [
-                item.name,
-                ...(item.ingredients || [])
-            ])
-            .filter(Boolean)
-            .map(normalize);
-
+    const fridgeIngredients = (state.fridge || []).flatMap(item => [item.name, ...(item.ingredients || [])]).filter(Boolean).map(normalize);
     let matched = 0;
     const ings = normalizeIngredientList(recipe.ingredients);
 
     ings.forEach(ingredient => {
-        const raw = ingredient.ingredientName || ingredient.name || ingredient;
+        const raw = typeof ingredient === 'string' ? ingredient : (ingredient.ingredientName || ingredient.name || '');
         const value = normalize(raw);
         if (value && fridgeIngredients.some(fridge => fridge.includes(value) || value.includes(fridge))) {
             matched++;
@@ -91,1503 +69,481 @@ function recipeScore(recipe) {
         score += (matched / ings.length) * 50;
     }
 
-
-    if (
-        state.profile.diet !==
-        "Ăn linh tinh" &&
-        recipe.tags.includes(
-            state.profile.diet
-        )
-    ) {
-
-        score +=
-            12;
+    if (state.profile && state.profile.diet && state.profile.diet !== "Ăn linh tinh" && recipe.tags && recipe.tags.includes(state.profile.diet)) {
+        score += 25;
     }
-
-
-    if (
-        state.profile.diet ===
-        "Ăn linh tinh" &&
-        recipe.kcal >= 250 &&
-        recipe.kcal <= 550
-    ) {
-
-        score +=
-            7;
-    }
-
-
-    const goal =
-        getGoal();
-
-
-    if (
-        goal === "Giảm cân" &&
-        recipe.kcal <= 450
-    ) {
-
-        score +=
-            8;
-    }
-
-
-    if (
-        goal === "Tăng cân" &&
-        recipe.kcal >= 350
-    ) {
-
-        score +=
-            8;
-    }
-
-
-    const dislikes =
-        normalize(
-            state.profile.dislikes
-        )
-            .split(",")
-            .map(
-                value =>
-                    value.trim()
-            )
-            .filter(
-                Boolean
-            );
-
-
-    const recipeText =
-        normalize(
-            recipe.ingredients
-                .join(" ")
-        );
-
-
-    if (
-        dislikes.some(
-            dislike =>
-                recipeText.includes(
-                    dislike
-                )
-        )
-    ) {
-
-        score -=
-            20;
-    }
-
-
-    return Math.max(
-        1,
-        Math.min(
-            99,
-            Math.round(
-                score
-            )
-        )
-    );
+    return Math.min(100, Math.round(score));
 }
 
+function recipeMatch(r) {
+    const have = (window.state && state.fridge) ? state.fridge.map(i => String(i.name || '').toLowerCase()) : [];
+    if (!have.length) return 55;
+    const ings = normalizeIngredientList(r.ingredients);
+    if (!ings.length) return 60;
 
-function suggestedRecipes() {
-    if (!state.fridge || state.fridge.length === 0) {
-        return [];
-    }
-
-    const fridgeIngredients = (state.fridge || [])
-        .flatMap(item => [item.name, ...(item.ingredients || [])])
-        .filter(Boolean)
-        .map(normalize);
-
-    return recipes
-        .filter(isRecipeSafeForProfile)
-        .filter(recipe => {
-            const ings = normalizeIngredientList(recipe.ingredients);
-            return ings.some(ingredient => {
-                const raw = ingredient.ingredientName || ingredient.name || ingredient;
-                const value = normalize(raw);
-                return value && fridgeIngredients.some(fridge => fridge.includes(value) || value.includes(fridge));
-            });
-        })
-        .map(
-            recipe => ({
-                ...recipe,
-                score: recipeScore(recipe)
-            })
-        )
-        .sort(
-            (a, b) => b.score - a.score
-        );
-}
-
-
-function scoreRecipeWithSelected(
-    recipe,
-    selectedItems
-) {
-
-    const selected =
-        selectedItems
-            .flatMap(
-                item => [
-
-                    item.name,
-
-                    ...(item.ingredients || [])
-                ]
-            )
-            .map(
-                normalize
-            );
-
-
-    let recipeMatched =
-        0;
-
-
-    recipe.ingredients
-        .forEach(
-            ingredient => {
-
-                const value =
-                    normalize(
-                        ingredient
-                    );
-
-
-                if (
-                    selected.some(
-                        item =>
-                            item.includes(
-                                value
-                            ) ||
-                            value.includes(
-                                item
-                            )
-                    )
-                ) {
-
-                    recipeMatched++;
-                }
-            }
-        );
-
-
-    let selectedUsed =
-        0;
-
-
-    selectedItems
-        .forEach(
-            item => {
-
-                const itemName =
-                    normalize(
-                        item.name
-                    );
-
-
-                if (
-                    recipe.ingredients.some(
-                        ingredient => {
-
-                            const value =
-                                normalize(
-                                    ingredient
-                                );
-
-
-                            return (
-                                value.includes(
-                                    itemName
-                                ) ||
-                                itemName.includes(
-                                    value
-                                )
-                            );
-                        }
-                    )
-                ) {
-
-                    selectedUsed++;
-                }
-            }
-        );
-
-
-    let score =
-        15;
-
-
-    score +=
-        (
-            recipeMatched /
-            recipe.ingredients.length
-        ) *
-        50;
-
-
-    score +=
-        (
-            selectedUsed /
-            selectedItems.length
-        ) *
-        30;
-
-
-    if (
-        recipe.tags.includes(
-            state.profile.diet
-        )
-    ) {
-
-        score +=
-            5;
-    }
-
-
-    return Math.max(
-        1,
-        Math.min(
-            99,
-            Math.round(
-                score
-            )
-        )
-    );
+    let matched = 0;
+    ings.forEach(ing => {
+        const name = typeof ing === 'string' ? ing : (ing.ingredientName || ing.name || '');
+        if (have.some(h => name.toLowerCase().includes(h) || h.includes(name.toLowerCase()))) {
+            matched++;
+        }
+    });
+    return Math.min(100, Math.max(30, Math.round((matched / ings.length) * 100)));
 }
 
 
 /* =========================================================
-   RECIPE CARD
+   2. RECIPE CATALOG FETCHING & RENDERING
 ========================================================= */
 
-function recipeCard(recipe) {
+async function loadRecipes() {
+    const container = document.getElementById('recipesList') || document.getElementById('recipesGrid');
+    if (container) showSkeleton(container, 'card', 6);
 
-    const favorite =
-        state.favorites.includes(
-            Number(
-                recipe.id
-            )
-        );
-
-
-    const score =
-        recipe.score ??
-        recipeScore(
-            recipe
-        );
-
-
-    return `
-
-        <article class="recipe-card">
-
-
-            <div class="recipe-image-wrap">
-
-
-                <img
-                    class="recipe-image"
-                    src="${recipe.imageUrl || recipe.image || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80'}"
-                    alt="${recipe.title || recipe.name || 'Món ăn'}"
-                    loading="lazy"
-                    onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80';">
-
-
-                <span class="recipe-match">
-                    ${score}% phù hợp
-                </span>
-
-
-                <button
-                    type="button"
-                    class="favorite-button ${favorite ? "active" : ""}"
-                    data-action="favorite"
-                    data-id="${recipe.id}">
-
-                    ${favorite ? "♥" : "♡"}
-
-                </button>
-
-
-            </div>
-
-
-            <div class="recipe-body">
-
-
-                <h3 class="recipe-title">
-                    ${recipe.name}
-                </h3>
-
-
-                <div class="recipe-meta">
-
-
-                    <span>
-                        ◷ ${recipe.time} phút
-                    </span>
-
-
-                    <span>
-                        ◉ ${recipe.difficulty}
-                    </span>
-
-
-                    <span>
-                        🔥 ${recipe.kcal} kcal
-                    </span>
-
-
-                </div>
-
-
-                <div class="recipe-actions">
-
-
-                    <button
-                        type="button"
-                        class="secondary-button"
-                        data-action="recipe-detail"
-                        data-id="${recipe.id}">
-
-                        Chi tiết
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        class="small-green-button"
-                        data-action="favorite"
-                        data-id="${recipe.id}">
-
-                        ${
-        favorite
-            ? "✓ Đã lưu"
-            : "♡ Lưu món"
+    try {
+        const res = await apiRequest('/api/recipes');
+        if (Array.isArray(res) && res.length > 0) {
+            recipesCache = res;
+        } else if (res && Array.isArray(res.data) && res.data.length > 0) {
+            recipesCache = res.data;
+        } else {
+            recipesCache = VIETNAMESE_RECIPES;
+        }
+    } catch (err) {
+        console.warn('Lỗi tải công thức từ API, dùng dữ liệu mẫu:', err);
+        recipesCache = VIETNAMESE_RECIPES;
     }
 
-                    </button>
+    window.recipesCache = recipesCache;
+    renderRecipes();
+}
 
+function renderRecipes() {
+    const container = document.getElementById('recipesList') || document.getElementById('recipesGrid');
+    if (!container) return;
 
-                </div>
+    const query = normalize(document.getElementById('recipeSearch')?.value || '');
+    const activeCategory = document.querySelector('.recipe-tag-btn.active')?.dataset.category || 'all';
 
+    let list = recipesCache && recipesCache.length ? recipesCache : VIETNAMESE_RECIPES;
 
+    list = list.filter(r => {
+        const title = r.title || r.name || '';
+        const matchQ = !query || normalize(title).includes(query);
+        const cat = r.category || '';
+        const matchC = activeCategory === 'all' || cat === activeCategory || (r.tags && r.tags.includes(activeCategory));
+        return matchQ && matchC && isRecipeSafeForProfile(r);
+    });
+
+    if (!list.length) {
+        renderEmpty(container, '🍳', 'Không tìm thấy món ăn phù hợp', 'Thử đổi từ khóa hoặc bộ lọc danh mục.', null, null);
+        return;
+    }
+
+    container.innerHTML = list.map(recipe => renderRecipeCard(recipe)).join('');
+}
+
+function renderRecipeCard(recipe) {
+    const id = recipe.id;
+    const title = recipe.title || recipe.name || 'Món ăn ngon';
+    const img = recipe.imageUrl || recipe.image || '/images/recipes/default-recipe.jpg';
+    const kcal = recipe.calories || recipe.kcal || 350;
+    const time = recipe.cookTime || recipe.time || 25;
+    const match = recipeMatch(recipe);
+    const isFav = (state.favorites || []).some(x => String(x) === String(id));
+
+    return `
+        <article class="recipe-card card-3d" data-recipe-id="${id}" onclick="openRecipeDetail('${id}')">
+            <div class="rc-thumb-wrap">
+                <img src="${escapeHtml(img)}" alt="${escapeHtml(title)}" class="rc-thumb" loading="lazy" onerror="this.src='/images/recipes/default-recipe.jpg'">
+                <span class="rc-match-badge ${match >= 75 ? 'high' : 'medium'}">${match}% khớp tủ</span>
+                <button type="button" class="rc-fav-btn ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite('${id}')" title="Yêu thích">
+                    ${isFav ? '❤️' : '🤍'}
+                </button>
             </div>
-
-
+            <div class="rc-content">
+                <h4 class="rc-title">${escapeHtml(title)}</h4>
+                <div class="rc-meta">
+                    <span>⏱ ${time} phút</span>
+                    <span>🔥 ${kcal} kcal</span>
+                </div>
+            </div>
         </article>
     `;
 }
 
-
-function renderRecipes() {
-
-    const data =
-        suggestedRecipes()
-            .slice(
-                0,
-                3
-            );
-
-
-    const grid =
-        document.getElementById(
-            "recipeGrid"
-        );
-
-
-    if (grid) {
-
-        grid.innerHTML =
-            data
-                .map(
-                    recipeCard
-                )
-                .join("");
-    }
-
-
-    setText(
-        "suggestionCount",
-        data.length
-    );
-
-
-    let diet =
-        state.profile.diet;
-
-
-    if (
-        diet ===
-        "Ăn linh tinh"
-    ) {
-
-        diet =
-            "Không cố định";
-    }
-
-
-    setText(
-        "suggestionText",
-        `${getGoal()} • ${diet} • ưu tiên nguyên liệu đang có`
-    );
-}
-
-
-/* =========================================================
-   SELECTED AI
-========================================================= */
-
-function openSelectedAISuggestions() {
-    if (!isUserLoggedIn()) {
-        requireAuth('suggest');
-        return;
-    }
-
-    const selectedItems =
-        state.selectedFridgeIds
-            .map(
-                id =>
-                    state.fridge.find(
-                        food =>
-                            Number(food.id) ===
-                            Number(id)
-                    )
-            )
-            .filter(
-                Boolean
-            );
-
-
-    if (
-        !selectedItems.length
-    ) {
-
-        showToast(
-            "Hãy tích chọn ít nhất một nguyên liệu.",
-            "warning"
-        );
-
-
-        return;
-    }
-
-
-    setText(
-        "aiSelectedDescription",
-        `Food X đang ưu tiên ${selectedItems.length} nguyên liệu đã chọn.`
-    );
-
-
-    const chips =
-        document.getElementById(
-            "selectedIngredientChips"
-        );
-
-
-    if (chips) {
-
-        chips.innerHTML =
-            selectedItems
-                .map(
-                    item => `
-
-                        <span>
-                            ✓ ${item.name}
-                        </span>
-                    `
-                )
-                .join("");
-    }
-
-
-    const suggestions =
-        recipes
-            .filter(
-                isRecipeSafeForProfile
-            )
-            .map(
-                recipe => ({
-
-                    ...recipe,
-
-                    score:
-                        scoreRecipeWithSelected(
-                            recipe,
-                            selectedItems
-                        )
-                })
-            )
-            .sort(
-                (a, b) =>
-                    b.score -
-                    a.score
-            )
-            .slice(
-                0,
-                6
-            );
-
-
-    const grid =
-        document.getElementById(
-            "aiSelectedRecipeGrid"
-        );
-
-
-    if (grid) {
-
-        grid.innerHTML =
-            suggestions
-                .map(
-                    recipeCard
-                )
-                .join("");
-    }
-
-
-    closeOtherModals(
-        "aiSelectedModal"
-    );
-
-
-    document
-        .getElementById(
-            "aiSelectedModal"
-        )
-        ?.classList
-        .add("show");
-}
-
-
-document
-    .getElementById(
-        "openSelectedAI"
-    )
-    ?.addEventListener(
-        "click",
-        openSelectedAISuggestions
-    );
-
-
-document
-    .getElementById(
-        "selectedAIButton"
-    )
-    ?.addEventListener(
-        "click",
-        openSelectedAISuggestions
-    );
-
-
-/* =========================================================
-   FAVORITES
-========================================================= */
-
-async function toggleFavorite(id) {
-    if (!isUserLoggedIn()) {
-        requireAuth('favorite');
-        return;
-    }
-    const idKey = String(id);
-    const isNumeric = !isNaN(+id) && !idKey.startsWith('c');
-
-    if (isNumeric) {
-        // Server (favorite module) là nguồn sự thật: nhận lại trạng thái cuối cùng để
-        // đồng bộ DOM — tránh lỗi Unlike/Like bị lệch giữa localStorage và backend.
-        try {
-            const saved = await apiRequest('/api/favorites/toggle', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ targetId: +id, targetType: 'RECIPE' })
-            });
-            const nowSaved = saved === true;
-            if (nowSaved) {
-                if (!state.favorites.some(x => String(x) === idKey)) state.favorites.push(idKey);
-            } else {
-                state.favorites = state.favorites.filter(x => String(x) !== idKey);
-                delete savedPostsState[idKey];
-            }
-            localStorage.setItem('foodx_saved_posts', JSON.stringify(savedPostsState));
-            saveState();
-            showToast(nowSaved ? 'Đã lưu món vào yêu thích ❤️' : 'Đã bỏ lưu món khỏi yêu thích.', nowSaved ? 'success' : 'info');
-        } catch (e) {
-            showToast('Không thể cập nhật yêu thích: ' + (e.message || 'Lỗi mạng'), 'error');
-        }
+function toggleFavorite(id) {
+    const idStr = String(id);
+    const idx = (state.favorites || []).findIndex(x => String(x) === idStr);
+    if (idx >= 0) {
+        state.favorites.splice(idx, 1);
+        delete savedPostsState[idStr];
+        showToast('Đã bỏ lưu món ăn.', 'info');
     } else {
-        // Món cộng đồng (id dạng 'c...') vẫn lưu local như cũ
-        const wasSaved = !!savedPostsState[idKey];
-        if (wasSaved) {
-            delete savedPostsState[idKey];
-            state.favorites = state.favorites.filter(x => String(x) !== idKey);
-        } else {
-            savedPostsState[idKey] = { id: idKey, title: 'Công thức cộng đồng', savedAt: new Date().toISOString() };
-            if (!state.favorites.some(x => String(x) === idKey)) state.favorites.push(idKey);
-        }
-        localStorage.setItem('foodx_saved_posts', JSON.stringify(savedPostsState));
-        saveState();
-        showToast(wasSaved ? 'Đã bỏ lưu món.' : 'Đã lưu món vào yêu thích ❤️', wasSaved ? 'info' : 'success');
-    }
-
-    if (typeof renderRecipes === 'function') renderRecipes();
-    renderFavorites();
-    if (typeof renderSocialFeedFiltered === 'function') renderSocialFeedFiltered();
-}
-
-
-async function renderFavorites() {
-    const grid = document.getElementById("favoriteGrid");
-    const empty = document.getElementById("favoriteEmpty");
-    if (!grid) return;
-
-    let favorites = [];
-    if (isUserLoggedIn()) {
-        try {
-            const res = await apiRequest('/api/favorites');
-            if (Array.isArray(res)) favorites = res;
-        } catch (_) {}
-    }
-
-    if (!favorites.length) {
-        grid.innerHTML = '';
-        if (empty) {
-            empty.style.display = 'block';
-            empty.innerHTML =
-                '<span>♡</span>' +
-                '<h3>' + (isUserLoggedIn() ? 'Chưa có món yêu thích' : 'Đăng nhập để lưu món yêu thích') + '</h3>' +
-                '<p>' + (isUserLoggedIn()
-                    ? 'Hãy bấm biểu tượng trái tim ở một công thức để lưu món.'
-                    : 'Danh sách yêu thích của bạn sẽ được lưu trên tài khoản FoodX.') + '</p>';
-        }
-        return;
-    }
-    if (empty) empty.style.display = 'none';
-
-    // Bộ lọc danh mục + tìm kiếm nhanh
-    const filterType = window.favFilterType || 'all';
-    const kw = (window.favSearchText || '').trim().toLowerCase();
-    let filtered = favorites;
-    if (filterType === 'recipe') {
-        filtered = filtered.filter(f => String(f.targetType || '').toUpperCase() === 'RECIPE');
-    } else if (filterType === 'ingredient') {
-        filtered = filtered.filter(f => String(f.targetType || '').toUpperCase() === 'INGREDIENT');
-    }
-    if (kw) {
-        filtered = filtered.filter(f => String(f.title || '').toLowerCase().includes(kw)
-            || String(f.subtitle || '').toLowerCase().includes(kw));
-    }
-
-    if (!filtered.length) {
-        grid.innerHTML = '<div class="fav-filter-empty">Không tìm thấy món yêu thích phù hợp với bộ lọc.</div>';
-        return;
-    }
-
-    grid.innerHTML = filtered.map(function(f) {
-        const isRecipe = String(f.targetType || '').toUpperCase() === 'RECIPE';
-        const kcalStr = f.kcal ? '<span>🔥 ' + f.kcal + ' kcal</span>' : '';
-        const timeStr = f.cookTime ? '<span>⏱ ' + f.cookTime + '′</span>' : '';
-        const diffStr = f.difficulty ? '<span>📊 ' + escapeHtml(f.difficulty) + '</span>' : '';
-        const imgEl = f.imageUrl
-            ? '<img class="recipe-image" src="' + escapeHtml(f.imageUrl) + '" alt="' + escapeHtml(f.title) + '" loading="lazy" onerror="this.onerror=null;this.src=\'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80\';">'
-            : '<div class="recipe-image recipe-image-emoji">' + recipeEmoji(f) + '</div>';
-        return '<article class="recipe-card' + (isRecipe ? '' : ' fav-ingredient-card') + '"' +
-            (isRecipe ? ' data-open-fav="' + f.targetId + '" style="cursor:pointer;"' : '') + '>' +
-            '<div class="recipe-image-wrap">' +
-                imgEl +
-                '<span class="fav-type-badge">' + (isRecipe ? '🍳 Công thức' : '🥦 Nguyên liệu') + '</span>' +
-                '<button type="button" class="favorite-button active" data-fav-toggle="' + f.targetId + '" data-fav-type="' + escapeHtml(f.targetType) + '" title="Bỏ lưu khỏi yêu thích">♥</button>' +
-            '</div>' +
-            '<div class="recipe-body">' +
-                '<h3 class="recipe-title">' + escapeHtml(f.title) + '</h3>' +
-                (f.subtitle ? '<div class="fav-subtitle">' + escapeHtml(f.subtitle) + '</div>' : '') +
-                '<div class="recipe-meta">' + timeStr + kcalStr + diffStr + '</div>' +
-            '</div>' +
-        '</article>';
-    }).join('');
-
-    // Mở chi tiết công thức
-    grid.querySelectorAll('[data-open-fav]').forEach(card => {
-        card.addEventListener('click', function(e) {
-            if (e.target.closest('.favorite-button')) return;
-            const id = card.getAttribute('data-open-fav');
-            if (id) openRecipeDetail(id);
-        });
-    });
-    // Bỏ yêu thích trực tiếp bằng trái tim đỏ
-    grid.querySelectorAll('[data-fav-toggle]').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const id = btn.getAttribute('data-fav-toggle');
-            if (id) toggleFavorite(id);
-        });
-    });
-}
-
-/* Bộ lọc + tìm kiếm cho view Yêu thích */
-(function initFavoritesToolbar() {
-    window.favFilterType = 'all';
-    window.favSearchText = '';
-    document.querySelectorAll('[data-fav-filter]').forEach(function(pill) {
-        pill.addEventListener('click', function() {
-            document.querySelectorAll('[data-fav-filter]').forEach(function(x) { x.classList.remove('active'); });
-            pill.classList.add('active');
-            window.favFilterType = pill.getAttribute('data-fav-filter') || 'all';
-            if (typeof renderFavorites === 'function') renderFavorites();
-        });
-    });
-    const favSearch = document.getElementById('favSearchInput');
-    if (favSearch) {
-        favSearch.addEventListener('input', debounce(function() {
-            window.favSearchText = favSearch.value || '';
-            if (typeof renderFavorites === 'function') renderFavorites();
-        }, 200));
-    }
-})();
-
-
-/* =========================================================
-   RECIPE DETAIL
-========================================================= */
-
-let activeRecipeContext =
-    null;
-
-
-let cookingState = {
-
-    recipeId:
-        null,
-
-    stepIndex:
-        0
-};
-
-
-function getRecipeById(id) {
-
-    return recipes.find(
-        recipe =>
-            recipe.id ===
-            Number(id)
-    );
-}
-
-
-function openRecipeModalQuick(id) {
-
-    const recipe =
-        getRecipeById(
-            id
-        );
-
-
-    if (!recipe) {
-        return;
-    }
-
-
-    closeOtherModals(
-        "recipeModal"
-    );
-
-
-    activeRecipeContext = {
-
-        id:
-        recipe.id,
-
-        name:
-        recipe.name,
-
-        ingredients:
-            [...recipe.ingredients],
-
-        steps:
-            [...recipe.steps],
-
-        kcal:
-        recipe.kcal,
-
-        time:
-        recipe.time,
-
-        difficulty:
-        recipe.difficulty
-    };
-
-
-    const missing =
-        recipe.ingredients.filter(
-            ingredient =>
-                !hasIngredientInFridge(
-                    ingredient
-                )
-        );
-
-    showRecipeDetail(recipe);
-}
-
-
-
-function scaleIngredientText(text, scaleFactor) {
-    if (!text || scaleFactor === 1) return text;
-    return text.replace(/(\d+(?:\.\d+)?)/g, function (match) {
-        const val = parseFloat(match) * scaleFactor;
-        return val % 1 === 0 ? val : (Math.round(val * 10) / 10);
-    });
-}
-
-let currentRecipeDetailServings = 2;
-
-function showRecipeDetail(recipe, customServings) {
-    if (!recipe) return;
-    const baseServings = recipe.servings || 2;
-    currentRecipeDetailServings = customServings || currentRecipeDetailServings || baseServings;
-    if (currentRecipeDetailServings < 1) currentRecipeDetailServings = 1;
-    const scaleFactor = currentRecipeDetailServings / baseServings;
-
-    const scaledKcal = Math.round((recipe.kcal || 350) * scaleFactor);
-    const scaledIngredients = (recipe.ingredients || []).map(function(ing) { return scaleIngredientText(ing, scaleFactor); });
-    const missing = scaledIngredients.filter(function(ing) { return !hasIngredientInFridge(ing); });
-
-    setText("recipeModalTitle", recipe.name);
-
-    const body = document.getElementById("recipeModalBody");
-    if (!body) return;
-
-    body.innerHTML = `
-        <div class="recipe-detail-v2">
-            <div class="recipe-detail-hero">
-                <img src="${recipe.image}" alt="${recipe.name}" class="recipe-detail-main-image">
-                <div class="recipe-detail-floating">
-                    <span>✦ ${recipeScore(recipe)}% phù hợp</span>
-                </div>
-            </div>
-
-            <div class="recipe-detail-summary">
-                <div class="recipe-main-info">
-                    <span class="page-eyebrow">CÔNG THỨC FOOD X</span>
-                    <h2>${recipe.name}</h2>
-                    <p>Công thức được xếp hạng dựa trên tủ lạnh và hồ sơ dinh dưỡng.</p>
-                </div>
-
-                <div class="recipe-quick-stats">
-                    <div>
-                        <span>🔥 Năng lượng</span>
-                        <strong>${scaledKcal} kcal</strong>
-                    </div>
-                    <div>
-                        <span>◷ Thời gian</span>
-                        <strong>${recipe.time} phút</strong>
-                    </div>
-                    <div>
-                        <span>◉ Độ khó</span>
-                        <strong>${recipe.difficulty}</strong>
-                    </div>
-                </div>
-            </div>
-
-            <section class="recipe-v2-section">
-                <div class="recipe-v2-section-heading">
-                    <div>
-                        <span class="recipe-section-number">01</span>
-                        <div>
-                            <h3>Nguyên liệu cần có</h3>
-                            <p>Đã tự động tính theo khẩu phần ${currentRecipeDetailServings} người ăn.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SERVING SIZE MULTIPLIER -->
-                <div class="recipe-servings-bar" style="display:flex;align-items:center;justify-content:space-between;background:var(--bg);padding:10px 14px;border-radius:12px;margin:10px 0 14px 0;border:1px solid var(--border);">
-                    <span style="font-weight:700;font-size:13px;color:var(--text);display:flex;align-items:center;gap:6px;">⚖️ Điều chỉnh khẩu phần:</span>
-                    <div style="display:flex;align-items:center;gap:10px;">
-                        <button type="button" class="stepper-btn" id="servingsDecBtn" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:var(--card);font-weight:bold;cursor:pointer;font-size:14px;">−</button>
-                        <span id="servingsCountText" style="font-weight:800;font-size:14px;color:var(--green);min-width:64px;text-align:center;">${currentRecipeDetailServings} người</span>
-                        <button type="button" class="stepper-btn" id="servingsIncBtn" style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:var(--card);font-weight:bold;cursor:pointer;font-size:14px;">+</button>
-                    </div>
-                </div>
-
-                <div class="ingredient-check-list">
-                    ${scaledIngredients.map(function(ingredient) {
-                        const available = hasIngredientInFridge(ingredient);
-                        return `
-                            <div class="recipe-ingredient-row ${available ? "available" : "missing"}">
-                                <div class="ingredient-check-icon">${available ? "✓" : "!"}</div>
-                                <span>${ingredient}</span>
-                                <strong>${available ? "Đã có" : "Còn thiếu"}</strong>
-                            </div>
-                        `;
-                    }).join("")}
-                </div>
-
-                ${missing.length ? `
-                    <button type="button" class="secondary-button missing-shopping-button" data-action="add-missing" data-recipe="${recipe.id}">
-                        🛒 Thêm ${missing.length} nguyên liệu thiếu vào danh sách mua
-                    </button>
-                ` : `
-                    <div class="recipe-ready-box">✓ Bạn đã có đủ nguyên liệu chính.</div>
-                `}
-            </section>
-
-
-            </section>
-
-
-            <section class="recipe-v2-section">
-
-
-                <div class="recipe-v2-section-heading">
-
-
-                    <div>
-
-
-                        <span class="recipe-section-number">
-                            02
-                        </span>
-
-
-                        <div>
-
-                            <h3>
-                                Các bước thực hiện
-                            </h3>
-
-                            <p>
-                                Xem nhanh quy trình trước khi nấu.
-                            </p>
-
-                        </div>
-
-
-                    </div>
-
-
-                </div>
-
-
-                <div class="recipe-step-preview">
-
-
-                    ${
-        recipe.steps
-            .map(
-                (step, index) => `
-
-                                    <div class="preview-step">
-
-
-                                        <div class="preview-step-number">
-
-                                            ${index + 1}
-
-                                        </div>
-
-
-                                        <div>
-
-                                            <strong>
-                                                Bước ${index + 1}
-                                            </strong>
-
-                                            <p>
-                                                ${step}
-                                            </p>
-
-                                        </div>
-
-
-                                    </div>
-                                `
-            )
-            .join("")
-    }
-
-
-                </div>
-
-
-            </section>
-
-
-            <div class="recipe-detail-bottom-actions">
-
-
-                <button
-                    type="button"
-                    class="secondary-button"
-                    data-action="ask-recipe-ai"
-                    data-id="${recipe.id}">
-
-                    ✦ Hỏi AI về món này
-
-                </button>
-
-
-                <button
-                    type="button"
-                    class="primary-button"
-                    data-action="start-cooking"
-                    data-id="${recipe.id}">
-
-                    👨‍🍳 Bắt đầu nấu
-
-                </button>
-
-
-            </div>
-
-
-        </div>
-    `;
-
-
-    document
-        .getElementById(
-            "recipeModal"
-        )
-        ?.classList
-        .add("show");
-
-    const decBtn = document.getElementById("servingsDecBtn");
-    if (decBtn) {
-        decBtn.addEventListener("click", function () {
-            if (currentRecipeDetailServings > 1) {
-                showRecipeDetail(recipe, currentRecipeDetailServings - 1);
-            }
-        });
-    }
-    const incBtn = document.getElementById("servingsIncBtn");
-    if (incBtn) {
-        incBtn.addEventListener("click", function () {
-            if (currentRecipeDetailServings < 20) {
-                showRecipeDetail(recipe, currentRecipeDetailServings + 1);
-            }
-        });
-    }
-}
-
-
-/* =========================================================
-   COOKING
-========================================================= */
-
-function recipeEmoji(r) {
-    const t = (r.title || '').toLowerCase();
-    if (t.includes('phở')) return '🍜';
-    if (t.includes('gà')) return '🍗';
-    if (t.includes('cơm')) return '🍚';
-    if (t.includes('bánh mì')) return '🥖';
-    if (t.includes('rau')) return '🥦';
-    if (t.includes('canh')) return '🐟';
-    if (t.includes('súp')) return '🎃';
-    if (t.includes('bò')) return '🥩';
-    if (t.includes('cháo')) return '🍲';
-    if (t.includes('gỏi')) return '🥗';
-    if (t.includes('chè')) return '🍮';
-    return '🍽️';
-}
-
-function recipeMatch(r) {
-    const have = (window.state && (state.fridge || [])) ? state.fridge.map(i => String(i.name || '').toLowerCase()) : [];
-    if (!have.length) return 55;
-    const names = (r.ingredients || []).map(i => String(i.ingredientName || '').toLowerCase());
-    if (!names.length) return 70;
-    const hit = names.filter(function (n) {
-        return have.some(function (h) {
-            return h.includes(n.split(' ')[0]) || n.includes(h.split(' ')[0]);
-        });
-    }).length;
-    return Math.min(95, Math.round(45 + hit / names.length * 55));
-}
-
-async function loadRecipes() {
-    try {
-        recipesCache = await apiRequest('/api/recipes') || [];
-    } catch (e) {
-        recipesCache = [];
-    }
-    renderRecipeBrowse();
-}
-
-function handleRecipeChipClick(chipType) {
-    document.querySelectorAll('.rc-chip').forEach(function (btn) {
-        btn.classList.remove('active');
-    });
-    const activeBtn = document.querySelector('.rc-chip[data-chip="' + chipType + '"]');
-    if (activeBtn) activeBtn.classList.add('active');
-
-    const mealSlotEl = document.getElementById('recipeMealSlot');
-    const speedEl = document.getElementById('recipeSpeed');
-    const catEl = document.getElementById('recipeCategory');
-
-    if (chipType === 'all') {
-        if (mealSlotEl) mealSlotEl.value = '';
-        if (speedEl) speedEl.value = '';
-        if (catEl) catEl.value = '';
-    } else if (chipType === 'morning' || chipType === 'lunch' || chipType === 'dinner') {
-        if (mealSlotEl) mealSlotEl.value = chipType;
-        if (speedEl) speedEl.value = '';
-        if (catEl) catEl.value = '';
-    } else if (chipType === 'quick') {
-        if (speedEl) speedEl.value = 'quick';
-        if (mealSlotEl) mealSlotEl.value = '';
-    } else if (chipType === 'slow') {
-        if (speedEl) speedEl.value = 'slow';
-        if (mealSlotEl) mealSlotEl.value = '';
-    } else if (chipType === 'eatclean') {
-        if (catEl) catEl.value = 'Eat Clean';
-        if (mealSlotEl) mealSlotEl.value = '';
-        if (speedEl) speedEl.value = '';
-    } else if (chipType === 'soup') {
-        if (catEl) catEl.value = 'Canh';
-        if (mealSlotEl) mealSlotEl.value = '';
-        if (speedEl) speedEl.value = '';
-    }
-
-    renderRecipeBrowse();
-}
-window.handleRecipeChipClick = handleRecipeChipClick;
-
-function syncRecipeChips() {
-    const mealSlot = document.getElementById('recipeMealSlot')?.value || '';
-    const speed = document.getElementById('recipeSpeed')?.value || '';
-    const cat = document.getElementById('recipeCategory')?.value || '';
-
-    let matchedChip = 'all';
-    if (mealSlot === 'morning' || mealSlot === 'lunch' || mealSlot === 'dinner') {
-        matchedChip = mealSlot;
-    } else if (speed === 'quick' || speed === 'slow') {
-        matchedChip = speed;
-    } else if (cat.toLowerCase().includes('clean')) {
-        matchedChip = 'eatclean';
-    } else if (cat.toLowerCase().includes('canh')) {
-        matchedChip = 'soup';
-    } else if (!mealSlot && !speed && !cat) {
-        matchedChip = 'all';
-    } else {
-        matchedChip = '';
-    }
-
-    document.querySelectorAll('.rc-chip').forEach(function (btn) {
-        btn.classList.toggle('active', matchedChip && btn.getAttribute('data-chip') === matchedChip);
-    });
-}
-window.syncRecipeChips = syncRecipeChips;
-
-function renderRecipeBrowse() {
-    const grid = document.getElementById('recipeBrowseGrid');
-    if (!grid) return;
-
-    const kw = normalize(document.getElementById('recipeSearch')?.value || '');
-    const mealSlot = document.getElementById('recipeMealSlot')?.value || '';
-    const speed = document.getElementById('recipeSpeed')?.value || '';
-    const category = normalize(document.getElementById('recipeCategory')?.value || '');
-    const difficulty = normalize(document.getElementById('recipeDifficulty')?.value || '');
-    const legacyFilter = normalize(document.getElementById('recipeFilter')?.value || '');
-
-    let list = (recipesCache || []).filter(function (r) {
-        if (!r) return false;
-
-        const titleNorm = normalize(r.title || r.name || '');
-        const descNorm = normalize(r.description || '');
-        const catNorm = normalize(r.category || '');
-        const msNorm = normalize(r.mealSlots || '');
-        const diffNorm = normalize(r.difficulty || '');
-        const cookTime = parseInt(r.cookTime || r.time) || 30;
-
-        // 1. Lọc theo tên món, mô tả, hoặc nguyên liệu
-        if (kw) {
-            let ingsNorm = '';
-            if (Array.isArray(r.ingredients)) {
-                ingsNorm = r.ingredients.map(function (i) {
-                    return normalize(i.ingredientName || i.name || (typeof i === 'string' ? i : ''));
-                }).join(' ');
-            }
-            const matchKw = titleNorm.includes(kw) || descNorm.includes(kw) || ingsNorm.includes(kw);
-            if (!matchKw) return false;
-        }
-
-        // 2. Lọc theo Bữa ăn (Sáng / Trưa / Tối / Ăn nhẹ)
-        if (mealSlot) {
-            if (mealSlot === 'morning') {
-                const isMorning = msNorm.includes('morning') || msNorm.includes('sang')
-                    || catNorm.includes('sang') || catNorm.includes('breakfast')
-                    || titleNorm.includes('pho') || titleNorm.includes('banh mi') || titleNorm.includes('chao')
-                    || titleNorm.includes('hu tieu') || titleNorm.includes('yen mach') || titleNorm.includes('banh cuon') || titleNorm.includes('xoi');
-                if (!isMorning) return false;
-            } else if (mealSlot === 'lunch') {
-                const isLunch = msNorm.includes('lunch') || msNorm.includes('trua')
-                    || catNorm.includes('trua') || catNorm.includes('chinh')
-                    || titleNorm.includes('com') || titleNorm.includes('bun') || titleNorm.includes('mi y')
-                    || titleNorm.includes('suon') || titleNorm.includes('bo luc lac') || titleNorm.includes('thit') || titleNorm.includes('ga');
-                if (!isLunch) return false;
-            } else if (mealSlot === 'dinner') {
-                const isDinner = msNorm.includes('dinner') || msNorm.includes('toi')
-                    || catNorm.includes('toi') || catNorm.includes('chinh') || catNorm.includes('canh') || catNorm.includes('kho')
-                    || titleNorm.includes('canh') || titleNorm.includes('kho') || titleNorm.includes('hap')
-                    || titleNorm.includes('ham') || titleNorm.includes('xao') || titleNorm.includes('salad') || titleNorm.includes('ca hoi') || titleNorm.includes('dau hu');
-                if (!isDinner) return false;
-            } else if (mealSlot === 'snack') {
-                const isSnack = msNorm.includes('snack') || msNorm.includes('phu') || msNorm.includes('vat')
-                    || catNorm.includes('vat') || catNorm.includes('nhe') || catNorm.includes('trang mieng');
-                if (!isSnack) return false;
-            }
-        }
-
-        // 3. Lọc theo Tốc độ nấu / Thời gian (Ăn nhanh, Vừa phải, Nấu kỹ - Ăn chậm)
-        if (speed) {
-            if (speed === 'quick') {
-                // Ăn nhanh: ≤ 20 phút
-                if (cookTime > 20) return false;
-            } else if (speed === 'medium') {
-                // Vừa phải: 21 - 35 phút
-                if (cookTime <= 20 || cookTime > 35) return false;
-            } else if (speed === 'slow') {
-                // Nấu kỹ / Ăn chậm: > 35 phút
-                if (cookTime <= 35) return false;
-            }
-        }
-
-        // 4. Lọc theo Danh mục
-        if (category) {
-            if (category.includes('canh') || category.includes('nuoc')) {
-                const isSoup = catNorm.includes('canh') || catNorm.includes('nuoc') || catNorm.includes('sup')
-                    || titleNorm.includes('canh') || titleNorm.includes('sup') || titleNorm.includes('pho')
-                    || titleNorm.includes('bun') || titleNorm.includes('hu tieu');
-                if (!isSoup) return false;
-            } else if (category.includes('eat clean') || category.includes('clean') || category.includes('healthy')) {
-                const isClean = catNorm.includes('clean') || catNorm.includes('healthy')
-                    || descNorm.includes('clean') || descNorm.includes('giam can') || descNorm.includes('chất xơ')
-                    || titleNorm.includes('uc ga') || titleNorm.includes('yen mach') || titleNorm.includes('salad');
-                if (!isClean) return false;
-            } else if (category.includes('sang')) {
-                if (!catNorm.includes('sang') && !msNorm.includes('morning') && !titleNorm.includes('banh mi') && !titleNorm.includes('pho')) return false;
-            } else if (category.includes('chinh')) {
-                if (!catNorm.includes('chinh') && !msNorm.includes('lunch') && !msNorm.includes('dinner') && !titleNorm.includes('com') && !titleNorm.includes('kho')) return false;
-            } else {
-                if (!catNorm.includes(category) && !titleNorm.includes(category)) return false;
-            }
-        }
-
-        // 5. Lọc theo Độ khó
-        if (difficulty) {
-            if (!diffNorm.includes(difficulty)) return false;
-        }
-
-        // 6. Legacy Filter
-        if (legacyFilter) {
-            if (!catNorm.includes(legacyFilter)) return false;
-        }
-
-        return true;
-    });
-
-    if (!list.length) {
-        grid.innerHTML = '<div class="social-empty" style="grid-column: 1/-1; text-align: center; padding: 40px 20px; border: 1px dashed var(--border); border-radius: 12px; background: var(--bg);">' +
-            '<div style="font-size: 36px; margin-bottom: 8px;">🍽</div>' +
-            '<strong style="font-size: 15px; color: var(--text); display: block; margin-bottom: 4px;">Không tìm thấy công thức phù hợp</strong>' +
-            '<span style="font-size: 13px; color: var(--text-soft);">Hãy thử từ khoá khác hoặc đổi bộ lọc (bữa sáng/trưa/tối, ăn nhanh/chậm...).</span>' +
-            '</div>';
-        return;
-    }
-
-    grid.innerHTML = list.map(function (r) {
-        const pct = recipeMatch(r);
-        const kcal = r.kcal ? r.kcal + ' kcal' : '';
-        const imgUrl = r.imageUrl || r.image;
-        const imgHtml = (imgUrl && String(imgUrl).trim() && !String(imgUrl).includes('default-recipe.jpg'))
-            ? '<img class="recipe-image" src="' + escapeHtml(imgUrl) + '" alt="' + escapeHtml(r.title || r.name) + '" loading="lazy" onerror="this.onerror=null;this.src=\'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80\';">'
-            : '<div class="recipe-image recipe-image-emoji">' + recipeEmoji(r) + '</div>';
-
-        const cookTime = parseInt(r.cookTime || r.time) || 30;
-        let speedBadge = '';
-        if (cookTime <= 20) {
-            speedBadge = '<span style="background: rgba(34,197,94,0.15); color: #16a34a; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 6px;">⚡ Nhanh ' + cookTime + '′</span>';
-        } else if (cookTime > 35) {
-            speedBadge = '<span style="background: rgba(234,88,12,0.15); color: #ea580c; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 6px;">🥘 Nấu kỹ ' + cookTime + '′</span>';
-        } else {
-            speedBadge = '<span style="font-size: 12px; color: var(--text-soft);">⏱ ' + cookTime + '′</span>';
-        }
-
-        return '<div class="recipe-card browse-card" data-rid="' + r.id + '">' +
-            '<div class="recipe-image-wrap">' + imgHtml +
-            '<span class="recipe-match">' + pct + '% khớp</span></div>' +
-            '<div class="recipe-body"><div class="recipe-title">' + escapeHtml(r.title) + '</div>' +
-            '<div class="recipe-meta" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">' +
-            speedBadge +
-            (kcal ? '<span>🔥 ' + kcal + '</span>' : '') +
-            '<span>📊 ' + escapeHtml(r.difficulty || 'Dễ') + '</span>' +
-            '</div></div></div>';
-    }).join('');
-
-    document.querySelectorAll('.browse-card').forEach(function (c) {
-        c.addEventListener('click', function () { openRecipeDetail(+c.getAttribute('data-rid')); });
-    });
-}
-
-async function openRecipeDetail(id) {
-    if (!id) return;
-    curRecipe = null;
-
-    // Check in savedPostsState / allSocialPostsCache / communityFeedPosts / sampleBlogPosts
-    const savedPosts = JSON.parse(localStorage.getItem('foodx_saved_posts') || '{}');
-    let socialMatch = savedPosts[String(id)] || null;
-    if (!socialMatch && typeof allSocialPostsCache !== 'undefined' && Array.isArray(allSocialPostsCache)) {
-        socialMatch = allSocialPostsCache.find(p => String(p.id) === String(id) || (p.title && String(p.title) === String(id)));
-    }
-    if (!socialMatch && typeof communityFeedPosts !== 'undefined' && Array.isArray(communityFeedPosts)) {
-        socialMatch = communityFeedPosts.find(p => String(p.id) === String(id) || (p.title && String(p.title) === String(id)));
-    }
-    if (!socialMatch && typeof sampleBlogPosts !== 'undefined' && Array.isArray(sampleBlogPosts)) {
-        socialMatch = sampleBlogPosts.find(p => String(p.id) === String(id) || (p.title && String(p.title) === String(id)));
-    }
-
-    if (socialMatch && (!socialMatch.ingredients || !socialMatch.ingredients.length)) {
-        const fullPost = (typeof allSocialPostsCache !== 'undefined' && (allSocialPostsCache || []).find(p => String(p.id) === String(id)))
-            || (typeof communityFeedPosts !== 'undefined' && (communityFeedPosts || []).find(p => String(p.id) === String(id)));
-        if (fullPost) {
-            socialMatch.ingredients = fullPost.ingredients || [];
-            if (!socialMatch.instructions) socialMatch.instructions = fullPost.instructions || '';
-            if (!socialMatch.steps) socialMatch.steps = fullPost.steps || [];
-        }
-    }
-
-    if (socialMatch) {
-        curRecipe = {
-            id: socialMatch.id,
-            title: socialMatch.title,
-            name: socialMatch.title,
-            description: socialMatch.description || '',
-            cookTime: socialMatch.cookTime || '30',
-            time: parseInt(socialMatch.cookTime) || 30,
-            kcal: parseInt(socialMatch.kcal) || 350,
-            servings: socialMatch.servings || 2,
-            difficulty: socialMatch.difficulty || (socialMatch.category === 'eatclean' ? 'Healthy' : 'Dễ nấu'),
-            category: socialMatch.category || 'Món chính',
-            imageUrl: socialMatch.imageUrl || socialMatch.image || '',
-            ingredients: normalizeIngredientList(socialMatch.ingredients),
-            instructions: socialMatch.instructions || (Array.isArray(socialMatch.steps) ? socialMatch.steps.join('\n') : (socialMatch.description || '')),
-            steps: Array.isArray(socialMatch.steps)
-                ? socialMatch.steps
-                : (socialMatch.instructions ? String(socialMatch.instructions).split('\n').filter(Boolean) : [socialMatch.description || 'Sơ chế và nấu theo khẩu vị'])
-        };
-    } else {
-        try {
-            curRecipe = await apiRequest('/api/recipes/' + id);
-        } catch (e) {
-            curRecipe = (recipesCache || []).find(r => r.id === Number(id) || String(r.id) === String(id))
-                || (typeof recipes !== 'undefined' ? recipes.find(r => r.id === Number(id) || String(r.id) === String(id)) : null);
-        }
-        if (curRecipe && curRecipe.ingredients) {
-            curRecipe.ingredients = normalizeIngredientList(curRecipe.ingredients);
-        }
-    }
-
-    if (!curRecipe) {
-        showToast('Không tìm thấy thông tin công thức.', 'warning');
-        return;
-    }
-
-    if (!curRecipe.name && curRecipe.title) curRecipe.name = curRecipe.title;
-    if (!curRecipe.title && curRecipe.name) curRecipe.title = curRecipe.name;
-    if (!curRecipe.time && curRecipe.cookTime) curRecipe.time = curRecipe.cookTime;
-    if (!curRecipe.cookTime && curRecipe.time) curRecipe.cookTime = curRecipe.time;
-    if (curRecipe.ingredients) {
-        curRecipe.ingredients = normalizeIngredientList(curRecipe.ingredients);
-    }
-
-    curRecipe.baseServings = parseInt(curRecipe.servings) || 4;
-    curRecipe.currentServings = curRecipe.baseServings;
-    curRecipe.baseKcal = parseInt(curRecipe.kcal) || 0;
-    curRecipe.baseProtein = parseFloat(curRecipe.protein) || 0;
-    curRecipe.baseCarb = parseFloat(curRecipe.carb) || 0;
-    curRecipe.baseFat = parseFloat(curRecipe.fat) || 0;
-
-    activeRecipeContext = {
-        id: curRecipe.id,
-        name: curRecipe.title || curRecipe.name,
-        ingredients: Array.isArray(curRecipe.ingredients)
-            ? curRecipe.ingredients.map(i => i.ingredientName || i.name || i)
-            : [],
-        steps: Array.isArray(curRecipe.steps)
-            ? [...curRecipe.steps]
-            : String(curRecipe.instructions || '').split('\n').filter(Boolean),
-        kcal: curRecipe.kcal || 350,
-        time: curRecipe.cookTime || curRecipe.time || 30,
-        difficulty: curRecipe.difficulty || 'Dễ'
-    };
-
-    renderRecipeDetail();
-    openView('recipe');
-}
-window.openRecipeDetail = openRecipeDetail;
-
-function setRecipeServings(servings) {
-    if (!curRecipe) return;
-    const targetServings = parseInt(servings) || 4;
-    curRecipe.currentServings = targetServings;
-    renderRecipeDetail();
-}
-window.setRecipeServings = setRecipeServings;
-
-
-async function toggleSaveRecipe() {
-    if (!curRecipe) return;
-    if (!isUserLoggedIn()) {
-        requireAuth('save');
-        return;
-    }
-    const idKey = String(curRecipe.id);
-    const isNumeric = !isNaN(+curRecipe.id) && !idKey.startsWith('c');
-
-    let newSaved = !(!!savedPostsState[idKey] || state.favorites.some(x => String(x) === idKey));
-
-    // Server (favorite module) là nguồn sự thật — nhận lại trạng thái cuối cùng
-    if (isNumeric) {
-        try {
-            const saved = await apiRequest('/api/favorites/toggle', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ targetId: +curRecipe.id, targetType: 'RECIPE' })
-            });
-            newSaved = saved === true;
-        } catch (e) {
-            showToast('Không thể cập nhật yêu thích: ' + (e.message || ''), 'error');
-            return;
-        }
-    }
-
-    // Đồng bộ local state theo kết quả cuối cùng (chống desync Like/Unlike)
-    if (newSaved) {
-        savedPostsState[idKey] = {
-            id: curRecipe.id,
-            title: curRecipe.title || curRecipe.name,
-            imageUrl: curRecipe.imageUrl || curRecipe.image,
-            cookTime: curRecipe.cookTime || curRecipe.time,
-            kcal: curRecipe.kcal,
-            description: curRecipe.description,
-            ingredients: curRecipe.ingredients,
-            instructions: curRecipe.instructions,
-            savedAt: new Date().toISOString()
-        };
-        if (!state.favorites.some(x => String(x) === idKey)) {
-            state.favorites.push(curRecipe.id);
-        }
-    } else {
-        delete savedPostsState[idKey];
-        state.favorites = state.favorites.filter(x => String(x) !== idKey);
+        if (!state.favorites) state.favorites = [];
+        state.favorites.push(id);
+        const r = (recipesCache || []).find(x => String(x.id) === idStr) || { id: id, title: 'Món đã lưu' };
+        savedPostsState[idStr] = { id: r.id, title: r.title || r.name, imageUrl: r.imageUrl || r.image, savedAt: new Date().toISOString() };
+        showToast('Đã thêm vào mục yêu thích! ❤️', 'success');
     }
     localStorage.setItem('foodx_saved_posts', JSON.stringify(savedPostsState));
     saveState();
+    renderRecipes();
+    if (typeof renderFavorites === 'function') renderFavorites();
+}
 
-    const saveBtn = document.getElementById('rdSave');
-    if (saveBtn) saveBtn.innerHTML = newSaved ? '❤️ Đã lưu vào công thức của tôi' : '🤍 Lưu món';
+function renderFavorites() {
+    const container = document.getElementById('favoritesGrid');
+    if (!container) return;
 
-    // Sync matching post cards if present
-    const cardSaveBtn = document.querySelector('[data-save="' + curRecipe.id + '"]');
-    if (cardSaveBtn) {
-        cardSaveBtn.classList.toggle('saved-active', newSaved);
+    const favIds = (state.favorites || []).map(String);
+    if (!favIds.length) {
+        renderEmpty(container, '❤️', 'Chưa có món ăn yêu thích nào', 'Nhấn vào biểu tượng trái tim ở các món ăn để lưu lại đây.', 'Khám phá công thức', () => openView('recipes'));
+        return;
+    }
+
+    const favs = (recipesCache || []).filter(r => favIds.includes(String(r.id)));
+    container.innerHTML = favs.map(r => renderRecipeCard(r)).join('');
+}
+
+
+/* =========================================================
+   3. RECIPE DETAIL MODAL & SERVING ADJUSTER
+========================================================= */
+
+function openRecipeDetail(recipeId) {
+    const r = (recipesCache || []).find(x => String(x.id) === String(recipeId))
+        || (VIETNAMESE_RECIPES || []).find(x => String(x.id) === String(recipeId));
+    if (!r) return;
+
+    curRecipe = r;
+    window.curRecipe = curRecipe;
+
+    const viewRecipe = document.getElementById('view-recipe');
+    if (viewRecipe) {
+        openView('recipe');
+        renderRecipeDetail(r);
+    }
+}
+
+function renderRecipeDetail(recipe) {
+    const r = recipe || curRecipe;
+    if (!r) return;
+
+    setText('rdTitle', r.title || r.name);
+    setText('rdTime', `${r.cookTime || r.time || 25} phút`);
+    setText('rdCalories', `${r.calories || r.kcal || 350} kcal`);
+    setText('rdDifficulty', r.difficulty || 'Dễ nấu');
+
+    const heroImg = document.getElementById('rdImage');
+    if (heroImg) heroImg.src = r.imageUrl || r.image || '/images/recipes/default-recipe.jpg';
+
+    // Ingredients
+    const ingsList = document.getElementById('rdIngredients');
+    if (ingsList) {
+        const ings = normalizeIngredientList(r.ingredients);
+        ingsList.innerHTML = ings.map(ing => {
+            const name = typeof ing === 'string' ? ing : (ing.ingredientName || ing.name || '');
+            const hasIt = hasIngredientInFridge(name);
+            return `
+                <li class="rd-ing-item ${hasIt ? 'in-fridge' : 'missing'}">
+                    <span>${hasIt ? '✓' : '○'} ${escapeHtml(name)}</span>
+                    <span class="ing-badge">${hasIt ? 'Có sẵn trong tủ' : 'Cần mua'}</span>
+                </li>
+            `;
+        }).join('');
+    }
+
+    // Steps
+    const stepsList = document.getElementById('rdSteps');
+    if (stepsList) {
+        const steps = r.steps || (r.instructions ? r.instructions.split('\n') : ["Chuẩn bị nguyên liệu sạch sẽ.", "Nấu chín và thưởng thức."]);
+        stepsList.innerHTML = steps.map((s, idx) => `
+            <div class="rd-step-card">
+                <strong>Bước ${idx + 1}</strong>
+                <p>${escapeHtml(s)}</p>
+            </div>
+        `).join('');
+    }
+
+    const startCookBtn = document.getElementById('rdCookNow');
+    if (startCookBtn) {
+        startCookBtn.onclick = () => startCooking(r.id);
+    }
+}
+
+function goBackFromRecipeDetail() {
+    openView(previousViewBeforeRecipe || 'recipes');
+}
+
+
+/* =========================================================
+   4. INTERACTIVE COOKING MODE & VOICE TIMERS
+========================================================= */
+
+let cookingTimerInterval = null;
+let cookingSecondsLeft = 0;
+let isCookingSpeechListening = false;
+let cookingSpeechRecognition = null;
+
+function getCookingStepTitle(step, index) {
+    const text = normalize(step);
+    if (text.includes("rua") || text.includes("cat") || text.includes("thai") || text.includes("got")) return "Chuẩn bị nguyên liệu";
+    if (text.includes("uop")) return "Ướp nguyên liệu";
+    if (text.includes("xao")) return "Xào nguyên liệu";
+    if (text.includes("nuong")) return "Nướng món ăn";
+    if (text.includes("luoc") || text.includes("hap")) return "Luộc / Hấp chín";
+    if (text.includes("nau") || text.includes("ham")) return "Nấu canh / Hầm";
+    return `Bước ${index + 1}`;
+}
+
+function openCookingMode() {
+    document.getElementById("cookingModeModal")?.classList.add("show");
+    document.body.style.overflow = "hidden";
+}
+
+function startCooking(recipeId) {
+    const r = (recipesCache || []).find(x => String(x.id) === String(recipeId)) || curRecipe;
+    if (!r) return;
+
+    cookingState.recipeId = r.id;
+    cookingState.stepIndex = 0;
+    cookingState.timerRunning = false;
+
+    setText("cmRecipeTitle", r.title || r.name);
+    openCookingMode();
+    renderCookingStep(0);
+}
+
+function renderCookingStep(stepIndex) {
+    const r = (recipesCache || []).find(x => String(x.id) === String(cookingState.recipeId)) || curRecipe;
+    if (!r) return;
+
+    const steps = r.steps || ["Sơ chế nguyên liệu sạch.", "Nấu chín theo định lượng.", "Trình bày ra đĩa và dùng nóng."];
+    cookingState.stepIndex = Math.max(0, Math.min(stepIndex, steps.length - 1));
+
+    setText("cmStepNumber", `Bước ${cookingState.stepIndex + 1} / ${steps.length}`);
+    setText("cmStepTitle", getCookingStepTitle(steps[cookingState.stepIndex], cookingState.stepIndex));
+    setText("cmStepInstruction", steps[cookingState.stepIndex]);
+
+    const progBar = document.getElementById("cmProgressBar");
+    if (progBar) {
+        progBar.style.width = `${((cookingState.stepIndex + 1) / steps.length) * 100}%`;
+    }
+
+    const prevBtn = document.getElementById("cmPrevStep");
+    const nextBtn = document.getElementById("cmNextStep");
+    if (prevBtn) prevBtn.disabled = cookingState.stepIndex === 0;
+    if (nextBtn) nextBtn.textContent = cookingState.stepIndex === steps.length - 1 ? "✓ Hoàn thành" : "Bước tiếp theo →";
+}
+
+function nextCookingStep() {
+    const r = (recipesCache || []).find(x => String(x.id) === String(cookingState.recipeId)) || curRecipe;
+    const steps = (r && r.steps) ? r.steps : [];
+    if (cookingState.stepIndex >= steps.length - 1) {
+        finishCookingMode();
+    } else {
+        renderCookingStep(cookingState.stepIndex + 1);
+    }
+}
+
+function prevCookingStep() {
+    renderCookingStep(cookingState.stepIndex - 1);
+}
+
+function finishCookingMode() {
+    stopCookingSpeech();
+    clearInterval(cookingTimerInterval);
+    document.getElementById("cookingModeModal")?.classList.remove("show");
+    document.body.style.overflow = "";
+    showToast("🎉 Chúc mừng bạn đã hoàn thành món ăn!", "success");
+}
+
+function updateTimerDisplay() {
+    const m = Math.floor(cookingSecondsLeft / 60);
+    const s = cookingSecondsLeft % 60;
+    setText("cmTimerDisplay", `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`);
+}
+
+function startCookingSpeech() {
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRec) {
+        showToast("Trình duyệt không hỗ trợ nhận diện giọng nói.", "warning");
+        return;
+    }
+    try {
+        cookingSpeechRecognition = new SpeechRec();
+        cookingSpeechRecognition.lang = 'vi-VN';
+        cookingSpeechRecognition.continuous = true;
+        cookingSpeechRecognition.interimResults = false;
+
+        cookingSpeechRecognition.onresult = function (event) {
+            const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
+            if (transcript.includes('tiếp') || transcript.includes('sau')) nextCookingStep();
+            else if (transcript.includes('trước') || transcript.includes('lùi')) prevCookingStep();
+            else if (transcript.includes('xong') || transcript.includes('hoàn thành')) finishCookingMode();
+        };
+
+        cookingSpeechRecognition.start();
+        isCookingSpeechListening = true;
+        showToast('🎙️ Đang lắng nghe: nói "Tiếp theo", "Lùi lại", "Xong".', 'info');
+    } catch (_) {
+        stopCookingSpeech();
+    }
+}
+
+function stopCookingSpeech() {
+    isCookingSpeechListening = false;
+    if (cookingSpeechRecognition) {
+        try { cookingSpeechRecognition.stop(); } catch (_) {}
+        cookingSpeechRecognition = null;
+    }
+}
+
+
+/* =========================================================
+   5. SOCIAL & COMMUNITY RECIPES MODULE
+========================================================= */
+
+function socialTime(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    const diff = Date.now() - d.getTime();
+    const min = Math.floor(diff / 60000);
+    if (min < 1) return 'Vừa xong';
+    if (min < 60) return min + ' phút trước';
+    const h = Math.floor(min / 60);
+    if (h < 24) return h + ' giờ trước';
+    return d.toLocaleDateString('vi-VN');
+}
+
+function postCard(post) {
+    const isLiked = post.likedByMe || !!likedPostsState[post.id];
+    const isSaved = !!savedPostsState[post.id];
+    const currentLikes = post.likeCount !== undefined ? post.likeCount : (post.likes || 0);
+    const defaultImg = '/images/recipes/default-recipe.jpg';
+    const rawImg = post.imageUrl || post.image || '';
+    const postImgUrl = (rawImg && String(rawImg).trim()) ? String(rawImg).trim() : defaultImg;
+
+    return `
+        <article class="card post-card" data-post-id="${post.id}">
+            <div class="post-header">
+                <div class="post-avatar-wrap"><div class="post-avatar-emoji">👨‍🍳</div></div>
+                <div class="post-author-info">
+                    <strong>${escapeHtml(post.authorName || 'Thành viên FoodX')}</strong>
+                    <span>${socialTime(post.createdAt)}</span>
+                </div>
+                <span class="post-badge-tag">${post.cookTime ? `⏱ ${post.cookTime}` : 'Công thức'}</span>
+            </div>
+            <h3 class="post-title" onclick="openRecipeDetail('${post.id}')">${escapeHtml(post.title)}</h3>
+            <div class="post-img-container" onclick="openRecipeDetail('${post.id}')">
+                <img class="post-image" src="${escapeHtml(postImgUrl)}" alt="${escapeHtml(post.title)}" loading="lazy" onerror="this.src='${defaultImg}'">
+            </div>
+            <div class="post-actions-bar">
+                <button type="button" class="post-action-btn ${isLiked ? 'active' : ''}" onclick="toggleLikePost(${post.id})">
+                    ${isLiked ? '❤️' : '🤍'} <span>${currentLikes}</span>
+                </button>
+                <button type="button" class="post-action-btn ${isSaved ? 'saved-active' : ''}" onclick="toggleFavorite('${post.id}')">
+                    ${isSaved ? '🔖 Đã lưu' : '🤍 Lưu món'}
+                </button>
+            </div>
+        </article>
+    `;
+}
+
+async function loadSocialFeed() {
+    const feed = document.getElementById('socialFeed');
+    if (!feed) return;
+    feed.innerHTML = '<div class="social-empty" style="grid-column:1/-1;">⏳ Đang tải bài viết cộng đồng...</div>';
+
+    let apiPosts = [];
+    try {
+        const res = await apiRequest(`${SOCIAL_API}/posts`);
+        apiPosts = Array.isArray(res) ? res : (res?.data || []);
+    } catch (_) {
+        apiPosts = [];
+    }
+
+    if (!apiPosts.length) {
+        apiPosts = [
+            { id: 101, title: 'Bí quyết nấu Phở Bò tái mềm thơm phức', authorName: 'Đầu Bếp Minh', cookTime: '45 phút', kcal: 480, imageUrl: 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&w=600&q=80', likeCount: 42 },
+            { id: 102, title: 'Salad gà sốt mè rang Eat Clean siêu tốc', authorName: 'Thanh Hằng Healthy', cookTime: '15 phút', kcal: 290, imageUrl: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80', likeCount: 88 }
+        ];
+    }
+
+    allSocialPostsCache = apiPosts;
+    feed.innerHTML = apiPosts.map(p => postCard(p)).join('');
+}
+
+async function toggleLikePost(postId) {
+    if (!isUserLoggedIn()) {
+        requireAuth('social');
+        return;
+    }
+    const isLiked = !!likedPostsState[postId];
+    likedPostsState[postId] = !isLiked;
+    localStorage.setItem('foodx_liked_posts', JSON.stringify(likedPostsState));
+
+    try {
+        await apiRequest(`${SOCIAL_API}/posts/${postId}/like`, { method: 'POST' });
+    } catch (_) {}
+    loadSocialFeed();
+}
+
+
+/* =========================================================
+   6. DOM EVENT WIRING & GLOBAL EXPOSURE
+========================================================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("recipeSearch")?.addEventListener("input", debounce(renderRecipes, 200));
+
+    document.querySelectorAll(".recipe-tag-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            document.querySelectorAll(".recipe-tag-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            renderRecipes();
+        });
+    });
+
+    document.getElementById("cmNextStep")?.addEventListener("click", nextCookingStep);
+    document.getElementById("cmPrevStep")?.addEventListener("click", prevCookingStep);
+    document.getElementById("cmCloseBtn")?.addEventListener("click", finishCookingMode);
+    document.getElementById("cmVoiceBtn")?.addEventListener("click", () => {
+        if (isCookingSpeechListening) stopCookingSpeech();
+        else startCookingSpeech();
+    });
+
+    document.getElementById("recipeBackBtn")?.addEventListener("click", goBackFromRecipeDetail);
+});
+
+if (typeof window !== 'undefined') {
+    window.normalizeIngredientList = normalizeIngredientList;
+    window.hasIngredientInFridge = hasIngredientInFridge;
+    window.isRecipeSafeForProfile = isRecipeSafeForProfile;
+    window.recipeScore = recipeScore;
+    window.recipeMatch = recipeMatch;
+    window.loadRecipes = loadRecipes;
+    window.renderRecipes = renderRecipes;
+    window.renderRecipeCard = renderRecipeCard;
+    window.toggleFavorite = toggleFavorite;
+    window.renderFavorites = renderFavorites;
+    window.openRecipeDetail = openRecipeDetail;
+    window.renderRecipeDetail = renderRecipeDetail;
+    window.goBackFromRecipeDetail = goBackFromRecipeDetail;
+
+    window.openCookingMode = openCookingMode;
+    window.startCooking = startCooking;
+    window.renderCookingStep = renderCookingStep;
+    window.nextCookingStep = nextCookingStep;
+    window.prevCookingStep = prevCookingStep;
+    window.finishCookingMode = finishCookingMode;
+    window.startCookingSpeech = startCookingSpeech;
+    window.stopCookingSpeech = stopCookingSpeech;
+
+    window.socialTime = socialTime;
+    window.postCard = postCard;
+    window.loadSocialFeed = loadSocialFeed;
+    window.toggleLikePost = toggleLikePost;
+}

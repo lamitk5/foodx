@@ -1,7 +1,7 @@
 package com.nhom6.foodx.social.controller;
 
 import com.nhom6.foodx.common.response.ApiResponse;
-import com.nhom6.foodx.security.SecurityUtils;
+import com.nhom6.foodx.common.security.SecurityUtils;
 import com.nhom6.foodx.social.dto.CommentRequest;
 import com.nhom6.foodx.social.dto.CommentResponse;
 import com.nhom6.foodx.social.dto.LikeResponse;
@@ -20,7 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * API mạng xã hội chia sẻ công thức (yêu cầu đăng nhập JWT).
+ * API mạng xã hội chia sẻ công thức.
+ *
+ * <p>Feed/chi tiết bài/bình luận là công khai (đọc được cả khi ẩn danh), các thao tác
+ * còn lại yêu cầu đăng nhập. Danh tính lấy từ JWT qua {@link SecurityUtils} (static).</p>
  */
 @RestController
 @RequestMapping("/api/social")
@@ -28,42 +31,41 @@ import java.util.List;
 public class SocialController {
 
     private final SocialService socialService;
-    private final SecurityUtils securityUtils;
 
     @GetMapping("/posts")
     public ApiResponse<List<PostResponse>> feed() {
-        return ApiResponse.success(socialService.feed(securityUtils.getCurrentUserOrNull()), "Danh sách bài chia sẻ");
+        return ApiResponse.success(socialService.feed(SecurityUtils.getCurrentUserIdOrNull()), "Danh sách bài chia sẻ");
     }
 
     @GetMapping("/posts/my")
     public ApiResponse<List<PostResponse>> myPosts() {
-        return ApiResponse.success(socialService.myPosts(securityUtils.getCurrentUser()), "Lịch sử bài đăng của tôi");
+        return ApiResponse.success(socialService.myPosts(SecurityUtils.getCurrentUserId()), "Lịch sử bài đăng của tôi");
     }
 
     @GetMapping("/posts/{id}")
     public ApiResponse<PostResponse> getPost(@PathVariable Long id) {
-        return ApiResponse.success(socialService.getPost(securityUtils.getCurrentUserOrNull(), id), "Chi tiết bài chia sẻ");
+        return ApiResponse.success(socialService.getPost(SecurityUtils.getCurrentUserIdOrNull(), id), "Chi tiết bài chia sẻ");
     }
 
     @PostMapping("/posts")
     public ApiResponse<PostResponse> create(@RequestBody PostRequest request) {
-        return ApiResponse.success(socialService.create(securityUtils.getCurrentUser(), request), "Đã lưu công thức");
+        return ApiResponse.success(socialService.create(SecurityUtils.getCurrentUserId(), request), "Đã lưu công thức");
     }
 
     @PostMapping("/posts/{id}/publish")
     public ApiResponse<PostResponse> publish(@PathVariable Long id) {
-        return ApiResponse.success(socialService.publish(securityUtils.getCurrentUser(), id), "Đã xuất bản công thức");
+        return ApiResponse.success(socialService.publish(SecurityUtils.getCurrentUserId(), id), "Đã xuất bản công thức");
     }
 
     @DeleteMapping("/posts/{id}")
     public ApiResponse<Void> delete(@PathVariable Long id) {
-        socialService.delete(securityUtils.getCurrentUser(), id);
+        socialService.delete(SecurityUtils.getCurrentUserId(), id);
         return ApiResponse.success(null, "Đã xóa bài chia sẻ");
     }
 
     @PostMapping("/posts/{id}/like")
     public ApiResponse<LikeResponse> toggleLike(@PathVariable Long id) {
-        return ApiResponse.success(socialService.toggleLike(securityUtils.getCurrentUser(), id), "Đã cập nhật lượt thích");
+        return ApiResponse.success(socialService.toggleLike(SecurityUtils.getCurrentUserId(), id), "Đã cập nhật lượt thích");
     }
 
     @GetMapping("/posts/{id}/comments")
@@ -73,12 +75,12 @@ public class SocialController {
 
     @PostMapping("/posts/{id}/comments")
     public ApiResponse<CommentResponse> addComment(@PathVariable Long id, @RequestBody CommentRequest request) {
-        return ApiResponse.success(socialService.addComment(securityUtils.getCurrentUser(), id, request), "Đã bình luận");
+        return ApiResponse.success(socialService.addComment(SecurityUtils.getCurrentUserId(), id, request), "Đã bình luận");
     }
 
     @DeleteMapping("/comments/{id}")
     public ApiResponse<Void> deleteComment(@PathVariable Long id) {
-        socialService.deleteComment(securityUtils.getCurrentUser(), id);
+        socialService.deleteComment(SecurityUtils.getCurrentUserId(), id);
         return ApiResponse.success(null, "Đã xóa bình luận");
     }
 }

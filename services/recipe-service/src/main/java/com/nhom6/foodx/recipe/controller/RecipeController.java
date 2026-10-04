@@ -1,12 +1,13 @@
 package com.nhom6.foodx.recipe.controller;
 
+import com.nhom6.foodx.common.food.FoodImageSearchService;
 import com.nhom6.foodx.common.response.ApiResponse;
+import com.nhom6.foodx.common.security.SecurityUtils;
 import com.nhom6.foodx.recipe.dto.RecipeImportRequest;
 import com.nhom6.foodx.recipe.dto.RecipeRequest;
 import com.nhom6.foodx.recipe.dto.RecipeResponse;
 import com.nhom6.foodx.recipe.service.ImportRecipeService;
 import com.nhom6.foodx.recipe.service.RecipeService;
-import com.nhom6.foodx.security.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,8 +29,7 @@ public class RecipeController {
 
     private final RecipeService recipeService;
     private final ImportRecipeService importRecipeService;
-    private final SecurityUtils securityUtils;
-    private final com.nhom6.foodx.food.service.FoodImageSearchService foodImageSearchService;
+    private final FoodImageSearchService foodImageSearchService;
 
     @GetMapping("/search-image")
     public ApiResponse<java.util.Map<String, String>> searchImage(@RequestParam String query) {
@@ -48,7 +48,7 @@ public class RecipeController {
     @GetMapping("/match")
     public ApiResponse<List<com.nhom6.foodx.recipe.dto.RecipeMatchDto>> matchWithFridge() {
         return ApiResponse.success(
-                recipeService.matchWithFridge(securityUtils.getCurrentUser()),
+                recipeService.matchWithFridge(SecurityUtils.getCurrentUserId()),
                 "Danh sách món khớp nguyên liệu tủ lạnh của bạn");
     }
 
@@ -59,14 +59,14 @@ public class RecipeController {
 
     @PostMapping
     public ApiResponse<RecipeResponse> create(@Valid @RequestBody RecipeRequest request) {
-        return ApiResponse.success(recipeService.create(request, securityUtils.getCurrentUser()),
+        return ApiResponse.success(recipeService.create(request, SecurityUtils.getCurrentUserId()),
                 "Tạo công thức thành công");
     }
 
     @PostMapping("/import")
     public ApiResponse<RecipeResponse> importRecipe(@Valid @RequestBody RecipeImportRequest request) {
         return ApiResponse.success(
-                importRecipeService.importFromText(request, securityUtils.getCurrentUser()),
+                importRecipeService.importFromText(request, SecurityUtils.getCurrentUserId()),
                 "Import công thức thành công");
     }
 

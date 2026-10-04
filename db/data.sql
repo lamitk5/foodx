@@ -41,30 +41,30 @@ INSERT INTO foods (source_key, name, type, kcal, protein, carb, fat, components,
 -- ---------- fridge_stock (Thực phẩm trong tủ lạnh) ----------
 INSERT INTO fridge_stock (user_id, food_id, quantity, unit, expires_at, note, created_at, updated_at) VALUES
 -- User 1 (Minh Anh)
-(1, 1,  10,  'quả', DATEADD('DAY', 12, CURRENT_DATE), 'Trứng gà Ba Huân mua tại WinMart',           CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 2,  450, 'g',   DATEADD('DAY', 2,  CURRENT_DATE), 'Ức gà để ngăn mát, cần nấu sớm',             CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 3,  500, 'g',   DATEADD('DAY', 4,  CURRENT_DATE), 'Bảo quản ngăn mát 2°C làm bò xào',           CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 5,  300, 'g',   DATEADD('DAY', 3,  CURRENT_DATE), 'Phi lê cá hồi Nauy tươi',                    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 7,  4,   'quả', DATEADD('DAY', 1,  CURRENT_DATE), 'Cà chua chín mềm, làm canh hoặc sốt',        CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 8,  250, 'g',   DATEADD('DAY', 5,  CURRENT_DATE), 'Bông cải đã rửa sạch để ráo',                CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 9,  3,   'củ',  DATEADD('DAY', 10, CURRENT_DATE), 'Bảo quản ngăn rau củ',                       CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 10, 4,   'củ',  DATEADD('DAY', 18, CURRENT_DATE), 'Bảo quản nơi khô ráo thoáng mát',            CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 14, 1,   'lít', DATEADD('DAY', 1,  CURRENT_DATE), 'Sữa tươi thanh trùng mở nắp hôm qua',        CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 15, 4,   'hộp', DATEADD('DAY', 8,  CURRENT_DATE), 'Sữa chua không đường ăn sáng',               CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 16, 2,   'quả', DATEADD('DAY', 3,  CURRENT_DATE), 'Quả bơ sáp 034 Đắk Lắk',                     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 17, 5,   'quả', DATEADD('DAY', 2,  CURRENT_DATE), 'Chuối tiêu chín tự nhiên',                   CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 18, 400, 'g',   DATEADD('DAY', 2,  CURRENT_DATE), 'Cơm nguội dùng chiên cơm',                   CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 19, 2,   'hộp', DATEADD('DAY', 4,  CURRENT_DATE), 'Đậu hũ non nấu canh rong biển',              CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 11, 5,   'củ',  DATEADD('DAY', 25, CURRENT_DATE), 'Hành tím phi thơm',                          CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 12, 3,   'củ',  DATEADD('DAY', 40, CURRENT_DATE), 'Tỏi Hải Dương',                              CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 4,  200, 'g',   DATEADD('DAY', -1, CURRENT_DATE), 'Thịt heo xay bảo quản ngăn mát - đã quá hạn',CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 1,  10,  'quả', DATE_ADD(CURRENT_DATE, INTERVAL 12 DAY), 'Trứng gà Ba Huân mua tại WinMart',           CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 2,  450, 'g',   DATE_ADD(CURRENT_DATE, INTERVAL 2 DAY),  'Ức gà để ngăn mát, cần nấu sớm',             CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 3,  500, 'g',   DATE_ADD(CURRENT_DATE, INTERVAL 4 DAY),  'Bảo quản ngăn mát 2°C làm bò xào',           CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 5,  300, 'g',   DATE_ADD(CURRENT_DATE, INTERVAL 3 DAY),  'Phi lê cá hồi Nauy tươi',                    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 7,  4,   'quả', DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY),  'Cà chua chín mềm, làm canh hoặc sốt',        CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 8,  250, 'g',   DATE_ADD(CURRENT_DATE, INTERVAL 5 DAY),  'Bông cải đã rửa sạch để ráo',                CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 9,  3,   'củ',  DATE_ADD(CURRENT_DATE, INTERVAL 10 DAY), 'Bảo quản ngăn rau củ',                       CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 10, 4,   'củ',  DATE_ADD(CURRENT_DATE, INTERVAL 18 DAY), 'Bảo quản nơi khô ráo thoáng mát',            CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 14, 1,   'lít', DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY),  'Sữa tươi thanh trùng mở nắp hôm qua',        CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 15, 4,   'hộp', DATE_ADD(CURRENT_DATE, INTERVAL 8 DAY),  'Sữa chua không đường ăn sáng',               CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 16, 2,   'quả', DATE_ADD(CURRENT_DATE, INTERVAL 3 DAY),  'Quả bơ sáp 034 Đắk Lắk',                     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 17, 5,   'quả', DATE_ADD(CURRENT_DATE, INTERVAL 2 DAY),  'Chuối tiêu chín tự nhiên',                   CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 18, 400, 'g',   DATE_ADD(CURRENT_DATE, INTERVAL 2 DAY),  'Cơm nguội dùng chiên cơm',                   CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 19, 2,   'hộp', DATE_ADD(CURRENT_DATE, INTERVAL 4 DAY),  'Đậu hũ non nấu canh rong biển',              CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 11, 5,   'củ',  DATE_ADD(CURRENT_DATE, INTERVAL 25 DAY), 'Hành tím phi thơm',                          CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 12, 3,   'củ',  DATE_ADD(CURRENT_DATE, INTERVAL 40 DAY), 'Tỏi Hải Dương',                              CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 4,  200, 'g',   DATE_SUB(CURRENT_DATE, INTERVAL 1 DAY),  'Thịt heo xay bảo quản ngăn mát - đã quá hạn',CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 
 -- User 2 (Người Dùng Demo)
-(2, 1,  8,   'quả', DATEADD('DAY', 14, CURRENT_DATE), 'Trứng gà sạch',                              CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 3,  400, 'g',   DATEADD('DAY', 3,  CURRENT_DATE), 'Thịt bò thăn mềm',                           CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 7,  5,   'quả', DATEADD('DAY', 2,  CURRENT_DATE), 'Cà chua Đà Lạt',                             CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 14, 1,   'lít', DATEADD('DAY', 1,  CURRENT_DATE), 'Sữa tươi Dalatmilk',                         CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 18, 500, 'g',   DATEADD('DAY', 3,  CURRENT_DATE), 'Cơm trắng',                                  CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(2, 1,  8,   'quả', DATE_ADD(CURRENT_DATE, INTERVAL 14 DAY), 'Trứng gà sạch',                              CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 3,  400, 'g',   DATE_ADD(CURRENT_DATE, INTERVAL 3 DAY),  'Thịt bò thăn mềm',                           CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 7,  5,   'quả', DATE_ADD(CURRENT_DATE, INTERVAL 2 DAY),  'Cà chua Đà Lạt',                             CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 14, 1,   'lít', DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY),  'Sữa tươi Dalatmilk',                         CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 18, 500, 'g',   DATE_ADD(CURRENT_DATE, INTERVAL 3 DAY),  'Cơm trắng',                                  CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- ---------- ingredients ----------
 INSERT INTO ingredients (name, default_unit, category, calories_per_unit, description) VALUES

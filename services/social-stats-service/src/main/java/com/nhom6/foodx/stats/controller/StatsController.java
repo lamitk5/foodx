@@ -1,7 +1,7 @@
 package com.nhom6.foodx.stats.controller;
 
 import com.nhom6.foodx.common.response.ApiResponse;
-import com.nhom6.foodx.security.SecurityUtils;
+import com.nhom6.foodx.common.security.SecurityUtils;
 import com.nhom6.foodx.stats.dto.CookRequest;
 import com.nhom6.foodx.stats.dto.StatsResponse;
 import com.nhom6.foodx.stats.service.StatsService;
@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * API thống kê nấu ăn (yêu cầu JWT).
+ * API thống kê nấu ăn (yêu cầu JWT). Danh tính lấy từ claims JWT qua
+ * {@link SecurityUtils} (static), không truy vấn bảng {@code users}.
  */
 @RestController
 @RequestMapping("/api/stats")
@@ -21,16 +22,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class StatsController {
 
     private final StatsService statsService;
-    private final SecurityUtils securityUtils;
 
     @GetMapping
     public ApiResponse<StatsResponse> getStats() {
-        return ApiResponse.success(statsService.getStats(securityUtils.getCurrentUser()), "Thống kê");
+        return ApiResponse.success(statsService.getStats(SecurityUtils.getCurrentUserId()), "Thống kê");
     }
 
     @PostMapping("/cooked")
     public ApiResponse<Void> recordCook(@RequestBody CookRequest request) {
-        statsService.recordCook(securityUtils.getCurrentUser(), request.recipeId(), request.servings());
+        statsService.recordCook(SecurityUtils.getCurrentUserId(), request.recipeId(), request.servings());
         return ApiResponse.success(null, "Đã ghi nhận món đã nấu (nguyên liệu trong tủ đã được trừ tương ứng)");
     }
 }

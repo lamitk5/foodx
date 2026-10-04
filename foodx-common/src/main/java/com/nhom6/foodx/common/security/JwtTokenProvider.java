@@ -13,7 +13,11 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * Tạo và kiểm tra tính hợp lệ của JWT dùng chung giữa các microservices.
+ * Tạo và kiểm tra tính hợp lệ của JWT — dùng chung cho mọi microservice.
+ *
+ * <p>Đây là nguồn duy nhất sinh/đọc token trong hệ thống FoodX. Trước đây mỗi service
+ * giữ một bản copy riêng của lớp này; nay tất cả dùng bean do
+ * {@link FoodxSecurityConfiguration} khai báo.</p>
  */
 public class JwtTokenProvider {
 
@@ -31,12 +35,16 @@ public class JwtTokenProvider {
     }
 
     private SecretKey getSigningKey(String secret) {
+        // Nếu secret là Base64 hợp lệ và đủ dài thì decode, ngược lại dùng trực tiếp bytes
         try {
             byte[] keyBytes = Decoders.BASE64.decode(secret);
-            return Keys.hmacShaKeyFor(keyBytes);
-        } catch (Exception ex) {
-            return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+            if (keyBytes.length >= 32) {
+                return Keys.hmacShaKeyFor(keyBytes);
+            }
+        } catch (Exception ignored) {
+            // rơi xuống nhánh dùng bytes thô
         }
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
     public String generateToken(Long userId, String username, String role) {
@@ -59,8 +67,12 @@ public class JwtTokenProvider {
     public Long getUserId(String token) {
         return extractClaim(token, claims -> {
             Object uid = claims.get("uid");
-            if (uid instanceof Number num) return num.longValue();
-            if (uid instanceof String str) return Long.parseLong(str);
+            if (uid instanceof Number num) {
+                return num.longValue();
+            }
+            if (uid instanceof String str && !str.isBlank()) {
+                return Long.parseLong(str);
+            }
             return null;
         });
     }

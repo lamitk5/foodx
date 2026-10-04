@@ -1,9 +1,7 @@
 package com.nhom6.foodx.ai.service;
 
-import com.nhom6.foodx.auth.entity.User;
-import com.nhom6.foodx.fridge.repository.FridgeItemRepository;
-import com.nhom6.foodx.profile.entity.UserProfile;
-import com.nhom6.foodx.profile.repository.UserProfileRepository;
+import com.nhom6.foodx.common.client.InventoryServiceClient;
+import com.nhom6.foodx.common.client.UserServiceClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,15 +14,18 @@ import java.util.stream.Collectors;
 
 /**
  * Dựng "bối cảnh người dùng" (hồ sơ dinh dưỡng + tủ lạnh) để nhồi vào prompt AI.
- * Cache TTL ngắn để chat liên tục không query DB mỗi lần.
+ *
+ * <p>ai-service không sở hữu bảng {@code profiles} / {@code fridge_stock}: dữ liệu được
+ * lấy qua HTTP client nội bộ của {@code foodx-common} (user-service, inventory-service).
+ * Cache TTL ngắn để chat liên tục không gọi HTTP mỗi lần.</p>
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AiContextService {
 
-    private final UserProfileRepository userProfileRepository;
-    private final FridgeItemRepository fridgeItemRepository;
+    private final UserServiceClient userServiceClient;
+    private final InventoryServiceClient inventoryServiceClient;
 
     @Value("${app.ai.context-cache-ttl-ms:45000}")
     private long cacheTtlMs;
@@ -40,18 +41,18 @@ public class AiContextService {
     /**
      * @return chuỗi bối cảnh tiếng Việt (hoặc chuỗi rỗng nếu user chưa có dữ liệu gì đáng kể)
      */
-    public String buildContext(User user) {
-        if (user == null) {
+    public String buildContext(Long userId) {
+        if (userId == null) {
             return "";
         }
         long now = System.currentTimeMillis();
-        CacheEntry cached = contextCache.get(user.getId());
+        CacheEntry cached = contextCache.get(userId);
         if (cached != null && !cached.expired(now)) {
             return cached.context();
         }
 
-        String context = loadContext(user);
-        contextCache.put(user.getId(), new CacheEntry(context, now + Math.max(1_000, cacheTtlMs)));
+        String context = loadContext(userId);
+        contextCache.put(userId, new CacheEntry(context, now + Math.max(1_000, cacheTtlMs)));
 
         // Dọn entry hết hạn thỉnh thoảng
         if (contextCache.size() > 5_000) {
@@ -67,41 +68,42 @@ public class AiContextService {
         }
     }
 
-    private String loadContext(User user) {
+    private String loadContext(Long userId) {
         StringBuilder sb = new StringBuilder();
 
-        userProfileRepository.findByUser_Id(user.getId()).ifPresent(profile -> {
+        // Hồ sơ dinh dưỡng: lấy từ user-service qua API nội bộ, lỗi mạng trả về rỗng.
+        userServiceClient.getProfile(userId).ifPresent(profile -> {
             List<String> parts = new java.util.ArrayList<>();
-            if (profile.getGender() != null) {
-                parts.add("giới tính " + ("female".equalsIgnoreCase(profile.getGender()) ? "nữ" : "nam"));
+            if (profile.gender() != null) {
+                parts.add("giới tính " + ("female".equalsIgnoreCase(profile.gender()) ? "nữ" : "nam"));
             }
-            if (profile.getAge() != null) {
-                parts.add(profile.getAge() + " tuổi");
+            if (profile.age() != null) {
+                parts.add(profile.age() + " tuổi");
             }
-            if (profile.getWeight() != null) {
-                parts.add("nặng " + trimNumber(profile.getWeight()) + " kg");
+            if (profile.weight() != null) {
+                parts.add("nặng " + trimNumber(profile.weight()) + " kg");
             }
-            if (profile.getHeight() != null) {
-                parts.add("cao " + trimNumber(profile.getHeight()) + " cm");
+            if (profile.height() != null) {
+                parts.add("cao " + trimNumber(profile.height()) + " cm");
             }
-            if (profile.getDiet() != null && !profile.getDiet().isBlank()
-                    && !"Ăn linh tinh".equals(profile.getDiet())) {
-                parts.add("chế độ ăn: " + profile.getDiet());
+            if (profile.diet() != null && !profile.diet().isBlank()
+                    && !"Ăn linh tinh".equals(profile.diet())) {
+                parts.add("chế độ ăn: " + profile.diet());
             }
             if (parts.isEmpty()) {
                 return;
             }
             sb.append("Hồ sơ người dùng: ").append(String.join(", ", parts)).append(".\n");
-            if (profile.getAllergies() != null && !profile.getAllergies().isBlank()) {
-                sb.append("Dị ứng cần tránh tuyệt đối: ").append(profile.getAllergies().trim()).append(".\n");
+            if (profile.allergies() != null && !profile.allergies().isBlank()) {
+                sb.append("Dị ứng cần tránh tuyệt đối: ").append(profile.allergies().trim()).append(".\n");
             }
-            if (profile.getDislikes() != null && !profile.getDislikes().isBlank()) {
-                sb.append("Món người dùng không thích: ").append(profile.getDislikes().trim()).append(".\n");
+            if (profile.dislikes() != null && !profile.dislikes().isBlank()) {
+                sb.append("Món người dùng không thích: ").append(profile.dislikes().trim()).append(".\n");
             }
         });
 
-        List<String> fridgeNames = fridgeItemRepository.findByUser_IdOrderByIdAsc(user.getId()).stream()
-                .map(item -> item.getFood() != null ? item.getFood().getName() : null)
+        // Tủ lạnh: inventory-service trả sẵn danh sách tên thực phẩm đã lọc trùng.
+        List<String> fridgeNames = inventoryServiceClient.getFridgeFoodNames(userId).stream()
                 .filter(name -> name != null && !name.isBlank())
                 .distinct()
                 .limit(40)
