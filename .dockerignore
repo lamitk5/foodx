@@ -1,0 +1,33 @@
+# Ngữ cảnh build được gửi lên Docker daemon — giữ càng nhỏ càng tốt.
+# Không có file này thì `target/` (hàng trăm MB) và `node_modules/` cũng bị gửi lên.
+
+.git
+.gitignore
+.github
+
+# Kết quả build (được tạo lại trong image)
+**/target/
+
+# IDE / công cụ
+.idea
+.vscode
+*.iml
+.playwright-cli
+
+# Node (chỉ dùng cho script test UI, không thuộc backend)
+node_modules
+package.json
+package-lock.json
+
+# Dữ liệu & tài liệu không cần cho image
+logs
+uploads
+scratch_img
+scripts
+tests
+katalon
+db
+*.md
+*.docx
+*.py
+*.log
