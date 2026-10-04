@@ -21,7 +21,7 @@ public class ImportRecipeService {
 
     public RecipeResponse importFromText(RecipeImportRequest request,
                                          com.nhom6.foodx.auth.entity.User user) {
-        if (request.getText() == null || request.getText().isBlank()) {
+        if (request == null || request.getText() == null || request.getText().isBlank()) {
             throw new BusinessException(400, "Text công thức không được để trống");
         }
         JsonNode parsed = recipeTextParser.parse(request.getText());

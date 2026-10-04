@@ -746,7 +746,11 @@ async function renderFavorites() {
     if (isUserLoggedIn()) {
         try {
             const res = await apiRequest('/api/favorites');
-            if (Array.isArray(res)) favorites = res;
+            if (Array.isArray(res)) {
+                favorites = res;
+            } else if (res && Array.isArray(res.data)) {
+                favorites = res.data;
+            }
         } catch (_) {}
     }
 
@@ -1206,7 +1210,8 @@ function recipeMatch(r) {
 
 async function loadRecipes() {
     try {
-        recipesCache = await apiRequest('/api/recipes') || [];
+        const res = await apiRequest('/api/recipes');
+        recipesCache = Array.isArray(res) ? res : (res && Array.isArray(res.data) ? res.data : []);
     } catch (e) {
         recipesCache = [];
     }
@@ -1477,7 +1482,8 @@ async function openRecipeDetail(id) {
         };
     } else {
         try {
-            curRecipe = await apiRequest('/api/recipes/' + id);
+            const res = await apiRequest('/api/recipes/' + id);
+            curRecipe = (res && res.data !== undefined) ? res.data : res;
         } catch (e) {
             curRecipe = (recipesCache || []).find(r => r.id === Number(id) || String(r.id) === String(id))
                 || (typeof recipes !== 'undefined' ? recipes.find(r => r.id === Number(id) || String(r.id) === String(id)) : null);

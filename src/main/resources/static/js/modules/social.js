@@ -277,12 +277,13 @@ function wirePostEvents() {
             if (isNumeric) {
                 try {
                     const res = await apiRequest(SOCIAL_API + '/posts/' + id + '/like', { method: 'POST' });
-                    if (res) {
-                        btn.classList.toggle('active', res.liked);
-                        btn.innerHTML = (res.liked ? '❤️' : '🤍') + ' <span data-like-count="' + id + '">' + res.likeCount + '</span>';
-                        likedPostsState[id] = res.liked;
+                    const data = (res && res.data !== undefined) ? res.data : res;
+                    if (data) {
+                        btn.classList.toggle('active', !!data.liked);
+                        btn.innerHTML = (data.liked ? '❤️' : '🤍') + ' <span data-like-count="' + id + '">' + (data.likeCount ?? 0) + '</span>';
+                        likedPostsState[id] = !!data.liked;
                         localStorage.setItem('foodx_liked_posts', JSON.stringify(likedPostsState));
-                        showToast(res.liked ? 'Đã thích bài viết ❤️' : 'Đã bỏ thích bài viết.', 'info');
+                        showToast(data.liked ? 'Đã thích bài viết ❤️' : 'Đã bỏ thích bài viết.', 'info');
                     }
                 } catch(e) {
                     showToast('Cần đăng nhập để thích bài viết', 'warning');
@@ -337,7 +338,7 @@ function wirePostEvents() {
             if (!catalogRecipeId && title) {
                 try {
                     const recipes = await apiRequest('/api/recipes?keyword=' + encodeURIComponent(title));
-                    const list = Array.isArray(recipes) ? recipes : [];
+                    const list = Array.isArray(recipes) ? recipes : (recipes && Array.isArray(recipes.data) ? recipes.data : []);
                     const exact = list.find(function (r) {
                         return String(r.title || '').trim().toLowerCase() === String(title).trim().toLowerCase();
                     });
@@ -475,12 +476,20 @@ async function deletePost(id) {
         return;
     }
     if (!window.confirm('Bạn muốn xóa bài chia sẻ này?')) return;
+    const isSample = String(id).startsWith('c') || isNaN(+id);
+    if (isSample) {
+        communityFeedPosts = communityFeedPosts.filter(p => String(p.id) !== String(id));
+        allSocialPostsCache = allSocialPostsCache.filter(p => String(p.id) !== String(id));
+        showToast('Đã xóa bài chia sẻ mẫu.', 'success');
+        loadSocialFeed();
+        return;
+    }
     try {
         await apiRequest(SOCIAL_API + '/posts/' + id, { method: 'DELETE' });
         showToast('Đã xóa bài chia sẻ.', 'success');
         loadSocialFeed();
     } catch (error) {
-        showToast('Không xóa được bài chia sẻ.', 'error');
+        showToast((error && error.message) ? error.message : 'Không xóa được bài chia sẻ.', 'error');
     }
 }
 
@@ -520,9 +529,10 @@ async function createPost(status) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
+        const postData = (savedPost && savedPost.data !== undefined) ? savedPost.data : savedPost;
         showToast(status === 'DRAFT' ? 'Đã lưu bản nháp 💾' : 'Đã xuất bản công thức thành công! 🎉', 'success');
-        if (savedPost && savedPost.status !== 'DRAFT') {
-            allSocialPostsCache.unshift(savedPost);
+        if (postData && postData.status !== 'DRAFT') {
+            allSocialPostsCache.unshift(postData);
         }
         resetComposer();
         loadSocialFeed();

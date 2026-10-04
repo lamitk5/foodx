@@ -34,4 +34,12 @@ public class SecurityUtils {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new BusinessException(401, "Người dùng không tồn tại"));
     }
+
+    public User getCurrentUserOrNull() {
+        String username = getCurrentUsername();
+        if (username == null) {
+            return null;
+        }
+        return userRepository.findByUsername(username).orElse(null);
+    }
 }

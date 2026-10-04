@@ -113,6 +113,9 @@ public class RecipeService {
 
     private void assertCanManage(Recipe recipe) {
         User current = securityUtils.getCurrentUser();
+        if (current == null) {
+            throw new BusinessException(401, "Yêu cầu đăng nhập");
+        }
         boolean admin = current.getRole() == User.Role.ADMIN;
         Long authorId = recipe.getAuthor() != null ? recipe.getAuthor().getId() : null;
         if (!admin && (authorId == null || !authorId.equals(current.getId()))) {
@@ -154,6 +157,12 @@ public class RecipeService {
     }
 
     private void applyRequest(Recipe recipe, RecipeRequest request) {
+        if (request == null) {
+            throw new BusinessException(400, "Dữ liệu công thức không hợp lệ");
+        }
+        if (request.getTitle() == null || request.getTitle().isBlank()) {
+            throw new BusinessException(400, "Tên công thức không được để trống");
+        }
         recipe.setTitle(request.getTitle().trim());
         recipe.setDescription(request.getDescription());
         recipe.setInstructions(request.getInstructions());
@@ -187,8 +196,11 @@ public class RecipeService {
     }
 
     private void saveIngredients(Recipe recipe, List<RecipeIngredientItem> items) {
+        if (items == null) return;
         for (RecipeIngredientItem item : items) {
+            if (item == null) continue;
             String ingName = item.getIngredientName() != null ? item.getIngredientName().trim() : "Nguyên liệu";
+            if (ingName.isBlank()) continue;
             Ingredient ingredient = ingredientRepository.findByNameIgnoreCase(ingName)
                     .orElseGet(() -> {
                         Ingredient newIng = Ingredient.builder()
@@ -200,10 +212,11 @@ public class RecipeService {
                         return ingredientRepository.save(newIng);
                     });
 
+            double qty = (item.getQuantity() != null && item.getQuantity() > 0) ? item.getQuantity() : 1.0;
             RecipeIngredient ri = RecipeIngredient.builder()
                     .recipe(recipe)
                     .ingredient(ingredient)
-                    .quantity(item.getQuantity() != null ? item.getQuantity() : 1.0)
+                    .quantity(qty)
                     .unit(item.getUnit() != null && !item.getUnit().isBlank() ? item.getUnit() : "phần")
                     .note(item.getNote())
                     .build();
@@ -218,7 +231,8 @@ public class RecipeService {
     }
 
     private RecipeResponse toResponse(Recipe recipe) {
-        List<RecipeResponse.IngredientDto> ings = recipe.getIngredients().stream()
+        List<RecipeResponse.IngredientDto> ings = (recipe.getIngredients() == null) ? List.of() : recipe.getIngredients().stream()
+                .filter(ri -> ri != null && ri.getIngredient() != null)
                 .map(ri -> RecipeResponse.IngredientDto.builder()
                         .id(ri.getId())
                         .ingredientName(ri.getIngredient().getName())

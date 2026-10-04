@@ -2,6 +2,7 @@ package com.nhom6.foodx.recipe.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.nhom6.foodx.auth.entity.User;
+import com.nhom6.foodx.common.exception.BusinessException;
 import com.nhom6.foodx.common.exception.ResourceNotFoundException;
 import com.nhom6.foodx.common.utils.StringUtils;
 import com.nhom6.foodx.fridge.repository.FridgeItemRepository;
@@ -37,6 +38,7 @@ public class RecipeService {
     private final IngredientRepository ingredientRepository;
     private final FridgeItemRepository fridgeItemRepository;
     private final com.nhom6.foodx.food.service.FoodImageSearchService foodImageSearchService;
+    private final com.nhom6.foodx.security.SecurityUtils securityUtils;
 
     @Transactional(readOnly = true)
     public List<RecipeResponse> search(String keyword, String category, String cuisine) {
@@ -84,6 +86,7 @@ public class RecipeService {
     @Transactional
     public RecipeResponse update(Long id, RecipeRequest request) {
         Recipe recipe = findEntity(id);
+        assertCanManage(recipe);
         applyRequest(recipe, request);
 
         if (!isUsableImage(recipe.getImageUrl())) {
@@ -104,7 +107,20 @@ public class RecipeService {
     @Transactional
     public void delete(Long id) {
         Recipe recipe = findEntity(id);
+        assertCanManage(recipe);
         recipeRepository.delete(recipe);
+    }
+
+    private void assertCanManage(Recipe recipe) {
+        User current = securityUtils.getCurrentUser();
+        if (current == null) {
+            throw new BusinessException(401, "Yêu cầu đăng nhập");
+        }
+        boolean admin = current.getRole() == User.Role.ADMIN;
+        Long authorId = recipe.getAuthor() != null ? recipe.getAuthor().getId() : null;
+        if (!admin && (authorId == null || !authorId.equals(current.getId()))) {
+            throw new BusinessException(403, "Bạn không có quyền sửa hoặc xoá công thức này");
+        }
     }
 
     @Transactional
@@ -141,6 +157,12 @@ public class RecipeService {
     }
 
     private void applyRequest(Recipe recipe, RecipeRequest request) {
+        if (request == null) {
+            throw new BusinessException(400, "Dữ liệu công thức không hợp lệ");
+        }
+        if (request.getTitle() == null || request.getTitle().isBlank()) {
+            throw new BusinessException(400, "Tên công thức không được để trống");
+        }
         recipe.setTitle(request.getTitle().trim());
         recipe.setDescription(request.getDescription());
         recipe.setInstructions(request.getInstructions());
@@ -174,8 +196,11 @@ public class RecipeService {
     }
 
     private void saveIngredients(Recipe recipe, List<RecipeIngredientItem> items) {
+        if (items == null) return;
         for (RecipeIngredientItem item : items) {
+            if (item == null) continue;
             String ingName = item.getIngredientName() != null ? item.getIngredientName().trim() : "Nguyên liệu";
+            if (ingName.isBlank()) continue;
             Ingredient ingredient = ingredientRepository.findByNameIgnoreCase(ingName)
                     .orElseGet(() -> {
                         Ingredient newIng = Ingredient.builder()
@@ -187,10 +212,11 @@ public class RecipeService {
                         return ingredientRepository.save(newIng);
                     });
 
+            double qty = (item.getQuantity() != null && item.getQuantity() > 0) ? item.getQuantity() : 1.0;
             RecipeIngredient ri = RecipeIngredient.builder()
                     .recipe(recipe)
                     .ingredient(ingredient)
-                    .quantity(item.getQuantity() != null ? item.getQuantity() : 1.0)
+                    .quantity(qty)
                     .unit(item.getUnit() != null && !item.getUnit().isBlank() ? item.getUnit() : "phần")
                     .note(item.getNote())
                     .build();
@@ -205,7 +231,8 @@ public class RecipeService {
     }
 
     private RecipeResponse toResponse(Recipe recipe) {
-        List<RecipeResponse.IngredientDto> ings = recipe.getIngredients().stream()
+        List<RecipeResponse.IngredientDto> ings = (recipe.getIngredients() == null) ? List.of() : recipe.getIngredients().stream()
+                .filter(ri -> ri != null && ri.getIngredient() != null)
                 .map(ri -> RecipeResponse.IngredientDto.builder()
                         .id(ri.getId())
                         .ingredientName(ri.getIngredient().getName())
