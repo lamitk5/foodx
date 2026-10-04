@@ -1,11 +1,14 @@
 package com.nhom6.foodx.fridge.controller;
 
+import com.nhom6.foodx.common.food.FoodImageSearchService;
+import com.nhom6.foodx.common.food.NutritionEstimateResponse;
+import com.nhom6.foodx.common.food.NutritionEstimateService;
 import com.nhom6.foodx.common.response.ApiResponse;
+import com.nhom6.foodx.common.security.SecurityUtils;
 import com.nhom6.foodx.fridge.dto.ExpiryRequest;
 import com.nhom6.foodx.fridge.dto.FridgeItemRequest;
 import com.nhom6.foodx.fridge.dto.FridgeItemResponse;
 import com.nhom6.foodx.fridge.service.FridgeService;
-import com.nhom6.foodx.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +25,9 @@ import java.util.List;
 
 /**
  * API tủ lạnh (gộp từ dự án food-x, yêu cầu đăng nhập JWT).
+ *
+ * <p>Danh tính người dùng lấy từ claims JWT qua {@link SecurityUtils} (static),
+ * không còn truy vấn bảng {@code users} của user-service.</p>
  */
 @RestController
 @RequestMapping("/api/fridge")
@@ -29,18 +35,17 @@ import java.util.List;
 public class FridgeController {
 
     private final FridgeService fridgeService;
-    private final SecurityUtils securityUtils;
-    private final com.nhom6.foodx.food.service.FoodImageSearchService foodImageSearchService;
-    private final com.nhom6.foodx.food.service.NutritionEstimateService nutritionEstimateService;
+    private final FoodImageSearchService foodImageSearchService;
+    private final NutritionEstimateService nutritionEstimateService;
 
     @GetMapping
     public ApiResponse<List<FridgeItemResponse>> getAll() {
-        return ApiResponse.success(fridgeService.getAll(securityUtils.getCurrentUser()), "Lấy tủ lạnh thành công");
+        return ApiResponse.success(fridgeService.getAll(SecurityUtils.getCurrentUserId()), "Lấy tủ lạnh thành công");
     }
 
     @PostMapping
     public ApiResponse<FridgeItemResponse> add(@RequestBody FridgeItemRequest request) {
-        return ApiResponse.success(fridgeService.add(securityUtils.getCurrentUser(), request), "Đã thêm vào tủ lạnh");
+        return ApiResponse.success(fridgeService.add(SecurityUtils.getCurrentUserId(), request), "Đã thêm vào tủ lạnh");
     }
 
     @PutMapping("/{id}")
@@ -48,34 +53,34 @@ public class FridgeController {
             @PathVariable Long id,
             @RequestBody com.nhom6.foodx.fridge.dto.FridgeItemUpdateRequest request) {
         return ApiResponse.success(
-                fridgeService.update(securityUtils.getCurrentUser(), id, request),
+                fridgeService.update(SecurityUtils.getCurrentUserId(), id, request),
                 "Đã cập nhật nguyên liệu thành công");
     }
 
     @PostMapping("/merge-duplicates")
     public ApiResponse<List<FridgeItemResponse>> mergeDuplicates() {
         return ApiResponse.success(
-                fridgeService.mergeDuplicates(securityUtils.getCurrentUser()),
+                fridgeService.mergeDuplicates(SecurityUtils.getCurrentUserId()),
                 "Đã gộp các nguyên liệu trùng hạn sử dụng thành công");
     }
 
     @PatchMapping("/{id}/quantity")
     public ApiResponse<FridgeItemResponse> changeQuantity(@PathVariable Long id, @RequestParam Double delta) {
         return ApiResponse.success(
-                fridgeService.changeQuantity(securityUtils.getCurrentUser(), id, delta).orElse(null),
+                fridgeService.changeQuantity(SecurityUtils.getCurrentUserId(), id, delta).orElse(null),
                 "Đã cập nhật số lượng");
     }
 
     @PatchMapping("/{id}/expiry")
     public ApiResponse<FridgeItemResponse> updateExpiry(@PathVariable Long id, @RequestBody ExpiryRequest request) {
         return ApiResponse.success(
-                fridgeService.updateExpiry(securityUtils.getCurrentUser(), id, request.expiresAt()),
+                fridgeService.updateExpiry(SecurityUtils.getCurrentUserId(), id, request.expiresAt()),
                 "Đã cập nhật hạn sử dụng");
     }
 
     @DeleteMapping({"", "/all", "/clear-all"})
     public ApiResponse<Void> clearAll() {
-        fridgeService.clearAll(securityUtils.getCurrentUser());
+        fridgeService.clearAll(SecurityUtils.getCurrentUserId());
         return ApiResponse.success(null, "Đã dọn sạch toàn bộ thực phẩm trong tủ lạnh");
     }
 
@@ -86,7 +91,7 @@ public class FridgeController {
     }
 
     @GetMapping("/estimate-nutrition")
-    public ApiResponse<com.nhom6.foodx.food.dto.NutritionEstimateResponse> estimateNutrition(
+    public ApiResponse<NutritionEstimateResponse> estimateNutrition(
             @RequestParam String name,
             @RequestParam(required = false, defaultValue = "100") Double quantity,
             @RequestParam(required = false, defaultValue = "g") String unit) {
@@ -97,7 +102,7 @@ public class FridgeController {
 
     @DeleteMapping("/{id:[0-9]+}")
     public ApiResponse<Void> delete(@PathVariable Long id) {
-        fridgeService.delete(securityUtils.getCurrentUser(), id);
+        fridgeService.delete(SecurityUtils.getCurrentUserId(), id);
         return ApiResponse.success(null, "Đã xóa khỏi tủ lạnh");
     }
 
@@ -105,13 +110,13 @@ public class FridgeController {
     public ApiResponse<com.nhom6.foodx.fridge.dto.ScanResultDto> scanImage(
             @RequestParam("file") org.springframework.web.multipart.MultipartFile file,
             @RequestParam(required = false, defaultValue = "false") boolean autoSave) {
-        var result = fridgeService.scanAndProcessImage(securityUtils.getCurrentUser(), file, autoSave);
+        var result = fridgeService.scanAndProcessImage(SecurityUtils.getCurrentUserId(), file, autoSave);
         return ApiResponse.success(result, "Quét và phân tích ảnh thực phẩm thành công");
     }
 
     @PostMapping("/batch")
     public ApiResponse<List<FridgeItemResponse>> batchAdd(@RequestBody List<FridgeItemRequest> requests) {
-        var result = fridgeService.batchAdd(securityUtils.getCurrentUser(), requests);
+        var result = fridgeService.batchAdd(SecurityUtils.getCurrentUserId(), requests);
         return ApiResponse.success(result, "Đã thêm danh sách thực phẩm vào tủ lạnh thành công");
     }
 }

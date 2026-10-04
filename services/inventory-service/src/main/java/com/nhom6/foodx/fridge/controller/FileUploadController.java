@@ -21,7 +21,7 @@ import java.util.UUID;
 /**
  * Upload ảnh món ăn (dùng cho form tạo công thức).
  * Chỉ chấp nhận ảnh raster an toàn (JPEG/PNG/WEBP) — từ chối SVG (nguy cơ stored-XSS),
- * kiểm tra cả đuôi file lẫn Content-Type. Yêu cầu đăng nhập (xem SecurityConfig).
+ * kiểm tra cả đuôi file lẫn Content-Type. Yêu cầu đăng nhập (xem InventoryServiceSecurityRules).
  */
 @RestController
 @RequestMapping("/api/upload")

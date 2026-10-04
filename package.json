@@ -1,0 +1,12 @@
+{
+  "name": "foodx-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FoodX Playwright UI Tests",
+  "scripts": {
+    "test:ui": "node scripts/test_ui_playwright.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}

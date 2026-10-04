@@ -6,13 +6,18 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Chỉ truy vấn bảng {@code shopping_items} do service này sở hữu.
+ * Khoá ngoại tới người dùng nay là {@code userId} (giá trị thô), không còn entity {@code User}.
+ */
 public interface ShoppingItemRepository extends JpaRepository<ShoppingItem, Long> {
 
-    List<ShoppingItem> findByUser_IdOrderByIdAsc(Long userId);
+    List<ShoppingItem> findByUserIdOrderByIdAsc(Long userId);
 
-    Optional<ShoppingItem> findByIdAndUser_Id(Long id, Long userId);
+    Optional<ShoppingItem> findByIdAndUserId(Long id, Long userId);
 
-    long countByUser_IdAndDoneFalse(Long userId);
+    long countByUserIdAndDoneFalse(Long userId);
 
-    void deleteByUser_Id(Long userId);
+    /** Dọn toàn bộ danh sách mua sắm của một người dùng (admin xoá tài khoản). */
+    long deleteByUserId(Long userId);
 }

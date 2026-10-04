@@ -1,0 +1,316 @@
+# ============================================================================
+# FoodX — cụm microservice trên Docker Compose
+# ============================================================================
+# Chạy:   docker compose up --build
+# Web:    http://localhost:8080
+#
+# Đặc điểm kiến trúc:
+#   * database-per-service: mỗi service một database + một tài khoản MySQL riêng
+#     (xem db/init/00-create-databases.sql) — không service nào chạm dữ liệu của
+#     service khác ở tầng DB.
+#   * Một Dockerfile duy nhất ở gốc repo, chọn module qua build arg (multi-stage,
+#     chạy bằng user thường, có HEALTHCHECK đọc /actuator/health).
+#   * Cấu hình qua biến môi trường (12-factor); bí mật đặt trong file .env
+#     (xem .env.example) — không sửa application.properties.
+#   * Chỉ API Gateway cần public ra ngoài. Port của từng service được publish
+#     thêm cho việc phát triển/debug; khi deploy thật hãy bỏ các mục `ports`
+#     của service lõi (xem ghi chú "PROD" bên dưới).
+# ============================================================================
+
+name: foodx
+
+# ---------------------------------------------------------------------------
+# Khối dùng chung (YAML anchor) — tránh lặp lại cấu hình ở 6 service
+# ---------------------------------------------------------------------------
+x-db-env: &db-env
+  SPRING_DATASOURCE_PASSWORD: foodx_dev_pw
+  SPRING_JPA_HIBERNATE_DDL_AUTO: update
+
+x-app-env: &app-env
+  # Token chia sẻ cho cổng nội bộ /internal/** giữa các service
+  FOODX_INTERNAL_TOKEN: ${FOODX_INTERNAL_TOKEN:-foodx-internal-dev-token}
+  # Khoá ký JWT — PHẢI giống nhau ở mọi service
+  APP_JWT_SECRET: ${APP_JWT_SECRET:-dev-super-secret-key-please-change-this-key-32bytes!!}
+  APP_JWT_ISSUER: ${APP_JWT_ISSUER:-foodx}
+
+services:
+
+  # =========================================================================
+  # Hạ tầng
+  # =========================================================================
+  mysql:
+    image: mysql:8.0
+    container_name: foodx-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Chỉ chạy khi volume còn rỗng: tạo 6 database + 6 tài khoản service
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    networks:
+      - foodx-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: foodx-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    networks:
+      - foodx-network
+
+  # =========================================================================
+  # API Gateway (cổng duy nhất ra ngoài) + host frontend SPA
+  # =========================================================================
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: api-gateway
+        PORT: 8080
+    image: foodx/api-gateway:local
+    container_name: foodx-api-gateway
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Bảng định tuyến trỏ tới tên service trong mạng Docker (DNS nội bộ)
+      GATEWAY_SERVICES_USER_SERVICE: "http://user-service:8081"
+      GATEWAY_SERVICES_INVENTORY_SERVICE: "http://inventory-service:8082"
+      GATEWAY_SERVICES_RECIPE_SERVICE: "http://recipe-service:8083"
+      GATEWAY_SERVICES_PLAN_SHOPPING_SERVICE: "http://plan-shopping-service:8084"
+      GATEWAY_SERVICES_AI_SERVICE: "http://ai-service:8085"
+      GATEWAY_SERVICES_SOCIAL_STATS_SERVICE: "http://social-stats-service:8086"
+      SPRING_DATA_REDIS_HOST: "redis"
+      SPRING_DATA_REDIS_PORT: "6379"
+      APP_RATE_LIMIT_BACKEND: "redis"
+      APP_RATE_LIMIT_PER_MINUTE: "120"
+      APP_AI_MAX_CONCURRENT_GLOBAL: "24"
+    depends_on:
+      redis:
+        condition: service_healthy
+      user-service:
+        condition: service_started
+      inventory-service:
+        condition: service_started
+      recipe-service:
+        condition: service_started
+      plan-shopping-service:
+        condition: service_started
+      ai-service:
+        condition: service_started
+      social-stats-service:
+        condition: service_started
+    volumes:
+      # Gateway phục vụ ảnh người dùng tải lên tại /uploads/**
+      - uploads_data:/app/uploads
+    networks:
+      - foodx-network
+
+  # =========================================================================
+  # user-service — sở hữu foodx_user (users, profiles)
+  # =========================================================================
+  user-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: services/user-service
+        PORT: 8081
+    image: foodx/user-service:local
+    container_name: foodx-user-service
+    restart: unless-stopped
+    ports:
+      - "8081:8081"   # PROD: bỏ dòng này, chỉ public qua gateway
+    environment:
+      <<: [*db-env, *app-env]
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/foodx_user?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci"
+      SPRING_DATASOURCE_USERNAME: "foodx_user"
+      # Admin xoá tài khoản -> yêu cầu 5 service còn lại tự dọn dữ liệu của họ
+      FOODX_SERVICES_INVENTORY_SERVICE: "http://inventory-service:8082"
+      FOODX_SERVICES_RECIPE_SERVICE: "http://recipe-service:8083"
+      FOODX_SERVICES_PLAN_SHOPPING_SERVICE: "http://plan-shopping-service:8084"
+      FOODX_SERVICES_AI_SERVICE: "http://ai-service:8085"
+      FOODX_SERVICES_SOCIAL_STATS_SERVICE: "http://social-stats-service:8086"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - foodx-network
+
+  # =========================================================================
+  # inventory-service — sở hữu foodx_inventory (foods, ingredients, fridge_stock)
+  # =========================================================================
+  inventory-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: services/inventory-service
+        PORT: 8082
+    image: foodx/inventory-service:local
+    container_name: foodx-inventory-service
+    restart: unless-stopped
+    ports:
+      - "8082:8082"   # PROD: bỏ dòng này
+    environment:
+      <<: [*db-env, *app-env]
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/foodx_inventory?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci"
+      SPRING_DATASOURCE_USERNAME: "foodx_inventory"
+      # Quét ảnh hoá đơn / tủ lạnh -> nhờ ai-service nhận diện
+      FOODX_SERVICES_AI_SERVICE: "http://ai-service:8085"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - foodx-network
+
+  # =========================================================================
+  # recipe-service — sở hữu foodx_recipe (recipes, recipe_ingredients, favorites)
+  # =========================================================================
+  recipe-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: services/recipe-service
+        PORT: 8083
+    image: foodx/recipe-service:local
+    container_name: foodx-recipe-service
+    restart: unless-stopped
+    ports:
+      - "8083:8083"   # PROD: bỏ dòng này
+    environment:
+      <<: [*db-env, *app-env]
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/foodx_recipe?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci"
+      SPRING_DATASOURCE_USERNAME: "foodx_recipe"
+      FOODX_SERVICES_USER_SERVICE: "http://user-service:8081"
+      FOODX_SERVICES_INVENTORY_SERVICE: "http://inventory-service:8082"
+      FOODX_SERVICES_AI_SERVICE: "http://ai-service:8085"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - foodx-network
+
+  # =========================================================================
+  # plan-shopping-service — sở hữu foodx_plan (meal_plan_entries, shopping_items)
+  # =========================================================================
+  plan-shopping-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: services/plan-shopping-service
+        PORT: 8084
+    image: foodx/plan-shopping-service:local
+    container_name: foodx-plan-shopping-service
+    restart: unless-stopped
+    ports:
+      - "8084:8084"   # PROD: bỏ dòng này
+    environment:
+      <<: [*db-env, *app-env]
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/foodx_plan?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci"
+      SPRING_DATASOURCE_USERNAME: "foodx_plan"
+      FOODX_SERVICES_USER_SERVICE: "http://user-service:8081"
+      FOODX_SERVICES_INVENTORY_SERVICE: "http://inventory-service:8082"
+      FOODX_SERVICES_RECIPE_SERVICE: "http://recipe-service:8083"
+      FOODX_SERVICES_AI_SERVICE: "http://ai-service:8085"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - foodx-network
+
+  # =========================================================================
+  # ai-service — sở hữu foodx_ai (chat_sessions, chat_messages)
+  # =========================================================================
+  ai-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: services/ai-service
+        PORT: 8085
+    image: foodx/ai-service:local
+    container_name: foodx-ai-service
+    restart: unless-stopped
+    ports:
+      - "8085:8085"   # PROD: bỏ dòng này
+    environment:
+      <<: [*db-env, *app-env]
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/foodx_ai?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci"
+      SPRING_DATASOURCE_USERNAME: "foodx_ai"
+      # Bối cảnh chat: hồ sơ dinh dưỡng + thực phẩm trong tủ
+      FOODX_SERVICES_USER_SERVICE: "http://user-service:8081"
+      FOODX_SERVICES_INVENTORY_SERVICE: "http://inventory-service:8082"
+      GROQ_API_KEY: "${GROQ_API_KEY:-}"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+      APP_AI_MAX_CONCURRENT: "12"
+      APP_RATE_LIMIT_PER_MINUTE: "120"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - foodx-network
+
+  # =========================================================================
+  # social-stats-service — sở hữu foodx_social (recipe_posts, post_likes,
+  #                        post_comments, cook_history)
+  # =========================================================================
+  social-stats-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: services/social-stats-service
+        PORT: 8086
+    image: foodx/social-stats-service:local
+    container_name: foodx-social-stats-service
+    restart: unless-stopped
+    ports:
+      - "8086:8086"   # PROD: bỏ dòng này
+    environment:
+      <<: [*db-env, *app-env]
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/foodx_social?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci"
+      SPRING_DATASOURCE_USERNAME: "foodx_social"
+      FOODX_SERVICES_USER_SERVICE: "http://user-service:8081"
+      FOODX_SERVICES_INVENTORY_SERVICE: "http://inventory-service:8082"
+      FOODX_SERVICES_RECIPE_SERVICE: "http://recipe-service:8083"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - foodx-network
+
+networks:
+  foodx-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  redis_data:
+  uploads_data:
