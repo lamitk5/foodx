@@ -1,130 +1,588 @@
 /**
- * =========================================================
- * FOODX - MODULE: CHAT (Giao diện hội thoại tương tác AI)
- * =========================================================
+ * FoodX module: chat.js
+ * Hoi thoai tro ly AI.
+ * Cat tu app.js, van dung bien toan cuc de index.html goi duoc.
  */
+/* =========================================================
+   CHAT
+========================================================= */
 
-var chatMode = 'chat';
-var activeChatSessionId = null;
-var chatSessionsCache = [];
-var activeRecipeContext = (typeof window !== 'undefined' && window.activeRecipeContext) ? window.activeRecipeContext : null;
-var cookingState = (typeof window !== 'undefined' && window.cookingState) ? window.cookingState : { recipeId: null, stepIndex: 0 };
+const chatWindow =
+    document.getElementById(
+        "chatWindow"
+    );
 
-// --- Banner & Context Chat ---
+
+const chatInput =
+    document.getElementById(
+        "chatInput"
+    );
+
+
+const chatMessages =
+    document.getElementById(
+        "chatMessages"
+    );
+
+
+function addChatMessage(text, sender) {
+    if (!chatMessages) return;
+    const div = document.createElement("div");
+    div.className = `message ${sender}`;
+    if (sender === 'ai') {
+        div.innerHTML = text;
+    } else {
+        div.textContent = text;
+    }
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+
 function updateChatContextBanner() {
-    const banner = document.getElementById("chatContextBanner");
-    if (!banner) return;
 
-    if (!activeRecipeContext) {
-        banner.classList.remove("show");
-        banner.innerHTML = "";
+    const banner =
+        document.getElementById(
+            "chatContextBanner"
+        );
+
+
+    if (!banner) {
         return;
     }
 
-    let stepText = "";
-    if (cookingState && cookingState.recipeId === activeRecipeContext.id && activeRecipeContext.steps) {
-        stepText = ` • Bước ${cookingState.stepIndex + 1}/${activeRecipeContext.steps.length}`;
+
+    if (
+        !activeRecipeContext
+    ) {
+
+        banner.classList.remove(
+            "show"
+        );
+
+
+        banner.innerHTML =
+            "";
+
+
+        return;
     }
 
-    banner.innerHTML = `✦ Bạn đang hỏi về: <strong>${escapeHtml(activeRecipeContext.name || activeRecipeContext.title || '')}</strong>${stepText}`;
-    banner.classList.add("show");
+
+    let stepText =
+        "";
+
+
+    if (
+        cookingState.recipeId ===
+        activeRecipeContext.id
+    ) {
+
+        stepText =
+            ` • Bước ${cookingState.stepIndex + 1}/${activeRecipeContext.steps.length}`;
+    }
+
+
+    banner.innerHTML = `
+
+        ✦ Bạn đang hỏi về:
+
+        <strong>
+            ${activeRecipeContext.name}
+        </strong>
+
+        ${stepText}
+    `;
+
+
+    banner.classList.add(
+        "show"
+    );
 }
 
-function openContextChat(type = "recipe") {
-    const chatWindow = document.getElementById("chatWindow");
-    const chatPanel = document.getElementById("chatPanel");
 
-    if (chatPanel) {
+function openContextChat(
+    type = "recipe"
+) {
+
+    // Chat mới (đa phiên): mở panel hiện đại; không còn chatWindow cũ
+    if (!chatWindow) {
         openChat(type === "step" ? "step" : "chat");
-        updateChatContextBanner();
         return;
     }
 
-    if (chatWindow) {
-        chatWindow.classList.add("show");
-        updateChatContextBanner();
-        const input = document.getElementById("chatInput");
-        setTimeout(() => input?.focus(), 120);
+    chatWindow
+        ?.classList
+        .add("show");
 
-        if (type === "step" && cookingState && cookingState.recipeId) {
-            const recipe = (typeof getRecipeById === 'function') ? getRecipeById(cookingState.recipeId) : activeRecipeContext;
-            if (recipe && recipe.steps) {
-                const step = recipe.steps[cookingState.stepIndex];
-                addMsg(`Bạn đang ở bước ${cookingState.stepIndex + 1}: "${step}". Bạn chưa hiểu chỗ nào?`, "ai");
-            }
-        } else if (activeRecipeContext) {
-            addMsg(`Tôi đang theo dõi công thức "${activeRecipeContext.name || activeRecipeContext.title}". Bạn muốn hỏi gì về món này?`, "ai");
+
+    updateChatContextBanner();
+
+
+    setTimeout(
+        () =>
+            chatInput
+                ?.focus(),
+        120
+    );
+
+
+    if (
+        type === "step"
+    ) {
+
+        const recipe =
+            getRecipeById(
+                cookingState.recipeId
+            );
+
+
+        if (recipe) {
+
+            const step =
+                recipe.steps[
+                    cookingState.stepIndex
+                    ];
+
+
+            addChatMessage(
+                `Bạn đang ở bước ${cookingState.stepIndex + 1}: "${step}". Bạn chưa hiểu chỗ nào?`,
+                "ai"
+            );
         }
+
+
+    } else if (
+        activeRecipeContext
+    ) {
+
+        addChatMessage(
+            `Tôi đang theo dõi công thức "${activeRecipeContext.name}". Bạn muốn hỏi gì về món này?`,
+            "ai"
+        );
     }
 }
+
+
+document
+    .getElementById(
+        "askCurrentStepAI"
+    )
+    ?.addEventListener(
+        "click",
+        () =>
+            openContextChat(
+                "step"
+            )
+    );
+
 
 function contextualRecipeAI(question) {
-    if (!activeRecipeContext) return null;
-    const text = (typeof normalize === 'function') ? normalize(question) : question.toLowerCase();
-    const recipe = activeRecipeContext;
-    let currentStep = null;
 
-    if (cookingState && cookingState.recipeId === recipe.id && recipe.steps) {
-        currentStep = recipe.steps[cookingState.stepIndex];
+    if (
+        !activeRecipeContext
+    ) {
+
+        return null;
     }
 
-    const recipeName = recipe.name || recipe.title || 'Món ăn';
-    if (text.includes("nguyen lieu")) {
-        const ings = Array.isArray(recipe.ingredients) ? recipe.ingredients.join(", ") : 'đầy đủ';
-        return `${recipeName} cần: ${ings}.`;
+
+    const text =
+        normalize(
+            question
+        );
+
+
+    const recipe =
+        activeRecipeContext;
+
+
+    let currentStep =
+        null;
+
+
+    if (
+        cookingState.recipeId ===
+        recipe.id
+    ) {
+
+        currentStep =
+            recipe.steps[
+                cookingState.stepIndex
+                ];
     }
-    if (text.includes("calo") || text.includes("kcal")) {
-        return `${recipeName} được ước tính khoảng ${recipe.kcal || 350} kcal/khẩu phần.`;
+
+
+    if (
+        text.includes(
+            "nguyen lieu"
+        )
+    ) {
+
+        return (
+            `${recipe.name} cần: ${recipe.ingredients.join(", ")}.`
+        );
     }
-    if (text.includes("bao lau") || text.includes("may phut")) {
-        return `Thời gian dự kiến của ${recipeName} là khoảng ${recipe.cookTime || recipe.time || 30} phút.`;
+
+
+    if (
+        text.includes("calo") ||
+        text.includes("kcal")
+    ) {
+
+        return (
+            `${recipe.name} được ước tính khoảng ${recipe.kcal} kcal/khẩu phần.`
+        );
     }
-    if (text.includes("khong co") || text.includes("thay bang") || text.includes("thay ")) {
-        return `Bạn đang hỏi về ${recipeName}. Bạn có thể thay thế nguyên liệu tương đương hoặc ghi chú lại vào danh sách mua nhé.`;
+
+
+    if (
+        text.includes("bao lau") ||
+        text.includes("may phut")
+    ) {
+
+        return (
+            `Thời gian dự kiến của ${recipe.name} là khoảng ${recipe.time} phút.`
+        );
     }
-    if (text.includes("khong hieu") || text.includes("lam sao") || text.includes("lam nhu nao") || text.includes("nghia la gi")) {
+
+
+    if (
+        text.includes("khong co") ||
+        text.includes("thay bang") ||
+        text.includes("thay ")
+    ) {
+
+        return (
+            `Bạn đang hỏi về ${recipe.name}. Nguyên liệu gốc gồm ${recipe.ingredients.join(", ")}. Hiện đây vẫn là AI mô phỏng; sau này AI thật sẽ phân tích nguyên liệu thay thế chính xác hơn.`
+        );
+    }
+
+
+    if (
+        text.includes("khong hieu") ||
+        text.includes("lam sao") ||
+        text.includes("lam nhu nao") ||
+        text.includes("nghia la gi")
+    ) {
+
         if (currentStep) {
-            return `Bạn đang ở bước ${cookingState.stepIndex + 1}: "${currentStep}". Hãy nói cụ thể thao tác nào chưa hiểu để FoodX giải thích tiếp nhé.`;
+
+            return (
+                `Bạn đang ở bước ${cookingState.stepIndex + 1}: "${currentStep}". Hãy nói cụ thể thao tác nào chưa hiểu để Food X giải thích tiếp.`
+            );
         }
     }
+
+
     if (currentStep) {
-        return `Bạn đang nấu "${recipeName}", bước ${cookingState.stepIndex + 1}: "${currentStep}".`;
+
+        return (
+            `Bạn đang nấu "${recipe.name}", bước ${cookingState.stepIndex + 1}: "${currentStep}".`
+        );
     }
-    return `Bạn đang hỏi về "${recipeName}". Tôi có thể hỗ trợ nguyên liệu, cách làm, calo và thời gian.`;
+
+
+    return (
+        `Bạn đang hỏi về "${recipe.name}". Tôi có thể hỗ trợ nguyên liệu, cách làm, calo và thời gian.`
+    );
 }
+
 
 function fakeAI(question) {
-    if (activeRecipeContext) {
-        const answer = contextualRecipeAI(question);
-        if (answer) return answer;
-    }
-    const text = (typeof normalize === 'function') ? normalize(question) : question.toLowerCase();
 
-    if (text.includes("an gi") || text.includes("goi y") || text.includes("mon")) {
-        if (typeof suggestedRecipes === 'function') {
-            const best = suggestedRecipes()[0];
-            if (best) return `FoodX gợi ý ${best.name || best.title}. Món này khoảng ${best.kcal || 350} kcal.`;
+    if (
+        activeRecipeContext
+    ) {
+
+        const answer =
+            contextualRecipeAI(
+                question
+            );
+
+
+        if (answer) {
+
+            return answer;
         }
-        return "FoodX gợi ý bạn nấu Phở bò tái lăn hoặc Canh chua cá lóc giải nhiệt!";
     }
-    if (text.includes("bmi") || text.includes("can nang")) {
-        if (typeof state !== 'undefined' && state.profile && typeof calculateBMI === 'function') {
-            const bmi = calculateBMI(state.profile.weight, state.profile.height);
-            return `BMI hiện tại khoảng ${bmi.toFixed(1)}. Cân nặng ${state.profile.weight} kg, chiều cao ${state.profile.height} cm.`;
-        }
+
+
+    const text =
+        normalize(
+            question
+        );
+
+
+    if (
+        text.includes("an gi") ||
+        text.includes("goi y") ||
+        text.includes("mon")
+    ) {
+
+        const best =
+            suggestedRecipes()[0];
+
+
+        return best
+
+            ? `Food X gợi ý ${best.name}. Món này khoảng ${best.kcal} kcal và đạt ${best.score}% phù hợp.`
+
+            : "Hiện chưa tìm thấy món phù hợp.";
     }
-    if (text.includes("tu lanh")) {
-        const count = (typeof state !== 'undefined' && Array.isArray(state.fridge)) ? state.fridge.length : 0;
-        return `Tủ lạnh hiện có ${count} loại thực phẩm.`;
+
+
+    if (
+        text.includes("bmi") ||
+        text.includes("can nang")
+    ) {
+
+        const bmi =
+            calculateBMI(
+                state.profile.weight,
+                state.profile.height
+            );
+
+
+        return (
+            `BMI hiện tại khoảng ${bmi.toFixed(1)}. Cân nặng ${state.profile.weight} kg, chiều cao ${state.profile.height} cm.`
+        );
     }
-    return "Tôi là Trợ lý AI của FoodX. Bạn có thể hỏi về món ăn, công thức, dinh dưỡng hoặc thực phẩm trong tủ lạnh.";
+
+
+    if (
+        text.includes("calo") ||
+        text.includes("kcal")
+    ) {
+
+        const calories =
+            calculateCalories(
+                state.profile.gender,
+                state.profile.age,
+                state.profile.weight,
+                state.profile.height,
+                state.profile.activity,
+                state.profile.target
+            );
+
+
+        return (
+            `Mức năng lượng tham khảo khoảng ${formatNumber(calories)} kcal/ngày.`
+        );
+    }
+
+
+    if (
+        text.includes(
+            "tu lanh"
+        )
+    ) {
+
+        return (
+            `Tủ lạnh hiện có ${state.fridge.length} loại thực phẩm.`
+        );
+    }
+
+
+    if (
+        text.includes(
+            "het han"
+        )
+    ) {
+
+        const data =
+            state.fridge
+                .filter(
+                    item =>
+                        daysLeft(
+                            item.expiresAt
+                        ) <= 3
+                )
+                .map(
+                    item =>
+                        item.name
+                );
+
+        return data.length
+            ? `Bạn nên ưu tiên dùng: ${data.join(", ")}.`
+            : "Không có thực phẩm nào cần dùng gấp.";
+    }
+
+    return (
+        "Tôi hiện là lớp mô phỏng AI của Food X. Bạn có thể hỏi về món ăn, BMI, calo, tủ lạnh hoặc thực phẩm sắp hết hạn."
+    );
 }
 
-// --- Session & Multi-Session Management ---
+
+function sendChat() {
+    const text = chatInput?.value.trim();
+    if (!text) return;
+
+    addChatMessage(text, "user");
+    chatInput.value = "";
+
+    const loading = document.createElement("div");
+    loading.className = "message ai typing-message";
+    loading.innerHTML = `<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>`;
+    chatMessages?.appendChild(loading);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text })
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+    })
+    .then(j => {
+        loading.remove();
+        if (j && j.success && j.data) {
+            const reply = escapeHtml(j.data.reply || '').replace(/\n/g, '<br>');
+            addChatMessage(reply, "ai");
+        } else {
+            addChatMessage("Có lỗi xảy ra, thử lại nhé!", "ai");
+        }
+    })
+    .catch(() => {
+        loading.remove();
+        addChatMessage("Không kết nối được máy chủ. Hãy khởi động backend rồi thử lại.", "ai");
+    });
+}
+
+
+document
+    .getElementById(
+        "sendChat"
+    )
+    ?.addEventListener(
+        "click",
+        sendChat
+    );
+
+
+chatInput
+    ?.addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key ===
+                "Enter"
+            ) {
+
+                event.preventDefault();
+
+
+                sendChat();
+            }
+        }
+    );
+
+
+document
+    .getElementById(
+        "closeChat"
+    )
+    ?.addEventListener(
+        "click",
+        () =>
+            chatWindow
+                ?.classList
+                .remove("show")
+    );
+
+
+document
+    .getElementById(
+        "chatFloating"
+    )
+    ?.addEventListener(
+        "click",
+        () => {
+
+            const cookingOpen =
+                document
+                    .getElementById(
+                        "cookingModal"
+                    )
+                    ?.classList
+                    .contains(
+                        "show"
+                    );
+
+
+            const recipeOpen =
+                document
+                    .getElementById(
+                        "recipeModal"
+                    )
+                    ?.classList
+                    .contains(
+                        "show"
+                    );
+
+
+            if (
+                activeRecipeContext &&
+                (
+                    cookingOpen ||
+                    recipeOpen
+                )
+            ) {
+
+                openContextChat(
+                    cookingOpen
+                        ? "step"
+                        : "recipe"
+                );
+
+
+                return;
+            }
+
+
+            if (
+                state.selectedFridgeIds
+                    .length
+            ) {
+
+                openSelectedAISuggestions();
+
+
+                return;
+            }
+
+
+            chatWindow
+                ?.classList
+                .toggle(
+                    "show"
+                );
+
+
+            setTimeout(
+                () =>
+                    chatInput
+                        ?.focus(),
+                100
+            );
+        }
+    );
+
+
+/* =========================================================
+   CHAT AI (Trợ lý AI FoodX — Đa phiên & Lịch sử theo tài khoản)
+========================================================= */
+let chatMode = 'chat';
+let activeChatSessionId = null;
+let chatSessionsCache = [];
+
 function initChatForCurrentUser() {
     activeChatSessionId = null;
     chatSessionsCache = [];
-    if (typeof isUserLoggedIn === 'function' && isUserLoggedIn()) {
+    if (isUserLoggedIn()) {
         fetchChatSessions(false);
     }
 }
@@ -153,8 +611,8 @@ function toggleChat() {
 }
 
 async function openChat(mode) {
-    if (typeof isUserLoggedIn === 'function' && !isUserLoggedIn()) {
-        if (typeof requireAuth === 'function') requireAuth('chat');
+    if (!isUserLoggedIn()) {
+        requireAuth('chat');
         return;
     }
 
@@ -166,6 +624,7 @@ async function openChat(mode) {
 
     loadAiStatus();
 
+    // Nếu chưa có phiên nào đang chọn, tải danh sách và tự động chọn phiên gần nhất hoặc tạo mới
     if (!activeChatSessionId) {
         await fetchChatSessions(true);
     }
@@ -201,11 +660,13 @@ function toggleChatMaximize() {
         panel.style.height = savedH ? savedH + 'px' : '';
     }
 }
+window.toggleChatMaximize = toggleChatMaximize;
 
 function initChatResizable() {
     const panel = document.getElementById('chatPanel');
     if (!panel) return;
 
+    // Khôi phục kích thước người dùng đã lưu
     const savedW = localStorage.getItem('foodx_chat_width');
     const savedH = localStorage.getItem('foodx_chat_height');
     if (savedW && !panel.classList.contains('maximized')) {
@@ -240,8 +701,8 @@ function initChatResizable() {
         const pt = e.touches ? e.touches[0] : e;
         if (!pt) return;
 
-        const deltaX = startX - pt.clientX;
-        const deltaY = startY - pt.clientY;
+        const deltaX = startX - pt.clientX; // Kéo sang trái làm tăng width
+        const deltaY = startY - pt.clientY; // Kéo lên trên làm tăng height
 
         const minW = 320;
         const maxW = window.innerWidth - 24;
@@ -281,6 +742,13 @@ function initChatResizable() {
     document.getElementById('chatResizeTopLeft')?.addEventListener('touchstart', e => onPointerDown(e, 'top-left'), { passive: false });
 }
 
+// Khởi chạy resize ngay
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initChatResizable);
+} else {
+    initChatResizable();
+}
+
 function setMode(m) {
     chatMode = m;
     const chatBtn = document.getElementById('modeChatBtn');
@@ -289,17 +757,19 @@ function setMode(m) {
     if (stepBtn) stepBtn.classList.toggle('active', m === 'step');
 }
 
+/** Tải danh sách các phiên trò chuyện từ backend */
 async function fetchChatSessions(autoSelectLatest = false) {
-    if (typeof isUserLoggedIn === 'function' && !isUserLoggedIn()) return;
+    if (!isUserLoggedIn()) return;
     try {
-        const token = (typeof getToken === 'function') ? getToken() : '';
         const res = await fetch('/api/chat/sessions', {
-            headers: { 'Authorization': 'Bearer ' + token }
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
         });
         if (res.status === 401 || res.status === 403) {
-            if (typeof setToken === 'function') setToken("");
+            setToken("");
             closeChat();
-            if (typeof requireAuth === 'function') requireAuth('chat');
+            requireAuth('chat');
             return;
         }
         const j = await res.json();
@@ -393,6 +863,7 @@ function formatChatSessionTime(isoDateStr) {
     }
 }
 
+/** Bật / tắt hiển thị danh sách các phiên trò chuyện */
 function toggleChatSessions(force) {
     const overlay = document.getElementById('chatSessionsOverlay');
     if (!overlay) return;
@@ -409,29 +880,29 @@ function toggleChatSessions(force) {
     }
 }
 
-async function createChatSession(title, mode, showSuccessToast = true) {
-    if (typeof isUserLoggedIn === 'function' && !isUserLoggedIn()) {
-        if (typeof requireAuth === 'function') requireAuth('chat');
+/** Tạo một phiên chat mới */
+async function createChatSession(title, mode, showSuccessToast = true, notifyOnError = true) {
+    if (!isUserLoggedIn()) {
+        requireAuth('chat');
         return null;
     }
 
     const newTitle = title || 'Cuộc trò chuyện mới';
     const newMode = mode || chatMode || 'chat';
-    const token = (typeof getToken === 'function') ? getToken() : '';
 
     try {
         const res = await fetch('/api/chat/sessions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
+                'Authorization': 'Bearer ' + getToken()
             },
             body: JSON.stringify({ title: newTitle, mode: newMode })
         });
         if (res.status === 401 || res.status === 403) {
-            if (typeof setToken === 'function') setToken("");
+            setToken("");
             closeChat();
-            if (typeof requireAuth === 'function') requireAuth('chat');
+            requireAuth('chat');
             return null;
         }
         const j = await res.json();
@@ -443,6 +914,7 @@ async function createChatSession(title, mode, showSuccessToast = true) {
             updateChatSessionToolbar();
             renderChatSessionsList();
 
+            // Xóa tin nhắn cũ và hiển thị lời chào phiên mới
             const body = document.getElementById('chatBody');
             if (body) {
                 body.innerHTML = '';
@@ -452,23 +924,25 @@ async function createChatSession(title, mode, showSuccessToast = true) {
             setMode(newSession.mode || 'chat');
             toggleChatSessions(false);
 
-            if (showSuccessToast && typeof showToast === 'function') {
+            if (showSuccessToast) {
                 showToast('Đã tạo phiên trò chuyện mới!', 'success');
             }
             return newSession;
-        } else {
-            if (typeof showToast === 'function') showToast(j?.message || 'Không thể tạo phiên mới', 'error');
+        } else if (notifyOnError) {
+            showToast(j?.message || 'Không thể tạo phiên mới', 'error');
         }
     } catch (err) {
         console.error('Lỗi tạo phiên chat:', err);
+        if (notifyOnError) showToast('Không tạo được phiên trò chuyện.', 'error');
     }
     return null;
 }
 
+/** Chuyển sang xem một phiên chat */
 async function switchChatSession(sessionId) {
     if (!sessionId) return;
-    if (typeof isUserLoggedIn === 'function' && !isUserLoggedIn()) {
-        if (typeof requireAuth === 'function') requireAuth('chat');
+    if (!isUserLoggedIn()) {
+        requireAuth('chat');
         return;
     }
 
@@ -483,9 +957,10 @@ async function switchChatSession(sessionId) {
     }
 
     try {
-        const token = (typeof getToken === 'function') ? getToken() : '';
         const res = await fetch(`/api/chat/sessions/${sessionId}`, {
-            headers: { 'Authorization': 'Bearer ' + token }
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
         });
         const j = await res.json();
         if (j && j.success && j.data) {
@@ -518,7 +993,7 @@ async function switchChatSession(sessionId) {
                 body.scrollTop = body.scrollHeight;
             }
         } else {
-            if (typeof showToast === 'function') showToast(j?.message || 'Không thể tải phiên chat', 'error');
+            showToast(j?.message || 'Không thể tải phiên chat', 'error');
         }
     } catch (err) {
         console.error('Lỗi tải chi tiết phiên chat:', err);
@@ -526,14 +1001,16 @@ async function switchChatSession(sessionId) {
     }
 }
 
+/** Đổi tên phiên chat đang chọn */
 function renameCurrentChatSession() {
     if (!activeChatSessionId) {
-        if (typeof showToast === 'function') showToast('Chưa có phiên chat nào được chọn', 'warning');
+        showToast('Chưa có phiên chat nào được chọn', 'warning');
         return;
     }
     renameChatSession(activeChatSessionId);
 }
 
+/** Đổi tên phiên chat */
 async function renameChatSession(sessionId, event) {
     if (event) event.stopPropagation();
     if (!sessionId) return;
@@ -545,35 +1022,78 @@ async function renameChatSession(sessionId, event) {
     if (newTitle === null) return;
     const trimmed = newTitle.trim();
     if (!trimmed) {
-        if (typeof showToast === 'function') showToast('Tiêu đề không được để trống', 'warning');
+        showToast('Tiêu đề không được để trống', 'warning');
         return;
     }
 
     try {
-        const token = (typeof getToken === 'function') ? getToken() : '';
         const res = await fetch(`/api/chat/sessions/${sessionId}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
+                'Authorization': 'Bearer ' + getToken()
             },
             body: JSON.stringify({ title: trimmed })
         });
         const j = await res.json();
         if (j && j.success) {
-            if (typeof showToast === 'function') showToast('Đã đổi tên phiên thành công', 'success');
+            showToast('Đã đổi tên phiên thành công', 'success');
             if (cur) cur.title = trimmed;
             updateChatSessionToolbar();
             renderChatSessionsList();
         } else {
-            if (typeof showToast === 'function') showToast(j?.message || 'Không thể đổi tên phiên', 'error');
+            showToast(j?.message || 'Không thể đổi tên phiên', 'error');
         }
     } catch (err) {
         console.error('Lỗi đổi tên phiên chat:', err);
-        if (typeof showToast === 'function') showToast('Lỗi kết nối máy chủ', 'error');
+        showToast('Lỗi kết nối máy chủ', 'error');
     }
 }
 
+function isQuantityString(s) {
+    if (!s) return false;
+    const l = String(s).toLowerCase().trim();
+    if (['vừa đủ', 'tùy thích', 'tùy khẩu vị', 'nêm nếm', '1 ít', 'ít'].some(q => l.includes(q))) {
+        return true;
+    }
+    if (/\d/.test(l) && /(g|kg|gr|gram|ml|l|lít|lit|quả|trái|củ|nhánh|cây|muỗng|thìa|bát|chén|gói|tép|lát|lon|hộp|miếng|bó|bắp|con|khúc|nhúm|thìa cà phê|muỗng canh)/i.test(l)) {
+        return true;
+    }
+    if (/^\d+(\s*[\.,\/]\s*\d+)?\s*(g|kg|gr|gram|ml|l|lít|lit|quả|trái|củ|nhánh|cây|muỗng|thìa|bát|chén|gói|tép|lát|lon|hộp|miếng|bó|bắp|con|khúc|phần)?$/i.test(l)) {
+        return true;
+    }
+    return false;
+}
+
+function cleanPureName(name) {
+    if (!name) return '';
+    let clean = String(name).trim();
+    clean = clean.replace(/[\*_~`]+/g, ' ');
+    clean = clean.replace(/[\/\\#=\-]+/g, ' ');
+    clean = clean.replace(/^\d+[\.\)\:\-]\s*/, '');
+    clean = clean.replace(/^[•\+\-\*\.\,\:]+\s*/, '');
+    clean = clean.replace(/[•\+\-\*\.\,\:\/\\#_]+$/, '');
+    clean = clean.replace(/\s+/g, ' ').trim();
+    if (clean.length > 0) {
+        clean = clean.charAt(0).toUpperCase() + clean.slice(1);
+    }
+    return clean;
+}
+
+function cleanPureQuantity(qty) {
+    if (!qty) return '1 phần';
+    let clean = String(qty).trim();
+    clean = clean.replace(/[\*_~`]+/g, ' ');
+    clean = clean.replace(/[\u2010-\u2015\u2212]/g, '-');
+    clean = clean.replace(/[\\#=]+/g, ' ');
+    const unit = 'kg|gram|gr|g|ml|lít|lit|l|quả|trái|củ|nhánh|cây|muỗng canh|muỗng cà phê|muỗng|thìa cà phê|thìa canh|thìa|bát|chén|gói|tép|lát|lon|hộp|miếng|bó|bắp|con|khúc|phần|vừa đủ|tùy thích|ít';
+    const m = clean.match(new RegExp('^(\\d+(?:[.\\/,\\-]\\d+)?\\s*(?:' + unit + '))', 'i'));
+    if (m && m[1]) clean = m[1];
+    clean = clean.replace(/\s+/g, ' ').trim();
+    return clean || '1 phần';
+}
+
+/** Xóa một phiên chat */
 async function deleteChatSession(sessionId, event) {
     if (event) event.stopPropagation();
     if (!sessionId) return;
@@ -582,14 +1102,15 @@ async function deleteChatSession(sessionId, event) {
     if (!confirmed) return;
 
     try {
-        const token = (typeof getToken === 'function') ? getToken() : '';
         const res = await fetch(`/api/chat/sessions/${sessionId}`, {
             method: 'DELETE',
-            headers: { 'Authorization': 'Bearer ' + token }
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
         });
         const j = await res.json();
         if (j && j.success) {
-            if (typeof showToast === 'function') showToast('Đã xóa phiên trò chuyện', 'success');
+            showToast('Đã xóa phiên trò chuyện', 'success');
             chatSessionsCache = chatSessionsCache.filter(s => s.id !== sessionId);
 
             if (activeChatSessionId === sessionId) {
@@ -604,22 +1125,22 @@ async function deleteChatSession(sessionId, event) {
                 renderChatSessionsList();
             }
         } else {
-            if (typeof showToast === 'function') showToast(j?.message || 'Không thể xóa phiên', 'error');
+            showToast(j?.message || 'Không thể xóa phiên', 'error');
         }
     } catch (err) {
         console.error('Lỗi xóa phiên chat:', err);
-        if (typeof showToast === 'function') showToast('Lỗi kết nối máy chủ', 'error');
+        showToast('Lỗi kết nối máy chủ', 'error');
     }
 }
 
-// --- Messages & Parser Helpers ---
 function addMsg(text, who, cls, rawContent) {
-    const body = document.getElementById('chatBody') || document.getElementById('chatMessages');
+    const body = document.getElementById('chatBody');
     if (!body) return null;
     const div = document.createElement('div');
     div.className = 'msg ' + who + (cls ? ' ' + cls : '');
     div.innerHTML = text;
 
+    // Nếu là tin nhắn AI có chứa danh sách nguyên liệu hoặc công thức, gắn nút Thao tác nhanh
     if (who === 'ai' && rawContent) {
         const lower = rawContent.toLowerCase();
         const hasRecipeOrDish = lower.includes('nguyên liệu') || lower.includes('cần chuẩn bị') || lower.includes('thành phần') 
@@ -630,7 +1151,7 @@ function addMsg(text, who, cls, rawContent) {
             const btnWrap = document.createElement('div');
             btnWrap.style.cssText = 'margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;';
 
-            // Lưu món vào Yêu thích
+            // Nút 1: Lưu món vào Danh sách Yêu thích
             const favBtn = document.createElement('button');
             favBtn.className = 'secondary-button ai-action-fav-btn';
             favBtn.style.cssText = 'padding: 6px 12px; font-size: 12px; border-radius: 8px; border: 1px solid #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.08); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-weight: 600; transition: all 0.2s;';
@@ -640,7 +1161,7 @@ function addMsg(text, who, cls, rawContent) {
             });
             btnWrap.appendChild(favBtn);
 
-            // Lưu vào Kho món ăn
+            // Nút 2: Lưu công thức vào Kho công thức
             const recipeBtn = document.createElement('button');
             recipeBtn.className = 'secondary-button ai-action-recipe-btn';
             recipeBtn.style.cssText = 'padding: 6px 12px; font-size: 12px; border-radius: 8px; border: 1px solid var(--green); color: #fff; background: var(--green); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-weight: 600; transition: all 0.2s;';
@@ -650,14 +1171,14 @@ function addMsg(text, who, cls, rawContent) {
             });
             btnWrap.appendChild(recipeBtn);
 
-            // Thêm vào Danh sách mua
+            // Nút 3: Thêm nguyên liệu vào Danh sách mua
             if (lower.includes('nguyên liệu') || lower.includes('thành phần') || lower.includes('chuẩn bị') || rawContent.includes('- ') || rawContent.includes('* ')) {
                 const shopBtn = document.createElement('button');
                 shopBtn.className = 'secondary-button ai-action-shop-btn';
                 shopBtn.style.cssText = 'padding: 6px 12px; font-size: 12px; border-radius: 8px; border: 1px solid var(--border); color: var(--text); background: var(--card); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-weight: 600; transition: all 0.2s;';
                 shopBtn.innerHTML = '🛒 Thêm vào Danh sách mua';
                 shopBtn.addEventListener('click', function () {
-                    addAiIngredientsToShopping(rawContent);
+                    openAiShoppingPicker(rawContent);
                 });
                 btnWrap.appendChild(shopBtn);
             }
@@ -671,249 +1192,9 @@ function addMsg(text, who, cls, rawContent) {
     return div;
 }
 
-function addChatMessage(text, sender) {
-    addMsg(text, sender);
-}
-
-function addSteps(steps) {
-    const body = document.getElementById('chatBody') || document.getElementById('chatMessages');
-    if (!body || !steps || !steps.length) return;
-    const card = document.createElement('div');
-    card.className = 'steps-card';
-    card.innerHTML = '<div class="steps-title">📋 Các bước thực hiện</div>' +
-        steps.map((s, i) => '<div class="step"><b>' + (i + 1) + '.</b>' + escapeHtml(s) + '</div>').join('');
-    body.appendChild(card);
-    body.scrollTop = body.scrollHeight;
-}
-
-function typing(on) {
-    const body = document.getElementById('chatBody');
-    if (!body) return;
-    if (on) {
-        const t = document.createElement('div');
-        t.className = 'typing';
-        t.id = 'typingInd';
-        t.innerHTML = '<span></span><span></span><span></span>';
-        body.appendChild(t);
-        body.scrollTop = body.scrollHeight;
-    } else {
-        const t = document.getElementById('typingInd');
-        if (t) t.remove();
-    }
-}
-
-function formatAiReply(text) {
-    if (!text) return '';
-
-    let html = String(text)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-
-    const lines = html.split('\n');
-    let inTable = false;
-    let tableHtml = '';
-    let parsedLines = [];
-
-    for (let i = 0; i < lines.length; i++) {
-        let line = lines[i].trim();
-        if (line.startsWith('|') && line.endsWith('|')) {
-            if (line.includes('---')) continue;
-            const cells = line.split('|').filter(function(_, idx, arr) { return idx > 0 && idx < arr.length - 1; });
-            if (!inTable) {
-                inTable = true;
-                tableHtml = '<table class="ai-table"><thead><tr>' + cells.map(function(c) { return '<th>' + c.trim() + '</th>'; }).join('') + '</tr></thead><tbody>';
-            } else {
-                tableHtml += '<tr>' + cells.map(function(c) { return '<td>' + c.trim() + '</td>'; }).join('') + '</tr>';
-            }
-        } else {
-            if (inTable) {
-                inTable = false;
-                tableHtml += '</tbody></table>';
-                parsedLines.push(tableHtml);
-                tableHtml = '';
-            }
-            parsedLines.push(line);
-        }
-    }
-    if (inTable) {
-        tableHtml += '</tbody></table>';
-        parsedLines.push(tableHtml);
-    }
-
-    html = parsedLines.join('\n');
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
-    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    html = html.replace(/^### (.*$)/gim, '<h4 class="ai-heading">$1</h4>');
-    html = html.replace(/^## (.*$)/gim, '<h3 class="ai-heading">$1</h3>');
-    html = html.replace(/^# (.*$)/gim, '<h2 class="ai-heading">$1</h2>');
-    html = html.replace(/^&gt;\s?(.*$)/gim, '<blockquote class="ai-quote">$1</blockquote>');
-    html = html.replace(/^\d+\.\s+(.*$)/gim, '<div class="ai-step-item">$1</div>');
-    html = html.replace(/^[-*]\s+(.*$)/gim, '<div class="ai-bullet-item">$1</div>');
-    html = html.replace(/\n/g, '<br>');
-    html = html.replace(/<br><br>/g, '<br>');
-
-    return html;
-}
-
-// --- Send & AI Network Calls ---
-async function sendMessage() {
-    const input = document.getElementById('chatInputFx') || document.getElementById('chatInput');
-    if (!input) return;
-    const msg = (input.value || '').trim();
-    if (!msg) {
-        if (typeof showToast === 'function') {
-            showToast('Vui lòng nhập nội dung câu hỏi!', 'warning');
-        }
-        input.value = '';
-        input.focus();
-        return;
-    }
-    input.value = '';
-    doSend(msg);
-}
-
-function sendChat() {
-    sendMessage();
-}
-
-async function doSend(msg) {
-    if (typeof isUserLoggedIn === 'function' && !isUserLoggedIn()) {
-        if (typeof requireAuth === 'function') requireAuth('chat');
-        return;
-    }
-
-    addMsg(escapeHtml(msg), 'user');
-    typing(true);
-    const btn = document.getElementById('chatSendBtn') || document.getElementById('sendChat');
-    if (btn) btn.disabled = true;
-
-    let ings = [];
-    if (window.fridgeItemsCache && Array.isArray(window.fridgeItemsCache)) {
-        ings = window.fridgeItemsCache.map(function(i) { return i.ingredientName || i.name; }).filter(Boolean);
-    } else if (typeof state !== 'undefined' && Array.isArray(state.fridge)) {
-        ings = state.fridge.map(f => f.name).filter(Boolean);
-    }
-
-    try {
-        if (!activeChatSessionId) {
-            const newS = await createChatSession(msg.length > 40 ? msg.substring(0, 40) + '…' : msg, chatMode, false);
-            if (!newS) {
-                typing(false);
-                return;
-            }
-        }
-
-        const token = (typeof getToken === 'function') ? getToken() : '';
-        const res = await fetch(`/api/chat/sessions/${activeChatSessionId}/messages`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
-            },
-            body: JSON.stringify({ message: msg, mode: chatMode, availableIngredients: ings })
-        });
-
-        if (res.status === 401 || res.status === 403) {
-            if (typeof setToken === 'function') setToken("");
-            typing(false);
-            closeChat();
-            if (typeof requireAuth === 'function') requireAuth('chat');
-            return;
-        }
-
-        const j = await res.json();
-        typing(false);
-
-        if (j && j.success && j.data) {
-            const replyText = j.data.reply || '';
-            addMsg(formatAiReply(replyText), 'ai', null, replyText);
-            if (j.data.steps && j.data.steps.length) {
-                addSteps(j.data.steps);
-            }
-            fetchChatSessions(false);
-        } else {
-            if (typeof showToast === 'function') showToast(j?.message || 'Có lỗi khi xử lý tin nhắn từ AI', 'error');
-        }
-    } catch (err) {
-        typing(false);
-        console.warn('Lỗi gửi tin nhắn AI:', err);
-        if (typeof showToast === 'function') showToast('Không thể kết nối đến máy chủ AI', 'error');
-    } finally {
-        if (btn) btn.disabled = false;
-        const input = document.getElementById('chatInputFx') || document.getElementById('chatInput');
-        if (input) input.focus();
-    }
-}
-
-function heroSearchSubmit(e) {
-    if (e) e.preventDefault();
-    if (typeof isUserLoggedIn === 'function' && !isUserLoggedIn()) {
-        if (typeof requireAuth === 'function') requireAuth('chat');
-        return false;
-    }
-    const input = document.getElementById('heroSearchInput') || document.getElementById('heroSearchInputApp');
-    if (!input) return false;
-    const val = input.value.trim();
-    if (!val) {
-        if (typeof showToast === 'function') showToast('Bạn muốn ăn gì? Hãy gõ nguyên liệu hoặc tên món vào ô tìm kiếm nhé 😉', 'info');
-        return false;
-    }
-    openChat();
-    doSend(val);
-    return false;
-}
-
-function askFromTag(q) {
-    if (typeof isUserLoggedIn === 'function' && !isUserLoggedIn()) {
-        if (typeof requireAuth === 'function') requireAuth('chat');
-        return;
-    }
-    openChat();
-    doSend(q);
-}
-
-async function loadAiStatus() {
-    const statusText = document.getElementById('chatStatusText');
-    const dot = document.getElementById('chatDot');
-    const setUi = (mock, provider, message) => {
-        if (statusText) {
-            if (mock) {
-                statusText.textContent = 'AI: Mock Mode • Sẵn sàng';
-            } else if (provider === 'groq') {
-                statusText.textContent = 'AI: Groq Llama-3.3 • Trực tuyến';
-            } else if (provider === 'gemini') {
-                statusText.textContent = 'AI: Gemini 1.5 • Trực tuyến';
-            } else {
-                statusText.textContent = `AI: ${provider || 'Trực tuyến'}`;
-            }
-            if (message) statusText.title = message;
-        }
-        if (dot) dot.classList.toggle('live', !mock);
-    };
-
-    setUi(true, 'mock');
-
-    try {
-        const res = await fetch('/api/ai/status');
-        if (res.ok) {
-            const j = await res.json();
-            if (j && j.success && j.data) {
-                const provider = (j.data.provider || '').toLowerCase();
-                const isMock = !!j.data.mock || provider === 'mock';
-                setUi(isMock, provider, j.data.message);
-            }
-        }
-    } catch (e) {
-        setUi(true, 'mock');
-    }
-}
-
-// --- Quick Recipe / Ingredient Exporters from AI message ---
 async function saveAiRecipeToFavorites(rawContent, btnElement) {
-    if (typeof isUserLoggedIn === 'function' && !isUserLoggedIn()) {
-        if (typeof requireAuth === 'function') requireAuth('favorite');
+    if (!isUserLoggedIn()) {
+        requireAuth('favorite');
         return;
     }
     const origText = btnElement ? btnElement.innerHTML : '';
@@ -921,9 +1202,10 @@ async function saveAiRecipeToFavorites(rawContent, btnElement) {
         btnElement.innerHTML = '⏳ Đang lưu...';
         btnElement.disabled = true;
     }
-    if (typeof showToast === 'function') showToast('Đang lưu món vào danh sách yêu thích...', 'info');
+    showToast('Đang lưu món vào danh sách yêu thích...', 'info');
 
     try {
+        // 1. Phân tích và tạo món trong database
         const res = await apiRequest('/api/recipes/import', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -934,36 +1216,25 @@ async function saveAiRecipeToFavorites(rawContent, btnElement) {
             const recipeId = res.id;
             const title = res.title || 'Món ăn gợi ý';
 
+            // 2. Đánh dấu đã lưu yêu thích ở backend
             try {
-                await apiRequest('/api/favorites/toggle', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ targetId: recipeId, targetType: 'RECIPE' })
-                });
-            } catch (_) {}
-
-            if (typeof state !== 'undefined' && Array.isArray(state.favorites)) {
-                if (!state.favorites.includes(recipeId) && !state.favorites.includes(String(recipeId))) {
-                    state.favorites.push(recipeId);
+                const saved = await toggleRecipeFavorite(recipeId);
+                if (saved) {
+                    rememberFavorite(recipeId, true, {
+                        id: recipeId,
+                        title: title,
+                        imageUrl: res.imageUrl || '',
+                        cookTime: res.cookTime,
+                        kcal: res.kcal,
+                        description: res.description || '',
+                        ingredients: res.ingredients || [],
+                        instructions: res.instructions || '',
+                        savedAt: new Date().toISOString()
+                    });
                 }
+            } catch (favErr) {
+                showToast('Đã tạo món nhưng chưa lưu yêu thích: ' + (favErr.message || ''), 'warning');
             }
-
-            if (typeof savedPostsState !== 'undefined') {
-                savedPostsState[String(recipeId)] = {
-                    id: recipeId,
-                    title: title,
-                    imageUrl: res.imageUrl || '',
-                    cookTime: res.cookTime || 30,
-                    kcal: res.kcal || 350,
-                    description: res.description || '',
-                    ingredients: res.ingredients || [],
-                    instructions: res.instructions || '',
-                    steps: res.steps || [],
-                    savedAt: new Date().toISOString()
-                };
-                localStorage.setItem('foodx_saved_posts', JSON.stringify(savedPostsState));
-            }
-            if (typeof saveState === 'function') saveState();
 
             if (btnElement) {
                 btnElement.innerHTML = '❤️ Đã lưu Yêu thích';
@@ -973,25 +1244,42 @@ async function saveAiRecipeToFavorites(rawContent, btnElement) {
                 btnElement.disabled = false;
             }
 
-            if (typeof showToast === 'function') showToast(`Đã lưu "${title}" vào Danh sách Yêu thích! ❤️`, 'success');
+            showToast(`Đã lưu "${title}" vào Danh sách Yêu thích! ❤️`, 'success');
+
+            const toastEl = document.getElementById('toast');
+            if (toastEl) {
+                const favBtn = document.createElement('button');
+                favBtn.textContent = 'Mở Yêu thích';
+                favBtn.style.cssText = 'margin-left:10px;background:#ef4444;color:#fff;border:none;border-radius:8px;padding:5px 12px;font-weight:700;cursor:pointer;';
+                favBtn.addEventListener('click', function () {
+                    openView('favorites');
+                    closeChat();
+                });
+                toastEl.appendChild(favBtn);
+                toastEl.classList.add('show');
+                clearTimeout(toastEl._tm);
+                toastEl._tm = setTimeout(function () { toastEl.classList.remove('show'); }, 4000);
+            }
+
             if (typeof renderFavorites === 'function') await renderFavorites();
             if (typeof renderRecipes === 'function') renderRecipes();
         } else {
-            if (typeof showToast === 'function') showToast('Đã lưu vào danh sách yêu thích thành công! ❤️', 'success');
+            showToast('Đã lưu vào danh sách yêu thích thành công! ❤️', 'success');
         }
     } catch (err) {
         console.error('Lỗi lưu món AI vào yêu thích:', err);
-        if (typeof showToast === 'function') showToast('Không thể lưu món: ' + (err.message || 'Lỗi xử lý dữ liệu'), 'error');
+        showToast('Không thể lưu món: ' + (err.message || 'Lỗi xử lý dữ liệu'), 'error');
         if (btnElement) {
             btnElement.innerHTML = origText || '❤️ Lưu vào Yêu thích';
             btnElement.disabled = false;
         }
     }
 }
+window.saveAiRecipeToFavorites = saveAiRecipeToFavorites;
 
 async function saveAiRecipeToCookbook(rawContent, btnElement) {
-    if (typeof isUserLoggedIn === 'function' && !isUserLoggedIn()) {
-        if (typeof requireAuth === 'function') requireAuth('recipes');
+    if (!isUserLoggedIn()) {
+        requireAuth('recipes');
         return;
     }
     const origText = btnElement ? btnElement.innerHTML : '';
@@ -999,7 +1287,7 @@ async function saveAiRecipeToCookbook(rawContent, btnElement) {
         btnElement.innerHTML = '⏳ Đang lưu...';
         btnElement.disabled = true;
     }
-    if (typeof showToast === 'function') showToast('Đang phân tích và lưu công thức vào kho...', 'info');
+    showToast('Đang phân tích và lưu công thức vào kho...', 'info');
     try {
         const res = await apiRequest('/api/recipes/import', {
             method: 'POST',
@@ -1007,18 +1295,29 @@ async function saveAiRecipeToCookbook(rawContent, btnElement) {
             body: JSON.stringify({ text: rawContent })
         });
         if (res && res.id) {
-            if (typeof showToast === 'function') showToast(`Đã lưu công thức "${res.title}" vào Kho món ăn! 🎉`, 'success');
+            showToast(`Đã lưu công thức "${res.title}" vào Kho món ăn! 🎉`, 'success');
             if (btnElement) {
                 btnElement.innerHTML = '📖 Đã lưu Kho món';
                 btnElement.style.background = '#059669';
                 btnElement.disabled = false;
             }
+            const toastEl = document.getElementById('toast');
+            if (toastEl) {
+                const viewBtn = document.createElement('button');
+                viewBtn.textContent = 'Xem ngay';
+                viewBtn.style.cssText = 'margin-left:10px;background:var(--green);color:#fff;border:none;border-radius:8px;padding:5px 12px;font-weight:700;cursor:pointer;';
+                viewBtn.addEventListener('click', function () { openRecipeDetail(res.id); });
+                toastEl.appendChild(viewBtn);
+                toastEl.classList.add('show');
+                clearTimeout(toastEl._tm);
+                toastEl._tm = setTimeout(function () { toastEl.classList.remove('show'); }, 4000);
+            }
             if (typeof loadRecipes === 'function') loadRecipes();
         } else {
-            if (typeof showToast === 'function') showToast('Đã lưu công thức thành công! 🎉', 'success');
+            showToast('Đã lưu công thức thành công! 🎉', 'success');
         }
     } catch (err) {
-        if (typeof showToast === 'function') showToast('Không thể lưu công thức: ' + (err.message || 'Lỗi xử lý dữ liệu'), 'error');
+        showToast('Không thể lưu công thức: ' + (err.message || 'Lỗi xử lý dữ liệu'), 'error');
         if (btnElement) {
             btnElement.innerHTML = origText || '📖 Lưu vào Kho món ăn';
             btnElement.disabled = false;
@@ -1052,46 +1351,21 @@ function isProceduralAction(text) {
     return false;
 }
 
-function isQuantityString(s) {
-    if (!s) return false;
-    const l = String(s).toLowerCase().trim();
-    if (['vừa đủ', 'tùy thích', 'tùy khẩu vị', 'nêm nếm', '1 ít', 'ít'].some(q => l.includes(q))) return true;
-    if (/\d/.test(l) && /(g|kg|gr|gram|ml|l|lít|lit|quả|trái|củ|nhánh|cây|muỗng|thìa|bát|chén|gói|tép|lát|lon|hộp|miếng|bó|bắp|con|khúc|nhúm|thìa cà phê|muỗng canh)/i.test(l)) return true;
-    if (/^\d+(\s*[\.,\/]\s*\d+)?\s*(g|kg|gr|gram|ml|l|lít|lit|quả|trái|củ|nhánh|cây|muỗng|thìa|bát|chén|gói|tép|lát|lon|hộp|miếng|bó|bắp|con|khúc|phần)?$/i.test(l)) return true;
-    return false;
-}
-
-function cleanPureName(name) {
-    if (!name) return '';
-    let clean = String(name).trim();
-    clean = clean.replace(/[\*_~`]+/g, ' ');
-    clean = clean.replace(/[\/\\#=\-]+/g, ' ');
-    clean = clean.replace(/^\d+[\.\)\:\-]\s*/, '');
-    clean = clean.replace(/^[•\+\-\*\.\,\:]+\s*/, '');
-    clean = clean.replace(/[•\+\-\*\.\,\:\/\\#_]+$/, '');
-    clean = clean.replace(/\s+/g, ' ').trim();
-    if (clean.length > 0) clean = clean.charAt(0).toUpperCase() + clean.slice(1);
-    return clean;
-}
-
-function cleanPureQuantity(qty) {
-    if (!qty) return '1 phần';
-    let clean = String(qty).trim();
-    clean = clean.replace(/[\*_~`]+/g, ' ');
-    clean = clean.replace(/[\/\\#=\-]+/g, ' ');
-    const m = clean.match(/^([\d\.,\/\s]+(?:kg|g|gr|gram|ml|l|lít|lit|quả|trái|củ|nhánh|cây|muỗng|thìa|bát|chén|gói|tép|lát|lon|hộp|miếng|bó|bắp|con|khúc|thìa cà phê|muỗng canh|vừa đủ|tùy thích|ít)?)\b/i);
-    if (m && m[1] && m[1].trim()) clean = m[1].trim();
-    clean = clean.replace(/\s+/g, ' ').trim();
-    return clean || '1 phần';
-}
-
 function parseIngredientFromText(rawLine) {
     if (!rawLine) return null;
     let line = String(rawLine).trim();
-    line = line.replace(/[\*_~`]+/g, ' ').replace(/[\/\\#=\-]+/g, ' ').replace(/\s+/g, ' ').trim();
-    line = line.replace(/^\d+[\.\)\:\-]\s*/, '').replace(/^[•\+\-\*\.\,\:]+\s*/, '').trim();
+
+    // 1. Loại bỏ các ký tự thừa: /////, \\\\, markdown ***, ###, ===, ---
+    line = line.replace(/[\*_~`]+/g, ' ');
+    line = line.replace(/[\/\\#=\-]+/g, ' ');
+    line = line.replace(/\s+/g, ' ').trim();
+
+    // 2. Loại bỏ số thứ tự đầu dòng (1., 2), 3:) và bullet
+    line = line.replace(/^\d+[\.\)\:\-]\s*/, '').trim();
+    line = line.replace(/^[•\+\-\*\.\,\:]+\s*/, '').trim();
 
     if (!line || line.length < 2 || line.length > 80) return null;
+
     const lower = line.toLowerCase();
     const blacklist = [
         'nguyên liệu', 'thành phần', 'cần chuẩn bị', 'hướng dẫn', 'cách làm',
@@ -1100,17 +1374,24 @@ function parseIngredientFromText(rawLine) {
         'kcal', 'công thức', 'mẹo nhỏ', 'bảo quản', 'ngon miệng', 'dưới đây là',
         'lợi ích', 'chất béo', 'vitamin', 'omega', 'protein', 'khoáng chất'
     ];
-    if (blacklist.some(kw => lower.includes(kw))) return null;
-    if (isProceduralAction(line)) return null;
+    if (blacklist.some(kw => lower.includes(kw))) {
+        return null;
+    }
+    if (isProceduralAction(line)) {
+        return null;
+    }
 
     let name = line;
     let quantity = '1 phần';
 
+    // Format A: trong ngoặc đơn - vd: Thịt ba chỉ (500g)
     const mParen = line.match(/^(.*?)\s*[\(\[]([^\)\]]+)[\)\]]$/);
     if (mParen && mParen[1].trim().length >= 2) {
         name = mParen[1].trim();
         quantity = mParen[2].trim();
-    } else if (line.includes(':')) {
+    }
+    // Format B: dấu hai chấm - vd: Thịt bò: 300g
+    else if (line.includes(':')) {
         const parts = line.split(':');
         const p1 = parts[0].trim();
         const p2 = parts.slice(1).join(':').trim();
@@ -1123,12 +1404,15 @@ function parseIngredientFromText(rawLine) {
                 quantity = p1;
             }
         }
-    } else {
+    }
+    // Format C: số lượng ở đầu - vd: 500g thịt ba chỉ, 2 củ cà rốt
+    else {
         const mStart = line.match(/^(\d+(?:[\.,\/]\d+)?\s*(?:kg|g|gr|gram|ml|l|lít|lit|quả|trái|củ|nhánh|cây|muỗng|thìa|bát|chén|gói|tép|lát|lon|hộp|miếng|bó|bắp|con)?)\s+(.*)$/i);
         if (mStart && mStart[1] && mStart[2] && mStart[2].trim().length >= 2) {
             quantity = mStart[1].trim();
             name = mStart[2].trim();
         } else {
+            // Format D: số lượng ở cuối - vd: Thịt ba chỉ 500g
             const mEnd = line.match(/^(.*?)\s+(\d+(?:[\.,\/]\d+)?\s*(?:kg|g|gr|gram|ml|l|lít|lit|quả|trái|củ|nhánh|cây|muỗng|thìa|bát|chén|gói|tép|lát|lon|hộp|miếng|bó|bắp|con))$/i);
             if (mEnd && mEnd[1] && mEnd[2] && mEnd[1].trim().length >= 2) {
                 name = mEnd[1].trim();
@@ -1139,14 +1423,232 @@ function parseIngredientFromText(rawLine) {
 
     name = cleanPureName(name);
     quantity = cleanPureQuantity(quantity);
+
     if (isProceduralAction(name)) return null;
     if (!name || name.length < 2) return null;
     return { name: name, quantity: quantity || '1 phần' };
 }
 
+const CHAT_INGREDIENT_NAMES = [
+    'thịt ba chỉ', 'thịt nạc vai', 'thịt nạc', 'thịt heo', 'thịt bò', 'thịt gà', 'ức gà',
+    'trứng gà', 'trứng vịt', 'trứng',
+    'nước tương', 'nước mắm', 'nước dừa', 'dầu ăn', 'dầu hào', 'dầu ô liu', 'dầu mè',
+    'muối', 'đường cát', 'đường', 'tiêu', 'bột ngọt', 'hạt nêm',
+    'tỏi', 'hành lá', 'hành tím', 'hành khô', 'hành tây',
+    'gừng', 'sả', 'ớt',
+    'cà chua', 'cà rốt', 'khoai tây', 'rau mùi', 'rau sống', 'ngò gai', 'xà lách',
+    'cơm trắng', 'bánh mì', 'bánh phở', 'gạo',
+    'vịt', 'cá hồi', 'cá lóc', 'cá', 'tôm', 'đậu hũ', 'mè rang', 'chanh'
+];
+
+function normalizeChatIngredientText(raw) {
+    return String(raw || '')
+        .replace(/[\u2010-\u2015\u2212]/g, '-')
+        .replace(/[\u00a0\u202f\u2009]/g, ' ')
+        .replace(/½/g, '1/2')
+        .replace(/¼/g, '1/4')
+        .replace(/⅓/g, '1/3')
+        .replace(/[\*_~`>#]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function nearbyIngredientQty(text, index, nameLength) {
+    const before = text.slice(Math.max(0, index - 32), index);
+    const after = text.slice(index + nameLength, index + nameLength + 22);
+    const qty = '(\\d+(?:[.,/\\-]\\d+)?|1/2|1/4|1/3)';
+    const unit = '(muỗng canh|muỗng cà phê|muỗng|thìa canh|thìa cà phê|thìa|tép|quả|trái|củ|nhánh|cây|gói|lon|hộp|miếng|kg|gram|gr|g|ml|lít|chén|bát)';
+    let match = after.match(new RegExp('^\\s*' + qty + '\\s*' + unit + '?', 'i'));
+    if (match) return (match[1] + (match[2] ? ' ' + match[2] : '')).trim();
+    match = before.match(new RegExp(qty + '\\s*' + unit + '?\\s*$', 'i'));
+    if (match) return (match[1] + (match[2] ? ' ' + match[2] : '')).trim();
+    return '1 phần';
+}
+
+function pushChatIngredient(list, name, quantity) {
+    let cleanName = String(name || '').replace(/\s+/g, ' ').trim();
+    cleanName = cleanName.replace(/^(và|với|thêm|cho|cần|mua)\s+/i, '').trim();
+    cleanName = cleanName.replace(/\s+(băm|cắt|thái|xay|tươi|khô)$/i, '').trim();
+    if (cleanName.length < 2 || cleanName.length > 80) return;
+    if (isProceduralAction(cleanName)) return;
+    const key = cleanName.toLowerCase();
+    const qty = String(quantity || '1 phần').replace(/\s+/g, ' ').trim().slice(0, 50) || '1 phần';
+    const existing = list.find(function (item) {
+        const current = item.name.toLowerCase();
+        return current === key || current === 'thịt ' + key || current === 'cá ' + key
+            || key === 'thịt ' + current || key === 'cá ' + current;
+    });
+    if (existing) {
+        const current = existing.name.toLowerCase();
+        if ((key === 'thịt ' + current || key === 'cá ' + current)) {
+            existing.name = (cleanName.charAt(0).toUpperCase() + cleanName.slice(1)).slice(0, 140);
+        }
+        if ((existing.quantity === '1 phần' || existing.quantity === '1') && qty !== '1 phần' && qty !== '1') {
+            existing.quantity = qty;
+        }
+        return;
+    }
+    const label = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+    list.push({ name: label.slice(0, 140), quantity: qty });
+}
+
+function extractChatIngredients(rawContent) {
+    const items = [];
+    const text = normalizeChatIngredientText(rawContent);
+    const lower = text.toLowerCase();
+    CHAT_INGREDIENT_NAMES.forEach(function (name) {
+        let from = 0;
+        while (from < lower.length) {
+            const index = lower.indexOf(name, from);
+            if (index < 0) break;
+            const before = index > 0 ? lower.charAt(index - 1) : ' ';
+            const after = lower.charAt(index + name.length) || ' ';
+            const boundary = !/[a-zà-ỹ]/i.test(before) && !/[a-zà-ỹ]/i.test(after);
+            const around = lower.slice(Math.max(0, index - 36), index + name.length + 28);
+            if (boundary && !/không cần|khong can|không dùng/.test(around)) {
+                pushChatIngredient(items, name, nearbyIngredientQty(text, index, name.length));
+            }
+            from = index + name.length;
+        }
+    });
+
+    String(rawContent || '').split('\n').forEach(function (rawLine) {
+        const lowerLine = rawLine.toLowerCase();
+        if (/không cần|khong can|không dùng|khong dung/.test(lowerLine)) return;
+        rawLine.split(/[,;]/).forEach(function (chunk) {
+            const parsed = parseIngredientFromText(chunk);
+            if (!parsed || !parsed.name) return;
+            const name = parsed.name.trim();
+            const qty = String(parsed.quantity || '').trim();
+            if (name.length > 40 || /[,:]/.test(name)) return;
+            if (/^(chuẩn bị|ướp nhanh|ướp|xào|chiên|kho|nấu|cách làm|bước|phi thơm)$/i.test(name)) return;
+            if (qty.length > 24) return;
+            if (/\d|muỗng|thìa|quả|tép|cà phê|gram|kg|ml/.test(name.toLowerCase())) return;
+            if (qty !== '1 phần' && qty !== '1' && !isQuantityString(qty)) return;
+            const nameKey = name.toLowerCase();
+            const known = CHAT_INGREDIENT_NAMES.some(function (n) {
+                return nameKey === n || nameKey === 'thịt ' + n || nameKey === 'cá ' + n;
+            });
+            if (!known) return;
+            pushChatIngredient(items, name, (qty === '1' ? '1 phần' : qty));
+        });
+    });
+    return items;
+}
+
+function renderAiShopRows(items) {
+    const box = document.getElementById('aiShopRows');
+    if (!box) return;
+    const rows = items && items.length ? items : [{ name: '', quantity: '1 phần' }];
+    box.innerHTML = rows.map(function (item, index) {
+        return '<div class="ai-shop-row" style="display:grid;grid-template-columns:28px 1fr 120px;gap:8px;align-items:center;margin-bottom:8px;">' +
+            '<input type="checkbox" class="ai-shop-check" ' + (item.name ? 'checked' : '') + ' aria-label="Chọn nguyên liệu ' + (index + 1) + '">' +
+            '<input type="text" class="rc-input ai-shop-name" value="' + escapeHtml(item.name || '') + '" placeholder="Tên nguyên liệu" style="height:38px;">' +
+            '<input type="text" class="rc-input ai-shop-qty" value="' + escapeHtml(item.quantity || '1 phần') + '" placeholder="Số lượng" style="height:38px;">' +
+            '</div>';
+    }).join('');
+}
+
+function openAiShoppingPicker(rawContent) {
+    if (!isUserLoggedIn()) {
+        requireAuth('shopping');
+        return;
+    }
+    const items = extractChatIngredients(rawContent);
+    let modal = document.getElementById('aiShopPicker');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.id = 'aiShopPicker';
+        modal.innerHTML =
+            '<div class="modal" style="max-width:560px;max-height:86vh;display:flex;flex-direction:column;">' +
+            '<div class="modal-header"><h3 style="margin:0;color:var(--text);">🛒 Nguyên liệu đưa vào danh sách mua</h3>' +
+            '<button type="button" class="modal-close" id="aiShopClose" aria-label="Đóng">✕</button></div>' +
+            '<p id="aiShopHint" style="margin:0 0 12px;color:var(--text-soft);font-size:13px;"></p>' +
+            '<div id="aiShopRows" style="overflow:auto;max-height:46vh;padding-right:4px;"></div>' +
+            '<button type="button" class="text-button" id="aiShopAddRow" style="align-self:flex-start;margin-top:4px;">+ Thêm dòng</button>' +
+            '<div class="modal-actions" style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">' +
+            '<button type="button" class="secondary-button" id="aiShopCancel">Huỷ</button>' +
+            '<button type="button" class="primary-button" id="aiShopSave">Lưu các dòng đã chọn</button>' +
+            '</div></div>';
+        document.body.appendChild(modal);
+        modal.addEventListener('click', function (e) { if (e.target === modal) modal.classList.remove('open'); });
+        document.getElementById('aiShopClose').addEventListener('click', function () { modal.classList.remove('open'); });
+        document.getElementById('aiShopCancel').addEventListener('click', function () { modal.classList.remove('open'); });
+        document.getElementById('aiShopAddRow').addEventListener('click', function () {
+            const box = document.getElementById('aiShopRows');
+            const row = document.createElement('div');
+            row.className = 'ai-shop-row';
+            row.style.cssText = 'display:grid;grid-template-columns:28px 1fr 120px;gap:8px;align-items:center;margin-bottom:8px;';
+            row.innerHTML = '<input type="checkbox" class="ai-shop-check" checked aria-label="Chọn nguyên liệu mới">' +
+                '<input type="text" class="rc-input ai-shop-name" placeholder="Tên nguyên liệu" style="height:38px;">' +
+                '<input type="text" class="rc-input ai-shop-qty" value="1 phần" placeholder="Số lượng" style="height:38px;">';
+            box.appendChild(row);
+            const nameInput = row.querySelector('.ai-shop-name');
+            if (nameInput) nameInput.focus();
+        });
+        document.getElementById('aiShopSave').addEventListener('click', saveAiShoppingSelection);
+    }
+    const hint = document.getElementById('aiShopHint');
+    if (hint) {
+        hint.textContent = items.length
+            ? 'Đã tách ' + items.length + ' nguyên liệu từ tin nhắn. Bỏ chọn hoặc sửa trước khi lưu.'
+            : 'Chưa tách được nguyên liệu rõ ràng. Hãy nhập từng dòng rồi lưu.';
+    }
+    renderAiShopRows(items);
+    modal.classList.add('open');
+}
+window.openAiShoppingPicker = openAiShoppingPicker;
+
+async function saveAiShoppingSelection() {
+    const rows = Array.from(document.querySelectorAll('#aiShopRows .ai-shop-row'));
+    const selected = rows.map(function (row) {
+        const checked = row.querySelector('.ai-shop-check');
+        const name = (row.querySelector('.ai-shop-name') || {}).value || '';
+        const quantity = (row.querySelector('.ai-shop-qty') || {}).value || '';
+        return { checked: !!(checked && checked.checked), name: name.trim(), quantity: quantity.trim() || '1 phần' };
+    }).filter(function (item) { return item.checked && item.name; });
+    if (!selected.length) {
+        showToast('Hãy chọn hoặc nhập ít nhất một nguyên liệu.', 'warning');
+        return;
+    }
+    const btn = document.getElementById('aiShopSave');
+    if (btn) btn.disabled = true;
+    let added = 0;
+    let lastError = '';
+    for (const item of selected) {
+        try {
+            await apiRequest('/api/shopping', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: item.name.slice(0, 140),
+                    quantity: item.quantity.slice(0, 50),
+                    price: 0,
+                    category: 'AI Gợi ý'
+                })
+            });
+            added++;
+        } catch (err) {
+            lastError = (err && err.message) || 'Lỗi lưu';
+        }
+    }
+    if (btn) btn.disabled = false;
+    if (added > 0) {
+        const modal = document.getElementById('aiShopPicker');
+        if (modal) modal.classList.remove('open');
+        if (typeof renderShopping === 'function') {
+            try { await renderShopping(); } catch (_) {}
+        }
+        showToast('Đã thêm ' + added + ' nguyên liệu vào danh sách mua.', 'success');
+    } else {
+        showToast(lastError ? ('Không lưu được: ' + lastError) : 'Không lưu được nguyên liệu.', 'error');
+    }
+}
+
 async function addAiIngredientsToShopping(rawContent) {
-    if (typeof isUserLoggedIn === 'function' && !isUserLoggedIn()) {
-        if (typeof requireAuth === 'function') requireAuth('shopping');
+    if (!isUserLoggedIn()) {
+        requireAuth('shopping');
         return;
     }
     const lines = String(rawContent || '').split('\n');
@@ -1167,21 +1669,26 @@ async function addAiIngredientsToShopping(rawContent) {
         if (!lineClean) continue;
         const lower = lineClean.toLowerCase();
 
+        // Kiểm tra bắt đầu vùng nguyên liệu
         if (lower.includes('nguyên liệu') || lower.includes('thành phần') || lower.includes('chuẩn bị')) {
             isIngSection = true;
             continue;
         }
-        if (isIngSection && (lower.includes('hướng dẫn') || lower.includes('cách làm') || lower.includes('các bước') || lower.includes('thực hiện') || lower.includes('bước 1') || lower.includes('bước 2') || lower.includes('bước 3') || lower.includes('sơ chế') || lower.includes('chế biến') || lower.includes('thành phẩm') || lower.includes('thưởng thức') || lower.includes('lưu ý') || lower.includes('chúc bạn'))) {
+        // Kiểm tra kết thúc vùng nguyên liệu -> Nếu đã vào vùng bước làm, NGẮT NGAY LẬP TỨC
+        if (isIngSection && (lower.includes('hướng dẫn') || lower.includes('cách làm') || lower.includes('các bước') || lower.includes('thực hiện') || lower.includes('bước 1') || lower.includes('bước 2') || lower.includes('bước 3') || lower.includes('sơ chế') || lower.includes('chế biến') || lower.includes('công đoạn') || lower.includes('nấu nước dùng') || lower.includes('trụng bánh') || lower.includes('thành phẩm') || lower.includes('thưởng thức') || lower.includes('lưu ý') || lower.includes('chúc bạn'))) {
             isIngSection = false;
             break;
         }
 
-        if (hasExplicitSection && !isIngSection) continue;
+        if (hasExplicitSection && !isIngSection) {
+            continue;
+        }
 
+        // Xử lý dòng bảng Markdown (ví dụ: | Nước dùng | Xương bò | 1kg | HOẶC | Dầu ô liu | 1 thìa | Lợi ích |)
         if (lineClean.startsWith('|') && lineClean.endsWith('|')) {
             if (lineClean.includes('---')) continue;
-            const cells = lineClean.split('|').map(c => c.trim()).filter((_, idx, arr) => idx > 0 && idx < arr.length - 1);
-            if (['nguyên liệu', 'định lượng', 'thành phần', 'số lượng', 'đơn vị', 'lợi ích', 'dinh dưỡng', 'ghi chú', 'bước', 'thao tác', 'hướng dẫn'].some(h => lower.includes(h))) {
+            const cells = lineClean.split('|').map(function (c) { return c.trim(); }).filter(function (_, idx, arr) { return idx > 0 && idx < arr.length - 1; });
+            if (['nguyên liệu', 'định lượng', 'thành phần', 'số lượng', 'đơn vị', 'lợi ích', 'dinh dưỡng', 'ghi chú', 'bước', 'thao tác', 'hướng dẫn'].some(function (h) { return lower.includes(h); })) {
                 continue;
             }
             const nonEmpty = cells.filter(Boolean);
@@ -1201,9 +1708,11 @@ async function addAiIngredientsToShopping(rawContent) {
             } else {
                 const c0 = nonEmpty[0], c1 = nonEmpty[1], c2 = nonEmpty[2];
                 if (isQuantityString(c1)) {
+                    // Bảng dạng: | Tên nguyên liệu | Định lượng | Lợi ích dinh dưỡng / Ghi chú |
                     name = c0;
                     qty = c1;
                 } else if (isQuantityString(c2)) {
+                    // Bảng dạng: | Nhóm phân loại | Tên nguyên liệu | Định lượng |
                     name = c1;
                     qty = c2;
                 } else {
@@ -1214,10 +1723,11 @@ async function addAiIngredientsToShopping(rawContent) {
 
             name = cleanPureName(name);
             qty = cleanPureQuantity(qty);
+
             if (isProceduralAction(name)) continue;
 
             if (name && name.length >= 2) {
-                if (!itemsToAdd.some(i => i.name.toLowerCase() === name.toLowerCase())) {
+                if (!itemsToAdd.some(function (i) { return i.name.toLowerCase() === name.toLowerCase(); })) {
                     itemsToAdd.push({ name: name, quantity: qty || '1 phần' });
                 }
             }
@@ -1233,7 +1743,7 @@ async function addAiIngredientsToShopping(rawContent) {
     }
 
     if (itemsToAdd.length === 0) {
-        if (typeof showToast === 'function') showToast('Không tìm thấy dòng nguyên liệu phù hợp trong tin nhắn.', 'warning');
+        showToast('Không tìm thấy dòng nguyên liệu phù hợp trong tin nhắn.', 'warning');
         return;
     }
 
@@ -1252,80 +1762,209 @@ async function addAiIngredientsToShopping(rawContent) {
     if (typeof renderShopping === 'function') await renderShopping();
 
     if (addedCount > 0) {
-        if (typeof showToast === 'function') showToast(`Đã thêm ${addedCount} nguyên liệu sạch vào Danh sách mua 🛒`, 'success');
+        showToast(`Đã thêm ${addedCount} nguyên liệu sạch vào Danh sách mua 🛒`, 'success');
     } else {
-        if (typeof showToast === 'function') showToast('Không thể thêm nguyên liệu vào danh sách mua.', 'error');
+        showToast('Không thể thêm nguyên liệu vào danh sách mua.', 'error');
     }
 }
 
-// --- Module Initializer ---
-(function initChatModule() {
+function addSteps(steps) {
     const body = document.getElementById('chatBody');
-    if (body && !body.childElementCount) {
-        addMsg('Chào bạn! Mình là <b>Trợ lý AI FoodX</b> 👋<br>Hỏi mình bất cứ điều gì về nấu nướng — công thức, mẹo hay gợi ý món ăn nhé!', 'ai');
-    }
-    loadAiStatus();
-    initChatResizable();
-
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') closeChat();
-    });
-
-    document.getElementById('chatSendBtn')?.addEventListener('click', sendMessage);
-    document.getElementById('sendChat')?.addEventListener('click', sendMessage);
-    document.getElementById('chatInputFx')?.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-
-    document.getElementById('chatCloseBtn')?.addEventListener('click', closeChat);
-    document.getElementById('closeChat')?.addEventListener('click', closeChat);
-    document.getElementById('chatMaximizeBtn')?.addEventListener('click', toggleChatMaximize);
-    document.getElementById('chatFloating')?.addEventListener('click', toggleChat);
-
-    const newBtn = document.getElementById('chatNewSession');
-    if (newBtn) {
-        newBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            createChatSession('Cuộc trò chuyện mới', chatMode || 'chat', true);
-        });
-    }
-
-    document.getElementById('modeChatBtn')?.addEventListener('click', () => setMode('chat'));
-    document.getElementById('modeStepBtn')?.addEventListener('click', () => setMode('step'));
-})();
-
-// Window Exports
-if (typeof window !== 'undefined') {
-    window.addChatMessage = addChatMessage;
-    window.updateChatContextBanner = updateChatContextBanner;
-    window.openContextChat = openContextChat;
-    window.contextualRecipeAI = contextualRecipeAI;
-    window.fakeAI = fakeAI;
-    window.sendMessage = sendMessage;
-    window.sendChat = sendChat;
-    window.doSend = doSend;
-    window.toggleChat = toggleChat;
-    window.openChat = openChat;
-    window.closeChat = closeChat;
-    window.toggleChatMaximize = toggleChatMaximize;
-    window.setMode = setMode;
-    window.initChatForCurrentUser = initChatForCurrentUser;
-    window.resetChatOnLogout = resetChatOnLogout;
-    window.fetchChatSessions = fetchChatSessions;
-    window.createChatSession = createChatSession;
-    window.switchChatSession = switchChatSession;
-    window.renameChatSession = renameChatSession;
-    window.renameCurrentChatSession = renameCurrentChatSession;
-    window.deleteChatSession = deleteChatSession;
-    window.toggleChatSessions = toggleChatSessions;
-    window.formatChatSessionTime = formatChatSessionTime;
-    window.heroSearchSubmit = heroSearchSubmit;
-    window.askFromTag = askFromTag;
-    window.loadAiStatus = loadAiStatus;
-    window.saveAiRecipeToFavorites = saveAiRecipeToFavorites;
-    window.saveAiRecipeToCookbook = saveAiRecipeToCookbook;
-    window.addAiIngredientsToShopping = addAiIngredientsToShopping;
+    if (!body || !steps || !steps.length) return;
+    const card = document.createElement('div');
+    card.className = 'steps-card';
+    card.innerHTML = '<div class="steps-title">📋 Các bước thực hiện</div>' +
+        steps.map((s, i) => '<div class="step"><b>' + (i + 1) + '.</b>' + escapeHtml(s) + '</div>').join('');
+    body.appendChild(card);
+    body.scrollTop = body.scrollHeight;
 }
+
+function typing(on) {
+    const body = document.getElementById('chatBody');
+    if (!body) return;
+    if (on) {
+        const t = document.createElement('div');
+        t.className = 'typing';
+        t.id = 'typingInd';
+        t.innerHTML = '<span></span><span></span><span></span>';
+        body.appendChild(t);
+        body.scrollTop = body.scrollHeight;
+    } else {
+        const t = document.getElementById('typingInd');
+        if (t) t.remove();
+    }
+}
+
+
+
+function formatAiReply(text) {
+    if (!text) return '';
+
+    let html = String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+    // Table parsing
+    const lines = html.split('\n');
+    let inTable = false;
+    let tableHtml = '';
+    let parsedLines = [];
+
+    for (let i = 0; i < lines.length; i++) {
+        let line = lines[i].trim();
+        if (line.startsWith('|') && line.endsWith('|')) {
+            if (line.includes('---')) continue;
+            const cells = line.split('|').filter(function(_, idx, arr) { return idx > 0 && idx < arr.length - 1; });
+            if (!inTable) {
+                inTable = true;
+                tableHtml = '<table class="ai-table"><thead><tr>' + cells.map(function(c) { return '<th>' + c.trim() + '</th>'; }).join('') + '</tr></thead><tbody>';
+            } else {
+                tableHtml += '<tr>' + cells.map(function(c) { return '<td>' + c.trim() + '</td>'; }).join('') + '</tr>';
+            }
+        } else {
+            if (inTable) {
+                inTable = false;
+                tableHtml += '</tbody></table>';
+                parsedLines.push(tableHtml);
+                tableHtml = '';
+            }
+            parsedLines.push(line);
+        }
+    }
+    if (inTable) {
+        tableHtml += '</tbody></table>';
+        parsedLines.push(tableHtml);
+    }
+
+    html = parsedLines.join('\n');
+
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    html = html.replace(/^### (.*$)/gim, '<h4 class="ai-heading">$1</h4>');
+    html = html.replace(/^## (.*$)/gim, '<h3 class="ai-heading">$1</h3>');
+    html = html.replace(/^# (.*$)/gim, '<h2 class="ai-heading">$1</h2>');
+    html = html.replace(/^&gt;\s?(.*$)/gim, '<blockquote class="ai-quote">$1</blockquote>');
+    html = html.replace(/^\d+\.\s+(.*$)/gim, '<div class="ai-step-item">$1</div>');
+    html = html.replace(/^[-*]\s+(.*$)/gim, '<div class="ai-bullet-item">$1</div>');
+    html = html.replace(/\n/g, '<br>');
+    html = html.replace(/<br><br>/g, '<br>');
+
+    return html;
+}
+
+async function sendMessage() {
+    const input = document.getElementById('chatInputFx');
+    if (!input) return;
+    const msg = input.value.trim();
+    if (!msg) return;
+    input.value = '';
+    doSend(msg);
+}
+
+function chatRetryHtml(msg) {
+    const safeMsg = String(msg || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    return '<br><button type="button" class="secondary-button" onclick="askFromTag(\'' + safeMsg + '\')" style="margin-top:8px;font-size:12px;padding:4px 8px;">🔄 Thử lại tin nhắn này</button>';
+}
+
+function showAiReply(replyText, steps) {
+    addMsg(formatAiReply(replyText || ''), 'ai', null, replyText || '');
+    if (steps && steps.length) addSteps(steps);
+}
+
+async function sendChatDirect(msg, ings) {
+    const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+        },
+        body: JSON.stringify({ message: msg, mode: chatMode, availableIngredients: ings })
+    });
+    if (res.status === 401 || res.status === 403) {
+        setToken("");
+        closeChat();
+        requireAuth('chat');
+        return 'auth';
+    }
+    const j = await res.json();
+    if (j && j.success && j.data && (j.data.reply || (j.data.steps && j.data.steps.length))) {
+        showAiReply(j.data.reply || '', j.data.steps);
+        return 'ok';
+    }
+    return 'fail';
+}
+
+async function doSend(msg) {
+    if (!isUserLoggedIn()) {
+        requireAuth('chat');
+        return;
+    }
+
+    addMsg(escapeHtml(msg), 'user');
+    typing(true);
+    const btn = document.getElementById('chatSendBtn');
+    if (btn) btn.disabled = true;
+
+    let ings = [];
+    if (window.fridgeItemsCache && Array.isArray(window.fridgeItemsCache)) {
+        ings = window.fridgeItemsCache.map(function(i) { return i.ingredientName || i.name; }).filter(Boolean);
+    } else if (state && Array.isArray(state.fridge)) {
+        ings = state.fridge.map(function(i) { return i.name; }).filter(Boolean);
+    }
+
+    try {
+        let sessionOk = false;
+        if (!activeChatSessionId) {
+            const newS = await createChatSession(msg.length > 40 ? msg.substring(0, 40) + '…' : msg, chatMode, false, false);
+            sessionOk = !!newS;
+        } else {
+            sessionOk = true;
+        }
+
+        if (sessionOk) {
+            const res = await fetch(`/api/chat/sessions/${activeChatSessionId}/messages`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + getToken()
+                },
+                body: JSON.stringify({ message: msg, mode: chatMode, availableIngredients: ings })
+            });
+
+            if (res.status === 401 || res.status === 403) {
+                setToken("");
+                closeChat();
+                requireAuth('chat');
+                return;
+            }
+
+            const j = await res.json();
+            if (j && j.success && j.data) {
+                showAiReply(j.data.reply || '', j.data.steps);
+                fetchChatSessions(false);
+                return;
+            }
+        }
+
+        const direct = await sendChatDirect(msg, ings);
+        if (direct === 'ok' || direct === 'auth') return;
+        addMsg('⚠️ Trợ lý AI chưa trả lời được.' + chatRetryHtml(msg), 'ai');
+    } catch (err) {
+        console.error('Chat AI lỗi:', err?.message || err);
+        try {
+            const direct = await sendChatDirect(msg, ings);
+            if (direct === 'ok' || direct === 'auth') return;
+        } catch (directErr) {
+            console.error('Chat trực tiếp lỗi:', directErr?.message || directErr);
+        }
+        addMsg('⚠️ Không thể kết nối đến máy chủ AI.' + chatRetryHtml(msg), 'ai');
+    } finally {
+        typing(false);
+        if (btn) btn.disabled = false;
+        const input = document.getElementById('chatInputFx');
+        if (input) input.focus();
+    }
+}
+

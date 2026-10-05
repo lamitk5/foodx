@@ -20,7 +20,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.bundle.css?v=20260923_ing_split_servings">
+    <link rel="stylesheet" href="/css/style.bundle.css?v=20261005_responsive2">
 </head>
 
 <body>
@@ -145,6 +145,16 @@
 
                 <svg class="icon"><use href="#i-cart"/></svg>
                 <b>Danh sách mua</b>
+
+            </button>
+
+            <button
+                    type="button"
+                    class="menu-item"
+                    data-view="stats">
+
+                <span class="icon" aria-hidden="true">📊</span>
+                <b>Thống kê</b>
 
             </button>
 
@@ -542,6 +552,7 @@
                     </div>
                 </div>
 
+                <div class="home-status">
                 <div class="home-fridge card" id="homeFridgeCard">
                     <div class="hf-icon"><svg class="icon"><use href="#i-refrigerator"/></svg></div>
                     <div class="hf-body">
@@ -557,6 +568,7 @@
                         <button type="button" class="text-button" onclick="openView('fridge')">Xem tất cả</button>
                     </div>
                     <div class="he-list" id="homeExpiring"></div>
+                </div>
                 </div>
 
                 <div class="home-suggest card" id="homeSuggestCard" hidden>
@@ -711,52 +723,6 @@
                     <div
                             class="search-results"
                             id="searchResults">
-
-                    </div>
-
-                </div>
-
-
-                <!-- SUGGESTIONS -->
-
-                <div
-                        class="card recipe-section"
-                        id="suggestionSection">
-
-                    <div class="section-header">
-
-                        <div>
-
-                            <span class="section-eyebrow">
-                                DÀNH CHO BẠN
-                            </span>
-
-                            <h2>
-                                Gợi ý món ăn
-                            </h2>
-
-                            <p id="suggestionText">
-                                Dựa trên tủ lạnh và hồ sơ dinh dưỡng.
-                            </p>
-
-                        </div>
-
-
-                        <button
-                                type="button"
-                                class="text-button"
-                                id="refreshSuggestions">
-
-                            ↻ Làm mới
-
-                        </button>
-
-                    </div>
-
-
-                    <div
-                            class="recipe-grid"
-                            id="recipeGrid">
 
                     </div>
 
@@ -1595,9 +1561,18 @@
                     </p>
                 </div>
 
-                <button type="button" class="primary-button" id="btnOpenCreateRecipe" onclick="openRecipeCreateModal()" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; font-size: 13.5px; border-radius: 12px; white-space: nowrap;">
-                    ➕ Thêm công thức
-                </button>
+                <div class="recipe-page-actions">
+                    <div class="mine-menu" id="personalRecipesCard">
+                        <button type="button" class="mine-menu-btn" id="personalMenuBtn" aria-expanded="false" aria-controls="personalRecipeGrid">
+                            <span>Công thức của tôi</span>
+                            <span class="mine-menu-count" id="personalMenuCount">0</span>
+                        </button>
+                        <div class="mine-menu-panel" id="personalRecipeGrid" hidden></div>
+                    </div>
+                    <button type="button" class="primary-button" id="btnOpenCreateRecipe" onclick="openRecipeCreateModal()" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; font-size: 13.5px; border-radius: 12px; white-space: nowrap;">
+                        ➕ Thêm công thức
+                    </button>
+                </div>
 
             </div>
 
@@ -2006,6 +1981,38 @@
 
 
         <!-- =====================================================
+             STATS
+        ====================================================== -->
+
+        <section class="view" id="view-stats">
+            <div class="page-title">
+                <div>
+                    <span class="page-eyebrow">THEO DÕI BẾP</span>
+                    <h1>Thống kê</h1>
+                    <p>Số món đã nấu, calo theo ngày và thực phẩm cần dùng sớm.</p>
+                </div>
+            </div>
+            <div class="kpi-grid" id="kpiGrid"></div>
+            <div class="card stats-card">
+                <h3>Calo theo ngày</h3>
+                <svg id="statsLine" class="stats-svg" viewBox="0 0 340 150" role="img" aria-label="Biểu đồ calo"></svg>
+                <div class="stats-labels" id="statsLabels"></div>
+            </div>
+            <div class="card stats-card">
+                <h3>Món nấu nhiều nhất</h3>
+                <div id="topDishes"></div>
+            </div>
+            <div class="card stats-card">
+                <h3>Nhận xét</h3>
+                <div id="statsInsights"></div>
+            </div>
+            <div class="card stats-card">
+                <h3>Thực phẩm trong tủ</h3>
+                <div id="statsWaste" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;"></div>
+            </div>
+        </section>
+
+        <!-- =====================================================
              ADMIN MANAGEMENT VIEW
         ====================================================== -->
 
@@ -2182,8 +2189,15 @@
             <div class="admin-tab-pane" id="adminTab-social">
                 <div class="admin-toolbar">
                     <div class="admin-search-wrap">
-                        <input type="text" class="admin-search-input" id="adminSocialSearch" placeholder="Tìm theo tiêu đề hoặc tác giả..." oninput="renderAdminSocial()">
+                        <input type="text" class="admin-search-input" id="adminSocialSearch" placeholder="Lọc theo tên bài viết..." oninput="renderAdminSocial()">
                     </div>
+                    <select id="adminSocialSort" class="admin-filter-select" onchange="renderAdminSocial()" aria-label="Sắp xếp bài chia sẻ">
+                        <option value="date-desc">Ngày đăng mới nhất</option>
+                        <option value="date-asc">Ngày đăng cũ nhất</option>
+                        <option value="comments">Bình luận mới nhất</option>
+                        <option value="name">Theo tên</option>
+                    </select>
+                    <input type="date" id="adminSocialDate" class="admin-filter-select" onchange="renderAdminSocial()" aria-label="Lọc theo ngày đăng" title="Lọc theo ngày đăng">
                 </div>
 
                 <div class="admin-table-card">
@@ -2191,7 +2205,6 @@
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
                                     <th>Tác giả</th>
                                     <th>Tiêu đề bài viết</th>
                                     <th>Lượt thích</th>
@@ -2201,7 +2214,7 @@
                                 </tr>
                             </thead>
                             <tbody id="adminSocialTableBody">
-                                <tr><td colspan="7" style="text-align:center; padding:32px; color:var(--text-soft);">Đang tải bài viết…</td></tr>
+                                <tr><td colspan="6" style="text-align:center; padding:32px; color:var(--text-soft);">Đang tải bài viết…</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -2296,7 +2309,7 @@
         <div class="chat-avatar">🤖<span class="on-dot" id="chatDot"></span></div>
         <div class="chat-head-info">
             <b>Trợ lý AI FoodX</b>
-            <small id="chatStatusText">Đang kết nối…</small>
+            <small id="chatStatusText">Đang bảo trì</small>
         </div>
         <div class="chat-head-actions">
             <button class="chat-head-btn chat-maximize-btn" id="chatMaximizeBtn" onclick="toggleChatMaximize()" title="Phóng to / Thu nhỏ" aria-label="Phóng to / Thu nhỏ">⛶</button>
@@ -4966,15 +4979,16 @@
 </div>
 
 
-<script src="/js/modules/utils.js"></script>
-<script src="/js/modules/state.js"></script>
-<script src="/js/modules/auth.js"></script>
-<script src="/js/modules/fridge.js"></script>
-<script src="/js/modules/recipes.js"></script>
-<script src="/js/modules/plan.js"></script>
-<script src="/js/modules/shopping.js"></script>
-<script src="/js/modules/chat.js"></script>
-<script src="/js/app.js"></script>
+<script src="/js/modules/utils.js?v=20261005_responsive2"></script>
+<script src="/js/modules/state.js?v=20261005_responsive2"></script>
+<script src="/js/modules/auth.js?v=20261005_responsive2"></script>
+<script src="/js/modules/fridge.js?v=20261005_responsive2"></script>
+<script src="/js/modules/recipes.js?v=20261005_responsive2"></script>
+<script src="/js/modules/plan.js?v=20261005_responsive2"></script>
+<script src="/js/modules/shopping.js?v=20261005_responsive2"></script>
+<script src="/js/modules/chat.js?v=20261005_responsive2"></script>
+<script src="/js/app.js?v=20261005_responsive2"></script>
+<script src="/js/modules/admin.js?v=20261005_responsive2"></script>
 
 </body>
 </html>

@@ -97,8 +97,7 @@ public class GroqService {
                     if (attempt == 0) {
                         try { Thread.sleep(1000); } catch(Exception e) {}
                     } else if (attempt == 1) {
-                        currentModel = "llama-3.1-8b-instant";
-                        log.warn("Falling back to model: {}", currentModel);
+                        log.warn("Groq vẫn quá tải với model {}, thử lại.", currentModel);
                         try { Thread.sleep(2000); } catch(Exception e) {}
                     }
                     attempt++;

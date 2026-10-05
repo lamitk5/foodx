@@ -235,6 +235,7 @@ services:
       <<: [*db-env, *app-env]
       SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/foodx_plan?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci"
       SPRING_DATASOURCE_USERNAME: "foodx_plan"
+      APP_AI_SERVICE_URL: "http://ai-service:8085"
       FOODX_SERVICES_USER_SERVICE: "http://user-service:8081"
       FOODX_SERVICES_INVENTORY_SERVICE: "http://inventory-service:8082"
       FOODX_SERVICES_RECIPE_SERVICE: "http://recipe-service:8083"
@@ -242,6 +243,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      ai-service:
+        condition: service_started
     networks:
       - foodx-network
 

@@ -213,9 +213,14 @@ public class PlanService {
                     "protein": 30.0,
                     "carb": 50.0,
                     "fat": 14.0,
-                    "difficulty": "Dễ"
+                    "difficulty": "Dễ",
+                    "ingredients": [
+                      {"name": "Thịt bò", "quantity": 200, "unit": "g"},
+                      {"name": "Hành lá", "quantity": 20, "unit": "g"}
+                    ]
                   }
                 ]
+                Mỗi món phải có ít nhất 4 nguyên liệu thật, đúng với tên món, kèm số lượng và đơn vị.
                 """, start, end, diet, allergies, dislikes, fridgeList, existingTitles);
 
         String rawJson = aiServiceClient.generate(prompt, "application/json").orElse(null);
@@ -393,8 +398,13 @@ public class PlanService {
                   "protein": 28.0,
                   "carb": 55.0,
                   "fat": 14.0,
-                  "difficulty": "Dễ"
+                  "difficulty": "Dễ",
+                  "ingredients": [
+                    {"name": "Ức gà", "quantity": 200, "unit": "g"},
+                    {"name": "Rau xà lách", "quantity": 80, "unit": "g"}
+                  ]
                 }
+                Món phải có ít nhất 4 nguyên liệu đúng với tên món.
                 """, slotVi, request.planDate(), userPrompt, targetKcal, diet, allergies, otherMealsToday, fridgeList, targetKcal);
 
         RecipeSummaryDto recipe = null;
@@ -605,5 +615,14 @@ public class PlanService {
         private Double carb;
         private Double fat;
         private String difficulty;
+        private java.util.List<AiIngredient> ingredients;
+    }
+
+    @lombok.Data
+    @lombok.NoArgsConstructor
+    public static class AiIngredient {
+        private String name;
+        private Double quantity;
     }
 }
+

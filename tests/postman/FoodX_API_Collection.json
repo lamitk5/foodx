@@ -1,0 +1,233 @@
+{
+	"info": {
+		"_postman_id": "b703988e-956b-4892-a141-7d2e1420dba8",
+		"name": "FoodX API - 4 Core Forms Test Suite",
+		"description": "Bộ kịch bản kiểm thử API chuyên nghiệp cho 4 dạng form khác nhau trong hệ thống FoodX.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "01 - Form Đăng ký tài khoản (Auth JSON)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"username\": \"test_user_{{$randomInt}}\",\n  \"email\": \"test_{{$randomInt}}@example.com\",\n  \"password\": \"Password123@\",\n  \"fullName\": \"Tester Chuyên Nghiệp\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/auth/register",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response matches standard ApiResponse envelope\", function () {",
+							"    const res = pm.response.json();",
+							"    pm.expect(res).to.have.property(\"success\", true);",
+							"    pm.expect(res).to.have.property(\"status\", 200);",
+							"    pm.expect(res).to.have.property(\"message\");",
+							"    pm.expect(res).to.have.property(\"data\");",
+							"});",
+							"",
+							"pm.test(\"Response returns valid AuthResponse with JWT token\", function () {",
+							"    const res = pm.response.json();",
+							"    const data = res.data;",
+							"    pm.expect(data.accessToken).to.be.a(\"string\").that.is.not.empty;",
+							"    pm.environment.set(\"accessToken\", data.accessToken);",
+							"    pm.environment.set(\"currentUserId\", data.userId);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			]
+		},
+		{
+			"name": "02 - Form Thêm thực phẩm tủ lạnh (Item Creation JSON)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Thịt bò Úc\",\n  \"type\": \"Thịt\",\n  \"quantity\": 500,\n  \"unit\": \"g\",\n  \"kcal\": 250,\n  \"protein\": 26,\n  \"carb\": 0,\n  \"fat\": 15,\n  \"expiresAt\": \"2026-10-15\",\n  \"note\": \"Bảo quản ngăn đông\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/fridge",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"fridge"
+					]
+				}
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response envelope is successful\", function () {",
+							"    const res = pm.response.json();",
+							"    pm.expect(res.success).to.be.true;",
+							"    pm.expect(res.status).to.eql(200);",
+							"});",
+							"",
+							"pm.test(\"Fridge item fields match request data\", function () {",
+							"    const res = pm.response.json();",
+							"    const item = res.data;",
+							"    pm.expect(item.id).to.be.a(\"number\");",
+							"    pm.expect(item.name).to.eql(\"Thịt bò Úc\");",
+							"    pm.expect(item.quantity).to.eql(500);",
+							"    pm.environment.set(\"createdFridgeItemId\", item.id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			]
+		},
+		{
+			"name": "03 - Form Cập nhật hồ sơ dinh dưỡng (Profile Metrics JSON)",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Nguyễn Văn Test\",\n  \"gender\": \"male\",\n  \"age\": 25,\n  \"weight\": 68.5,\n  \"height\": 172.0,\n  \"target\": 65.0,\n  \"activity\": 1.55,\n  \"diet\": \"Eat Clean\",\n  \"allergies\": \"Đậu phộng\",\n  \"dislikes\": \"Hành lá\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/profile",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"profile"
+					]
+				}
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Profile updated metrics match input\", function () {",
+							"    const res = pm.response.json();",
+							"    const profile = res.data;",
+							"    pm.expect(profile.age).to.eql(25);",
+							"    pm.expect(profile.weight).to.eql(68.5);",
+							"    pm.expect(profile.height).to.eql(172.0);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			]
+		},
+		{
+			"name": "04 - Form Upload Avatar (Multipart/form-data)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "avatar",
+							"type": "file",
+							"src": ""
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/profile/avatar",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"profile",
+						"avatar"
+					]
+				}
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Avatar URL is generated\", function () {",
+							"    const res = pm.response.json();",
+							"    pm.expect(res.data.avatarUrl).to.be.a(\"string\").that.is.not.empty;",
+							"    pm.environment.set(\"currentAvatarUrl\", res.data.avatarUrl);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080"
+		}
+	]
+}
