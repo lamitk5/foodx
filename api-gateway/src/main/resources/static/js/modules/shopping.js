@@ -1,4 +1,13 @@
-var recipesCache = (typeof window !== 'undefined' && window.recipesCache) ? window.recipesCache : [];
+/**
+ * FoodX module: shopping.js
+ * Danh sach mua sam.
+ * Cat tu app.js, van dung bien toan cuc de index.html goi duoc.
+ */
+/* =========================================================
+   SHOPPING
+========================================================= */
+// Quản lý danh sách mua sắm được xử lý đồng bộ qua API MySQL tại /api/shopping
+
 
 async function addShoppingItem() {
     await addShop();
@@ -30,10 +39,73 @@ document
         }
     );
 
+function quantityNumber(qty) {
+    const str = String(qty == null ? '' : qty).trim().replace(',', '.');
+    if (/^\d+\s*\/\s*\d+$/.test(str)) {
+        const parts = str.split('/');
+        const value = parseFloat(parts[0]) / parseFloat(parts[1]);
+        return isNaN(value) ? null : value;
+    }
+    if (/^[\d.]+$/.test(str)) {
+        const value = parseFloat(str);
+        return isNaN(value) ? null : value;
+    }
+    return null;
+}
+
 function formatScaledNumber(num) {
     if (isNaN(num)) return '';
-    const rounded = Math.round(num * 100) / 100;
-    return String(rounded);
+    return nearestCookFraction(num);
+}
+
+function nearestCookFraction(num) {
+    const steps = [
+        [0.125, '1/8'], [0.167, '1/6'], [0.25, '1/4'], [0.333, '1/3'],
+        [0.5, '1/2'], [0.667, '2/3'], [0.75, '3/4'], [0.833, '5/6'], [0.875, '7/8']
+    ];
+    const abs = Math.abs(Number(num));
+    if (!isFinite(abs)) return '';
+    const whole = Math.floor(abs + 1e-8);
+    const frac = abs - whole;
+    if (frac < 0.04) return String(whole);
+    if (frac > 0.96) return String(whole + 1);
+    let best = steps[0];
+    let diff = 1;
+    steps.forEach(function (step) {
+        const gap = Math.abs(frac - step[0]);
+        if (gap < diff) {
+            diff = gap;
+            best = step;
+        }
+    });
+    if (diff > 0.04) return String(Math.round(abs * 10) / 10);
+    if (whole === 0) return best[1];
+    return whole + ' ' + best[1];
+}
+
+function formatCookAmount(num, unit, name) {
+    if (num == null || isNaN(num)) return { text: '', hint: '' };
+    const u = String(unit || '').trim();
+    const label = String(name || '');
+    if (/^(kg|g|gr|gram|ml|l|lít|lit)$/i.test(u)) {
+        let rounded = num;
+        if (num >= 100) rounded = Math.round(num / 5) * 5;
+        else if (num >= 10) rounded = Math.round(num);
+        else rounded = Math.round(num * 10) / 10;
+        if (rounded <= 0 && num > 0) rounded = Math.round(num * 10) / 10 || num;
+        return { text: String(rounded), hint: '' };
+    }
+    const fraction = nearestCookFraction(num);
+    const isEgg = /trứng/i.test(label) && /quả|trái/i.test(u);
+    if (isEgg) {
+        if (num < 0.2) return { text: 'một ít', hint: '' };
+        if (num < 0.4) return { text: '1/2', hint: 'Công thức khoảng ' + fraction + ' quả, dùng nửa quả cho dễ.' };
+        if (num <= 0.6) return { text: '1/2', hint: '' };
+        if (num < 0.9) return { text: '1', hint: 'Công thức khoảng ' + fraction + ' quả. Dùng 1 quả cho dễ đánh.' };
+        if (Math.abs(num - Math.round(num)) < 0.08) return { text: String(Math.round(num)), hint: '' };
+    }
+    if (num > 0 && num < 0.12) return { text: 'một ít', hint: '' };
+    return { text: fraction, hint: '' };
 }
 
 function scaleIngredientQuantity(qty, factor) {
@@ -246,9 +318,14 @@ async function addRecipeIngredientsToShopping(recipeId, onlyMissing = false) {
                     continue;
                 }
                 const rawQty = ing.baseQuantity != null && ing.baseQuantity !== '' ? ing.baseQuantity : ing.quantity;
-                const scaledQty = scaleIngredientQuantity(rawQty, recipeServingRatio);
-                let qty = (scaledQty != null && String(scaledQty).trim() ? String(scaledQty).trim() : '') +
-                          (ing.unit && String(ing.unit).trim() ? ' ' + String(ing.unit).trim() : '');
+                const baseNum = quantityNumber(rawQty);
+                const cookedShop = baseNum == null
+                    ? { text: scaleIngredientQuantity(rawQty, recipeServingRatio), hint: '' }
+                    : formatCookAmount(baseNum * recipeServingRatio, ing.unit, rawName);
+                const shopUnit = ing.unit && String(ing.unit).trim() ? String(ing.unit).trim() : '';
+                let qty = cookedShop.text === 'một ít'
+                    ? 'một ít'
+                    : ((cookedShop.text ? String(cookedShop.text).trim() + (shopUnit ? ' ' + shopUnit : '') : shopUnit));
                 try {
                     const res = await apiRequest('/api/shopping', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -296,8 +373,9 @@ async function addRecipeIngredientsToFridge(recipeId) {
 }
 window.addRecipeIngredientsToFridge = addRecipeIngredientsToFridge;
 /* =========================================================
-   STATS
+   SHOPPING — progress + clear-done undo
 ========================================================= */
+let lastClearedShop = [];
 
 async function toggleShop(id) {
     if (!isUserLoggedIn()) {
@@ -376,9 +454,53 @@ function shopEmoji(name) {
     return '🛒';
 }
 
+async function mergeAndSaveShoppingItem(name, newQtyVal, newUnit, category) {
+    name = name.trim();
+    let lowerName = name.toLowerCase();
+    
+    const existing = allShoppingItemsCache.find(i => String(i.name || '').toLowerCase() === lowerName && !i.done);
+    
+    if (existing) {
+        let oldQtyStr = (existing.quantity || '').trim();
+        let match = oldQtyStr.match(/^([\d\.]+)\s*(.*)$/);
+        let oldQtyVal = match ? parseFloat(match[1]) : 1;
+        let oldUnit = match ? match[2].trim().toLowerCase() : 'phần';
+        
+        let mergedQtyStr = oldQtyStr + ' + ' + newQtyVal + ' ' + newUnit;
+        newUnit = newUnit.toLowerCase();
+        
+        if (oldUnit === newUnit) {
+            mergedQtyStr = (oldQtyVal + newQtyVal) + ' ' + newUnit;
+        } else if ((oldUnit === 'g' && newUnit === 'kg') || (oldUnit === 'kg' && newUnit === 'g')) {
+            let totalG = (oldUnit === 'kg' ? oldQtyVal * 1000 : oldQtyVal) + (newUnit === 'kg' ? newQtyVal * 1000 : newQtyVal);
+            mergedQtyStr = (totalG >= 1000) ? (totalG / 1000) + ' kg' : totalG + ' g';
+        } else if ((oldUnit === 'ml' && newUnit === 'lít') || (oldUnit === 'lít' && newUnit === 'ml')) {
+            let totalMl = (oldUnit === 'lít' ? oldQtyVal * 1000 : oldQtyVal) + (newUnit === 'lít' ? newQtyVal * 1000 : newQtyVal);
+            mergedQtyStr = (totalMl >= 1000) ? (totalMl / 1000) + ' lít' : totalMl + ' ml';
+        }
+        
+        await apiRequest('/api/shopping/' + existing.id, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: existing.name, quantity: mergedQtyStr, price: existing.price || 25000, category: existing.category || category })
+        });
+    } else {
+        await apiRequest('/api/shopping', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name, quantity: newQtyVal + ' ' + newUnit, price: 25000, category: category || 'Nguyên liệu' })
+        });
+    }
+}
+
 async function addShop() {
     const input = document.getElementById('shoppingInput');
+    const qtyInput = document.getElementById('shoppingQty');
+    const unitInput = document.getElementById('shoppingUnit');
     const v = (input ? input.value.trim() : '');
+    const q = (qtyInput ? parseFloat(qtyInput.value) || 1 : 1);
+    const u = (unitInput ? unitInput.value : 'phần');
+    
     if (!v) {
         showToast('Hãy nhập tên nguyên liệu cần mua.', 'warning');
         return;
@@ -388,12 +510,9 @@ async function addShop() {
         return;
     }
     try {
-        await apiRequest('/api/shopping', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: v, quantity: '1 phần', price: 25000, category: 'Nguyên liệu' })
-        });
+        await mergeAndSaveShoppingItem(v, q, u, 'Nguyên liệu');
         if (input) input.value = '';
+        if (qtyInput) qtyInput.value = '1';
         await renderShopping();
         showToast(`Đã thêm "${v}" vào Danh sách mua 🛒`, 'success');
     } catch (e) {
@@ -401,18 +520,19 @@ async function addShop() {
     }
 }
 
-async function addShopByName(name, qty, category) {
+async function addShopByName(name, qtyStr, category) {
     if (!name) return;
     if (!isUserLoggedIn()) {
         requireAuth('shopping');
         return;
     }
+    
+    let match = (qtyStr || '').match(/^([\d\.]+)\s*(.*)$/);
+    let q = match ? parseFloat(match[1]) : 1;
+    let u = match && match[2] ? match[2].trim() : 'phần';
+    
     try {
-        await apiRequest('/api/shopping', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name, quantity: qty || '1 phần', price: 25000, category: category || 'Nguyên liệu' })
-        });
+        await mergeAndSaveShoppingItem(name, q, u, category);
         await renderShopping();
         showToast(`Đã thêm "${name}" vào Danh sách mua 🛒`, 'success');
     } catch (e) {
@@ -791,169 +911,3 @@ async function undoClearDone() {
 }
 
 
-/* =========================================================
-   BOTTOM NAV + QUICK ACTION + DRAWER
-========================================================= */
-async function shareShoppingList() {
-    const items = (typeof state !== 'undefined' && Array.isArray(state.shopping)) ? state.shopping : [];
-    if (!items.length) {
-        showToast('Danh sách mua sắm đang trống.', 'warning');
-        return;
-    }
-    const doneCount = items.filter(i => i.done).length;
-    let text = `🛒 DANH SÁCH ĐI CHỢ FOODX:\n`;
-    items.forEach(i => {
-        const check = i.done ? '[x]' : '[ ]';
-        const qty = i.quantity ? ` (${i.quantity})` : '';
-        text += `${check} ${i.name || ''}${qty}\n`;
-    });
-    text += `-----------------------\nTổng cộng: ${items.length} món (Đã mua: ${doneCount}/${items.length})\n🌿 Smart Kitchen & Meal Planner FoodX`;
-
-    if (navigator.share) {
-        try {
-            await navigator.share({
-                title: 'Danh sách đi chợ FoodX',
-                text: text
-            });
-            showToast('Đã mở hộp thoại chia sẻ!', 'success');
-            return;
-        } catch (_) {}
-    }
-
-    try {
-        await navigator.clipboard.writeText(text);
-        showToast('📋 Đã sao chép danh sách đi chợ! Dán vào Zalo/Tin nhắn để gửi cho người thân.', 'success');
-    } catch (_) {
-        showToast('Không thể sao chép tự động.', 'error');
-    }
-}
-window.shareShoppingList = shareShoppingList;
-
-// --- 5.5 INIT EVENT LISTENERS FOR NEW UX FEATURES ---
-(function initUxEnhancements() {
-    // Food catalog buttons
-    const openCatalogBtn = document.getElementById('openFoodCatalogBtn');
-    if (openCatalogBtn) openCatalogBtn.addEventListener('click', function () {
-        if (typeof window.openFoodCatalogModal === 'function') window.openFoodCatalogModal();
-    });
-
-    const emptyCatalogBtn = document.getElementById('emptyFoodCatalogBtn');
-    if (emptyCatalogBtn) emptyCatalogBtn.addEventListener('click', function () {
-        if (typeof window.openFoodCatalogModal === 'function') window.openFoodCatalogModal();
-    });
-
-    const catalogGoCustomBtn = document.getElementById('catalogGoCustomBtn');
-    if (catalogGoCustomBtn) {
-        catalogGoCustomBtn.addEventListener('click', function () {
-            const catModal = document.getElementById('foodCatalogModal');
-            if (catModal) catModal.classList.remove('show');
-            if (typeof openCustomIngredientModal === 'function') openCustomIngredientModal();
-        });
-    }
-
-    // Catalog search
-    const catalogSearch = document.getElementById('catalogSearchInput');
-    if (catalogSearch) {
-        catalogSearch.addEventListener('input', debounce(function (e) {
-            renderFoodCatalog(activeCatalogCategory, e.target.value);
-        }, 150));
-    }
-
-    // Catalog tabs
-    const catTabs = document.querySelectorAll('#catalogCategoryTabs .catalog-tab');
-    catTabs.forEach(tab => {
-        tab.addEventListener('click', function () {
-            catTabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            activeCatalogCategory = tab.getAttribute('data-cat') || 'all';
-            const q = catalogSearch ? catalogSearch.value : '';
-            if (typeof renderFoodCatalog === 'function') renderFoodCatalog(activeCatalogCategory, q);
-            else if (typeof window.renderFoodCatalog === 'function') window.renderFoodCatalog(activeCatalogCategory, q);
-        });
-    });
-
-    // Zero-waste plan button
-    const planZeroWasteBtn = document.getElementById('planZeroWasteBtn');
-    if (planZeroWasteBtn) planZeroWasteBtn.addEventListener('click', function () {
-        if (typeof planZeroWasteRescue === 'function') planZeroWasteRescue();
-        else if (typeof window.planZeroWasteRescue === 'function') window.planZeroWasteRescue();
-    });
-
-    // Shopping share button
-    const shopShareBtn = document.getElementById('shopShareList');
-    if (shopShareBtn) shopShareBtn.addEventListener('click', shareShoppingList);
-})();
-
-/* =========================================================
-   6. SERVICE WORKER & PWA REGISTRATION
-========================================================= */
-if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-        navigator.serviceWorker.register('/sw.js')
-            .then(function (reg) {
-                console.log('[FoodX PWA] Service Worker registered successfully, scope:', reg.scope);
-            })
-            .catch(function (err) {
-                console.warn('[FoodX PWA] Service Worker registration failed:', err);
-            });
-    });
-}
-
-/* =========================================================
-   7. LAZY LOAD ẢNH TOÀN CỤC (hiệu suất cảm nhận — không phải sửa từng template)
-========================================================= */
-(function initGlobalLazyImages() {
-    function apply(img) {
-        if (img && img.tagName === 'IMG' && !img.hasAttribute('loading')) {
-            img.setAttribute('loading', 'lazy');
-        }
-        if (img && img.tagName === 'IMG' && !img.hasAttribute('decoding')) {
-            img.setAttribute('decoding', 'async');
-        }
-    }
-    function scan(root) {
-        if (root && root.querySelectorAll) {
-            root.querySelectorAll('img').forEach(apply);
-        }
-    }
-    if (document.body) scan(document);
-    document.addEventListener('DOMContentLoaded', function () { scan(document); });
-    if (typeof MutationObserver !== 'undefined') {
-        try {
-            const mo = new MutationObserver(function (mutations) {
-                mutations.forEach(function (m) {
-                    m.addedNodes.forEach(function (n) {
-                        if (n.nodeType === 1) {
-                            if (n.tagName === 'IMG') apply(n);
-                            scan(n);
-                        }
-                    });
-                });
-            });
-            mo.observe(document.documentElement, { childList: true, subtree: true });
-        } catch (_) { /* môi trường không hỗ trợ MutationObserver */ }
-    }
-})();
-
-// Module window exports
-if (typeof window !== 'undefined') window.addShoppingItem = addShoppingItem;
-if (typeof window !== 'undefined') window.formatScaledNumber = formatScaledNumber;
-if (typeof window !== 'undefined') window.scaleIngredientQuantity = scaleIngredientQuantity;
-if (typeof window !== 'undefined') window.parseIngredientString = parseIngredientString;
-if (typeof window !== 'undefined') window.normalizeIngredientList = normalizeIngredientList;
-if (typeof window !== 'undefined') window.getFridgeIngredientNames = getFridgeIngredientNames;
-if (typeof window !== 'undefined') window.checkIngredientInFridge = checkIngredientInFridge;
-if (typeof window !== 'undefined') window.toggleShop = toggleShop;
-if (typeof window !== 'undefined') window.delShop = delShop;
-if (typeof window !== 'undefined') window.formatShopTime = formatShopTime;
-if (typeof window !== 'undefined') window.shopEmoji = shopEmoji;
-if (typeof window !== 'undefined') window.addShop = addShop;
-if (typeof window !== 'undefined') window.addShopByName = addShopByName;
-if (typeof window !== 'undefined') window.renderShopping = renderShopping;
-if (typeof window !== 'undefined') window.renderShoppingFiltered = renderShoppingFiltered;
-if (typeof window !== 'undefined') window.openShoppingRecipeModal = openShoppingRecipeModal;
-if (typeof window !== 'undefined') window.renderSrmRecipes = renderSrmRecipes;
-if (typeof window !== 'undefined') window.selectSrmRecipe = selectSrmRecipe;
-if (typeof window !== 'undefined') window.clearDoneShopping = clearDoneShopping;
-if (typeof window !== 'undefined') window.clearAllShopping = clearAllShopping;
-if (typeof window !== 'undefined') window.undoClearDone = undoClearDone;

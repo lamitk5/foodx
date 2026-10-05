@@ -7,11 +7,14 @@ import com.nhom6.foodx.social.dto.CommentResponse;
 import com.nhom6.foodx.social.dto.LikeResponse;
 import com.nhom6.foodx.social.dto.PostRequest;
 import com.nhom6.foodx.social.dto.PostResponse;
+import com.nhom6.foodx.social.dto.SaveResponse;
 import com.nhom6.foodx.social.entity.PostComment;
 import com.nhom6.foodx.social.entity.PostLike;
+import com.nhom6.foodx.social.entity.PostSave;
 import com.nhom6.foodx.social.entity.RecipePost;
 import com.nhom6.foodx.social.repository.PostCommentRepository;
 import com.nhom6.foodx.social.repository.PostLikeRepository;
+import com.nhom6.foodx.social.repository.PostSaveRepository;
 import com.nhom6.foodx.social.repository.RecipePostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +31,7 @@ public class SocialService {
 
     private final RecipePostRepository postRepository;
     private final PostLikeRepository likeRepository;
+    private final PostSaveRepository saveRepository;
     private final PostCommentRepository commentRepository;
 
     @Transactional(readOnly = true)
@@ -100,6 +104,7 @@ public class SocialService {
         RecipePost post = findPost(id);
         requireAuthor(post, me);
         likeRepository.deleteByPost_Id(id);
+        saveRepository.deleteByPost_Id(id);
         commentRepository.deleteByPost_Id(id);
         postRepository.delete(post);
     }
@@ -119,6 +124,31 @@ public class SocialService {
             liked = true;
         }
         return new LikeResponse(liked, likeRepository.countByPost_Id(postId));
+    }
+
+    @Transactional
+    public SaveResponse toggleSave(User me, Long postId) {
+        RecipePost post = findPost(postId);
+        boolean saved;
+        if (saveRepository.existsByPost_IdAndUser_Id(postId, me.getId())) {
+            saveRepository.findByPost_IdAndUser_Id(postId, me.getId()).ifPresent(saveRepository::delete);
+            saved = false;
+        } else {
+            saveRepository.save(PostSave.builder()
+                    .user(me)
+                    .post(post)
+                    .build());
+            saved = true;
+        }
+        return new SaveResponse(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostResponse> savedPosts(User me) {
+        return saveRepository.findByUser_IdOrderByCreatedAtDesc(me.getId())
+                .stream()
+                .map(save -> toResponse(me, save.getPost()))
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -218,7 +248,8 @@ public class SocialService {
                 likeRepository.countByPost_Id(post.getId()),
                 me != null && likeRepository.existsByPost_IdAndUser_Id(post.getId(), me.getId()),
                 commentRepository.countByPost_Id(post.getId()),
-                post.getCreatedAt()
+                post.getCreatedAt(),
+                me != null && saveRepository.existsByPost_IdAndUser_Id(post.getId(), me.getId())
         );
     }
 

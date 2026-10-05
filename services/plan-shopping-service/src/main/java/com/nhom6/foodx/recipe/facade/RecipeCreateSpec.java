@@ -13,6 +13,7 @@ public record RecipeCreateSpec(
         Double carb,
         Double fat,
         String difficulty,
-        String mealSlots
+        String mealSlots,
+        java.util.List<IngredientLine> ingredients
 ) {
 }

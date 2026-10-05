@@ -193,9 +193,14 @@ public class PlanService {
                     "protein": 30.0,
                     "carb": 50.0,
                     "fat": 14.0,
-                    "difficulty": "Dễ"
+                    "difficulty": "Dễ",
+                    "ingredients": [
+                      {"name": "Thịt bò", "quantity": 200, "unit": "g"},
+                      {"name": "Hành lá", "quantity": 20, "unit": "g"}
+                    ]
                   }
                 ]
+                Mỗi món phải có ít nhất 4 nguyên liệu thật, đúng với tên món, kèm số lượng và đơn vị.
                 """, start, end, diet, allergies, dislikes, fridgeList, existingTitles);
 
         String rawJson = aiProviderService.generateText(prompt, "application/json");
@@ -240,7 +245,8 @@ public class PlanService {
                     item.getCarb(),
                     item.getFat(),
                     item.getDifficulty(),
-                    item.getSlot()
+                    item.getSlot(),
+                    linesOf(item)
             ));
             if (recipe == null) {
                 continue;
@@ -374,8 +380,13 @@ public class PlanService {
                   "protein": 28.0,
                   "carb": 55.0,
                   "fat": 14.0,
-                  "difficulty": "Dễ"
+                  "difficulty": "Dễ",
+                  "ingredients": [
+                    {"name": "Ức gà", "quantity": 200, "unit": "g"},
+                    {"name": "Rau xà lách", "quantity": 80, "unit": "g"}
+                  ]
                 }
+                Món phải có ít nhất 4 nguyên liệu đúng với tên món.
                 """, slotVi, request.planDate(), userPrompt, targetKcal, diet, allergies, otherMealsToday, fridgeList, targetKcal);
 
         RecipeSummary recipe = null;
@@ -397,7 +408,8 @@ public class PlanService {
                             item.getCarb(),
                             item.getFat(),
                             item.getDifficulty(),
-                            request.slot()
+                            request.slot(),
+                            linesOf(item)
                     ));
                 }
             }
@@ -482,7 +494,8 @@ public class PlanService {
                 carb,
                 fat,
                 "Dễ",
-                request.slot()
+                request.slot(),
+                java.util.List.of()
         ));
 
         MealPlanEntry entry = planRepository.findByUser_IdAndPlanDateAndSlot(user.getId(), request.planDate(), request.slot())
@@ -574,5 +587,29 @@ public class PlanService {
         private Double carb;
         private Double fat;
         private String difficulty;
+        private java.util.List<AiIngredient> ingredients;
+    }
+
+    @lombok.Data
+    @lombok.NoArgsConstructor
+    public static class AiIngredient {
+        private String name;
+        private Double quantity;
+        private String unit;
+    }
+
+    private java.util.List<com.nhom6.foodx.recipe.facade.IngredientLine> linesOf(AiMealPlanItem item) {
+        if (item == null || item.getIngredients() == null) {
+            return java.util.List.of();
+        }
+        java.util.List<com.nhom6.foodx.recipe.facade.IngredientLine> lines = new java.util.ArrayList<>();
+        for (AiIngredient ing : item.getIngredients()) {
+            if (ing == null || ing.getName() == null || ing.getName().isBlank()) {
+                continue;
+            }
+            lines.add(new com.nhom6.foodx.recipe.facade.IngredientLine(
+                    ing.getName().trim(), ing.getQuantity(), ing.getUnit()));
+        }
+        return lines;
     }
 }

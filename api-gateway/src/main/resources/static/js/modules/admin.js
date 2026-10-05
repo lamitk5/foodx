@@ -623,28 +623,103 @@ async function reloadAdminSocial() {
     }
 }
 
-function renderAdminSocial() {
+let adminSocialRendering = false;
+
+function adminPostDay(value) {
+    if (!value) return '';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return String(value).slice(0, 10);
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '-' + m + '-' + day;
+}
+
+function adminPostTime(value) {
+    const t = value ? new Date(value).getTime() : 0;
+    return Number.isNaN(t) ? 0 : t;
+}
+
+async function loadAdminLatestComments(posts) {
+    await Promise.all(posts.map(async function (p) {
+        const count = p.commentCount ?? p.commentsCount ?? 0;
+        if (!count) {
+            p._latestCommentAt = null;
+            return;
+        }
+        if (p._latestCommentAt !== undefined) return;
+        try {
+            const res = await apiCall('/api/social/posts/' + p.id + '/comments');
+            const comments = Array.isArray(res) ? res : (res?.data || []);
+            let latest = 0;
+            let latestRaw = null;
+            comments.forEach(function (c) {
+                const t = adminPostTime(c.createdAt);
+                if (t >= latest) {
+                    latest = t;
+                    latestRaw = c.createdAt;
+                }
+            });
+            p._latestCommentAt = latestRaw;
+        } catch (_) {
+            p._latestCommentAt = null;
+        }
+    }));
+}
+
+async function renderAdminSocial() {
     const tbody = document.getElementById('adminSocialTableBody');
-    if (!tbody) return;
+    if (!tbody || adminSocialRendering) return;
 
     const q = (document.getElementById('adminSocialSearch')?.value || '').toLowerCase().trim();
+    const sort = document.getElementById('adminSocialSort')?.value || 'date-desc';
+    const day = document.getElementById('adminSocialDate')?.value || '';
 
-    const filtered = adminSocialCache.filter(p => {
+    let filtered = adminSocialCache.filter(function (p) {
         const title = (p.title || '').toLowerCase();
-        const author = (p.authorName || '').toLowerCase();
-        return !q || title.includes(q) || author.includes(q);
+        if (q && !title.includes(q)) return false;
+        if (day && adminPostDay(p.createdAt) !== day) return false;
+        return true;
+    });
+
+    if (sort === 'comments' && filtered.some(function (p) {
+        const count = p.commentCount ?? p.commentsCount ?? 0;
+        return count > 0 && p._latestCommentAt === undefined;
+    })) {
+        adminSocialRendering = true;
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:32px; color:var(--text-soft);">Đang sắp theo bình luận mới nhất…</td></tr>';
+        try {
+            await loadAdminLatestComments(filtered);
+        } finally {
+            adminSocialRendering = false;
+        }
+        return renderAdminSocial();
+    }
+
+    filtered.sort(function (a, b) {
+        if (sort === 'name') {
+            return String(a.title || '').localeCompare(String(b.title || ''), 'vi');
+        }
+        if (sort === 'comments') {
+            const diff = adminPostTime(b._latestCommentAt) - adminPostTime(a._latestCommentAt);
+            if (diff) return diff;
+            return adminPostTime(b.createdAt) - adminPostTime(a.createdAt);
+        }
+        const diff = adminPostTime(a.createdAt) - adminPostTime(b.createdAt);
+        return sort === 'date-asc' ? diff : -diff;
     });
 
     if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px; color:var(--text-soft);">Không có bài đăng nào.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:32px; color:var(--text-soft);">Không có bài đăng nào khớp bộ lọc.</td></tr>';
         return;
     }
 
     tbody.innerHTML = filtered.map(p => {
         const dateStr = p.createdAt ? new Date(p.createdAt).toLocaleDateString('vi-VN') : '—';
+        const commentHint = p._latestCommentAt
+            ? '<div style="font-size:11px;color:var(--text-soft);margin-top:4px;">Mới ' + new Date(p._latestCommentAt).toLocaleString('vi-VN') + '</div>'
+            : '';
         return `
             <tr>
-                <td><strong>#${p.id}</strong></td>
                 <td><strong style="color:var(--text);">${escapeHtml(p.authorName || 'Ẩn danh')}</strong></td>
                 <td><strong style="color:var(--text); font-size:14px;">${escapeHtml(p.title || 'Không có tiêu đề')}</strong></td>
                 <td><span class="admin-stat-pill">❤️ ${p.likeCount ?? p.likesCount ?? 0}</span></td>
@@ -652,6 +727,7 @@ function renderAdminSocial() {
                     <button type="button" class="admin-comments-btn" onclick="openAdminCommentsModal(${p.id}, '${escapeHtml(p.title || '')}')">
                         💬 ${p.commentCount ?? p.commentsCount ?? 0} bình luận
                     </button>
+                    ${commentHint}
                 </td>
                 <td>${dateStr}</td>
                 <td>

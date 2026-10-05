@@ -1,6 +1,8 @@
 package com.nhom6.foodx.recipe.facade;
 
 import com.nhom6.foodx.food.service.FoodImageSearchService;
+import com.nhom6.foodx.ingredient.entity.Ingredient;
+import com.nhom6.foodx.ingredient.repository.IngredientRepository;
 import com.nhom6.foodx.recipe.entity.Recipe;
 import com.nhom6.foodx.recipe.entity.RecipeIngredient;
 import com.nhom6.foodx.recipe.repository.RecipeRepository;
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
 public class RecipeFacadeImpl implements RecipeFacade {
 
     private final RecipeRepository recipeRepository;
+    private final IngredientRepository ingredientRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -94,7 +97,52 @@ public class RecipeFacadeImpl implements RecipeFacade {
             recipe.setKcal(spec.kcal());
             recipe = recipeRepository.save(recipe);
         }
+        attachIngredientsIfEmpty(recipe, spec.ingredients());
         return toSummary(recipe);
+    }
+
+    private void attachIngredientsIfEmpty(Recipe recipe, List<IngredientLine> lines) {
+        if (recipe == null || lines == null || lines.isEmpty()) {
+            return;
+        }
+        if (recipe.getIngredients() != null && !recipe.getIngredients().isEmpty()) {
+            return;
+        }
+        if (recipe.getIngredients() == null) {
+            recipe.setIngredients(new java.util.ArrayList<>());
+        }
+        for (IngredientLine line : lines) {
+            if (line == null || line.name() == null || line.name().isBlank()) {
+                continue;
+            }
+            String name = line.name().trim();
+            if (name.length() > 100) {
+                name = name.substring(0, 100);
+            }
+            final String ingredientName = name;
+            Ingredient ingredient = ingredientRepository.findByNameIgnoreCase(ingredientName)
+                    .orElseGet(() -> ingredientRepository.save(Ingredient.builder()
+                            .name(ingredientName)
+                            .defaultUnit(line.unit())
+                            .category("Khác")
+                            .createdAt(LocalDateTime.now())
+                            .updatedAt(LocalDateTime.now())
+                            .build()));
+            String unit = line.unit() != null && !line.unit().isBlank() ? line.unit().trim() : "phần";
+            if (unit.length() > 20) {
+                unit = unit.substring(0, 20);
+            }
+            RecipeIngredient row = RecipeIngredient.builder()
+                    .recipe(recipe)
+                    .ingredient(ingredient)
+                    .quantity(line.quantity() != null && line.quantity() > 0 ? line.quantity() : 1.0)
+                    .unit(unit)
+                    .build();
+            recipe.getIngredients().add(row);
+        }
+        if (!recipe.getIngredients().isEmpty()) {
+            recipeRepository.save(recipe);
+        }
     }
 
     private RecipeSummary toSummary(Recipe recipe) {

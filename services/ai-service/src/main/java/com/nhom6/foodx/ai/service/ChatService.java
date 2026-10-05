@@ -73,11 +73,13 @@ public class ChatService {
                     reply = text;
                 }
             } catch (Exception ex) {
-                log.error("Groq API Call Failed Details: {}", ex.getMessage(), ex);
-                if (ex instanceof com.nhom6.foodx.common.exception.BusinessException be) {
-                    throw be;
+                log.error("Nhà cung cấp AI lỗi, dùng câu trả lời mẫu: {}", ex.getMessage(), ex);
+                if (stepMode) {
+                    steps = mockAiDataService.stepReply(request.getMessage(), request.getAvailableIngredients());
+                    reply = "Mình tạm dùng hướng dẫn mẫu cho món \"" + request.getMessage() + "\" vì trợ lý AI đang bận:";
+                } else {
+                    reply = mockAiDataService.chatReply(request.getMessage(), request.getAvailableIngredients());
                 }
-                throw new com.nhom6.foodx.common.exception.BusinessException(500, "Lỗi máy chủ AI: " + ex.getMessage());
             }
         }
 

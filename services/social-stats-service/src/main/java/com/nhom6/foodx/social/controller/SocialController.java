@@ -7,6 +7,7 @@ import com.nhom6.foodx.social.dto.CommentResponse;
 import com.nhom6.foodx.social.dto.LikeResponse;
 import com.nhom6.foodx.social.dto.PostRequest;
 import com.nhom6.foodx.social.dto.PostResponse;
+import com.nhom6.foodx.social.dto.SaveResponse;
 import com.nhom6.foodx.social.service.SocialService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,6 +39,16 @@ public class SocialController {
     @GetMapping("/posts/my")
     public ApiResponse<List<PostResponse>> myPosts() {
         return ApiResponse.success(socialService.myPosts(securityUtils.getCurrentUser()), "Lịch sử bài đăng của tôi");
+    }
+
+    @GetMapping("/posts/saved")
+    public ApiResponse<List<PostResponse>> savedPosts() {
+        return ApiResponse.success(socialService.savedPosts(securityUtils.getCurrentUser()), "Bài đã lưu");
+    }
+
+    @PostMapping("/posts/{id}/save")
+    public ApiResponse<SaveResponse> toggleSave(@PathVariable Long id) {
+        return ApiResponse.success(socialService.toggleSave(securityUtils.getCurrentUser(), id), "Đã cập nhật bài lưu");
     }
 
     @GetMapping("/posts/{id}")

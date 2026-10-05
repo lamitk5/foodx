@@ -2,6 +2,7 @@ package com.nhom6.foodx.recipe.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.nhom6.foodx.auth.entity.User;
+import com.nhom6.foodx.common.exception.BusinessException;
 import com.nhom6.foodx.common.exception.ResourceNotFoundException;
 import com.nhom6.foodx.common.utils.StringUtils;
 import com.nhom6.foodx.fridge.repository.FridgeItemRepository;
@@ -16,6 +17,7 @@ import com.nhom6.foodx.recipe.entity.RecipeIngredient;
 import com.nhom6.foodx.recipe.repository.RecipeIngredientRepository;
 import com.nhom6.foodx.recipe.repository.RecipeRepository;
 import lombok.RequiredArgsConstructor;
+import jakarta.persistence.EntityManager;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +39,7 @@ public class RecipeService {
     private final IngredientRepository ingredientRepository;
     private final FridgeItemRepository fridgeItemRepository;
     private final com.nhom6.foodx.food.service.FoodImageSearchService foodImageSearchService;
+    private final EntityManager entityManager;
 
     @Transactional(readOnly = true)
     public List<RecipeResponse> search(String keyword, String category, String cuisine) {
@@ -102,9 +105,27 @@ public class RecipeService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(Long id, User actor) {
         Recipe recipe = findEntity(id);
-        recipeRepository.delete(recipe);
+        Long authorId = recipe.getAuthor() != null ? recipe.getAuthor().getId() : null;
+        boolean owner = actor != null && authorId != null && authorId.equals(actor.getId());
+        boolean admin = actor != null && actor.getRole() == User.Role.ADMIN;
+        if (!owner && !admin) {
+            throw new BusinessException(403, "Bạn chỉ xóa được công thức do mình tạo");
+        }
+        recipeIngredientRepository.deleteByRecipeId(id);
+        entityManager.createNativeQuery("DELETE FROM saved_recipes WHERE recipe_id = :id")
+                .setParameter("id", id)
+                .executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM meal_plan_entries WHERE recipe_id = :id")
+                .setParameter("id", id)
+                .executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM cook_history WHERE recipe_id = :id")
+                .setParameter("id", id)
+                .executeUpdate();
+        entityManager.flush();
+        entityManager.clear();
+        recipeRepository.deleteById(id);
     }
 
     @Transactional
@@ -179,13 +200,16 @@ public class RecipeService {
             Ingredient ingredient = ingredientRepository.findByNameIgnoreCase(ingName)
                     .orElseGet(() -> {
                         Ingredient newIng = Ingredient.builder()
-                                .name(ingName)
+                                .name(ingName.length() > 100 ? ingName.substring(0, 100) : ingName)
                                 .category(recipe.getCategory())
                                 .createdAt(LocalDateTime.now())
                                 .updatedAt(LocalDateTime.now())
                                 .build();
-                        return ingredientRepository.save(newIng);
+                        return ingredientRepository.saveAndFlush(newIng);
                     });
+            if (ingredient == null || ingredient.getId() == null) {
+                continue;
+            }
 
             RecipeIngredient ri = RecipeIngredient.builder()
                     .recipe(recipe)
@@ -215,11 +239,7 @@ public class RecipeService {
                         .build())
                 .toList();
 
-        String img = recipe.getImageUrl();
-        if (!isUsableImage(img)) {
-            // Giải quyết ảnh cục bộ ngay lập tức, không gọi mạng trong vòng đọc dữ liệu
-            img = localImageForTitle(recipe.getTitle());
-        }
+        String img = preferredImage(recipe);
 
         int kcal = (recipe.getKcal() != null && recipe.getKcal() > 0) ? recipe.getKcal() : 380;
         double protein = (recipe.getProtein() != null && recipe.getProtein() > 0)
@@ -276,6 +296,48 @@ public class RecipeService {
             return false;
         }
         return true;
+    }
+
+    /** Ảnh local đúng món nếu file có sẵn; không thì giữ ảnh đã lưu hoặc ảnh mặc định. */
+    private String preferredImage(Recipe recipe) {
+        String local = locateExistingImage(recipe.getTitle());
+        if (local != null) {
+            return local;
+        }
+        String img = recipe.getImageUrl();
+        return isUsableImage(img) ? img : "/images/recipes/default-recipe.jpg";
+    }
+
+    private String locateExistingImage(String title) {
+        String slug = com.nhom6.foodx.food.service.FoodImageSearchService.toSlug(title);
+        String aliased = switch (slug) {
+            case "com-chien-trung-kieu-viet" -> "/images/recipes/com-chien-trung.jpg";
+            case "ga-kho-gung-sa-ot" -> "/images/recipes/ga-kho-gung.jpg";
+            case "ca-hoi-ap-chao-mang-tay" -> "/images/recipes/ca-hoi-ap-chao.jpg";
+            case "banh-mi-kep-pate-thit-nuong" -> "/images/foods/banh-mi.jpg";
+            case "canh-chua-ca-loc-mien-nam" -> "/images/foods/canh-chua-ca-loc-mien-tay-ca-kho-to.jpg";
+            default -> null;
+        };
+        String[] candidates = aliased == null
+                ? new String[]{"/images/foods/" + slug + ".jpg", "/images/recipes/" + slug + ".jpg"}
+                : new String[]{aliased, "/images/foods/" + slug + ".jpg", "/images/recipes/" + slug + ".jpg"};
+        for (String rel : candidates) {
+            if (staticImageExists(rel)) {
+                return rel;
+            }
+        }
+        return null;
+    }
+
+    private boolean staticImageExists(String rel) {
+        try {
+            if (new ClassPathResource("static" + rel).exists()) {
+                return true;
+            }
+        } catch (Exception ignored) {
+            // thử đường dẫn nguồn
+        }
+        return Files.exists(Paths.get("src/main/resources/static" + rel));
     }
 
     /** Ảnh local có sẵn theo slug tên món; nếu không có thì dùng ảnh mặc định. */

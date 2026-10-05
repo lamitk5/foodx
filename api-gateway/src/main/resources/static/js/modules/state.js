@@ -1,15 +1,132 @@
-var state = (typeof loadState === 'function' ? loadState() : (window.loadState ? window.loadState() : (typeof createDefaultState === 'function' ? createDefaultState() : {})));
-window.state = state;
-var saveState = (typeof window !== 'undefined' && window.saveState) ? window.saveState : function() {
+/**
+ * FoodX module: state.js
+ * Trang thai toan cuc: ho so, tu lanh local, auth session, cache dung chung.
+ * Cat tu app.js, van dung bien toan cuc de index.html goi duoc.
+ */
+/* =========================================================
+   STATE
+========================================================= */
+
+function createDefaultState() {
+
+    return {
+
+        theme:
+            "light",
+
+        userId:
+            null,
+
+        profile: {
+            name: "Khách",
+            avatarUrl: "",
+            gender: "male",
+            age: 25,
+            weight: 60,
+            height: 165,
+            target: 60,
+            activity: 1.2,
+            diet: "Cân bằng",
+            allergies: "",
+            dislikes: ""
+        },
+
+        fridge:
+            [],
+
+        favorites:
+            [],
+
+        shopping:
+            [],
+
+        selectedFridgeIds:
+            []
+    };
+}
+
+
+function loadState() {
+
+    const defaults =
+        createDefaultState();
+
     try {
-        const storageKey = typeof STORAGE_KEY !== 'undefined' ? STORAGE_KEY : (typeof window !== 'undefined' && window.STORAGE_KEY ? window.STORAGE_KEY : 'foodXLocalV8');
-        localStorage.setItem(storageKey, JSON.stringify(window.state || state));
+
+        const saved =
+            localStorage.getItem(
+                STORAGE_KEY
+            );
+
+        if (!saved) {
+            return defaults;
+        }
+
+        const parsed =
+            JSON.parse(saved);
+
+        return {
+
+            ...defaults,
+
+            ...parsed,
+
+            profile: {
+
+                ...defaults.profile,
+
+                ...(parsed.profile || {})
+            },
+
+            fridge:
+                [],
+
+            favorites:
+                Array.isArray(
+                    parsed.favorites
+                )
+                    ? parsed.favorites
+                    : [],
+
+            shopping:
+                Array.isArray(
+                    parsed.shopping
+                )
+                    ? parsed.shopping
+                    : [],
+
+            selectedFridgeIds:
+                Array.isArray(
+                    parsed.selectedFridgeIds
+                )
+                    ? parsed.selectedFridgeIds
+                    : []
+        };
+
+    } catch (error) {
+
+        console.error(
+            "Lỗi localStorage:",
+            error
+        );
+
+        return defaults;
+    }
+}
+
+
+var state =
+    loadState();
+window.state = state;
+
+function saveState() {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) {
         console.warn("Không thể lưu state vào LocalStorage:", e);
     }
-};
-if (typeof window !== 'undefined') window.saveState = saveState;
-
+}
+window.saveState = saveState;
 /* =========================================================
    AUTH STATE
 ========================================================= */
@@ -46,6 +163,27 @@ var SOCIAL_API = '/api/social';
 var savedPostsState = {};
 try { savedPostsState = JSON.parse(localStorage.getItem('foodx_saved_posts') || '{}'); } catch (_) { savedPostsState = {}; }
 
+function rememberSavedPost(post, saved) {
+    if (!post || post.id == null) return;
+    const id = String(post.id);
+    if (saved) {
+        savedPostsState[id] = {
+            id: post.id,
+            title: post.title || post.name || 'Công thức',
+            imageUrl: post.imageUrl || post.image || '',
+            cookTime: post.cookTime || post.time || 30,
+            kcal: post.kcal || 350,
+            description: post.description || '',
+            ingredients: post.ingredients || [],
+            instructions: post.instructions || '',
+            savedAt: new Date().toISOString()
+        };
+    } else {
+        delete savedPostsState[id];
+    }
+    try { localStorage.setItem('foodx_saved_posts', JSON.stringify(savedPostsState)); } catch (_) {}
+}
+
 var likedPostsState = {};
 try { likedPostsState = JSON.parse(localStorage.getItem('foodx_liked_posts') || '{}'); } catch (_) { likedPostsState = {}; }
 
@@ -59,20 +197,6 @@ var previousViewBeforeRecipe = 'recipes';
 
 var currentSocialCategory = 'all';
 var currentSocialSearch = '';
-
-if (typeof window !== 'undefined') {
-    window.SOCIAL_API = SOCIAL_API;
-    window.savedPostsState = savedPostsState;
-    window.likedPostsState = likedPostsState;
-    window.localCommentsState = localCommentsState;
-    window.allSocialPostsCache = allSocialPostsCache;
-    window.recipesCache = recipesCache;
-    window.curRecipe = curRecipe;
-    window.previousViewBeforeRecipe = previousViewBeforeRecipe;
-    window.currentSocialCategory = currentSocialCategory;
-    window.currentSocialSearch = currentSocialSearch;
-}
-
 
 // ===== DỮ LIỆU THẬT (thay thế dữ liệu demo giả cứng) =====
 // Hai mảng mẫu cũ (blog + feed cộng đồng với tác giả/like/comment ảo) đã bị gỡ để UI không
@@ -193,344 +317,3 @@ async function loadProfileFromApi(
     }
 }
 
-
-/* =========================================================
-   TOAST
-========================================================= */
-
-const toast =
-    document.getElementById(
-        "toast"
-    );
-
-let toastTimer;
-
-
-function showToast(
-    message,
-    type = "success"
-) {
-
-    if (!toast) {
-
-        console.log(message);
-
-        return;
-    }
-
-
-    clearTimeout(
-        toastTimer
-    );
-
-
-    const icons = {
-
-        success:
-            "✓",
-
-        error:
-            "!",
-
-        warning:
-            "⚠",
-
-        info:
-            "i"
-    };
-
-
-    toast.className =
-        `toast ${type}`;
-
-
-    toast.innerHTML = `
-
-        <span class="toast-icon">
-            ${icons[type] || "✓"}
-        </span>
-
-        <span>
-            ${message}
-        </span>
-
-    `;
-
-
-    requestAnimationFrame(
-        () =>
-            toast.classList.add(
-                "show"
-            )
-    );
-
-
-    toastTimer =
-        setTimeout(
-            () => {
-
-                toast.classList.remove(
-                    "show"
-                );
-
-            },
-            2800
-        );
-}
-
-
-/* =========================================================
-   BUTTON LOADING
-========================================================= */
-
-function buttonLoading(
-    button,
-    text = "Đang xử lý..."
-) {
-
-    if (!button) {
-
-        return () => {};
-    }
-
-
-    const oldHTML =
-        button.innerHTML;
-
-
-    button.disabled =
-        true;
-
-
-    button.classList.add(
-        "button-loading"
-    );
-
-
-    button.innerHTML = `
-
-        <span class="mini-spinner"></span>
-
-        ${text}
-    `;
-
-
-    return function restore(
-        html = null
-    ) {
-
-        button.disabled =
-            false;
-
-
-        button.classList.remove(
-            "button-loading"
-        );
-
-
-        button.innerHTML =
-            html ||
-            oldHTML;
-    };
-}
-
-
-/* =========================================================
-   THEME
-========================================================= */
-
-const lightButton =
-    document.getElementById(
-        "lightButton"
-    );
-
-
-const darkButton =
-    document.getElementById(
-        "darkButton"
-    );
-
-
-function setTheme(
-    theme,
-    notify = false
-) {
-
-    state.theme =
-        theme;
-
-
-    document.body.classList.toggle(
-        "dark",
-        theme === "dark"
-    );
-
-
-    lightButton
-        ?.classList
-        .toggle(
-            "active",
-            theme === "light"
-        );
-
-
-    darkButton
-        ?.classList
-        .toggle(
-            "active",
-            theme === "dark"
-        );
-
-
-    saveState();
-
-
-    if (notify) {
-
-        showToast(
-            theme === "dark"
-
-                ? "Đã chuyển sang giao diện tối."
-
-                : "Đã chuyển sang giao diện sáng.",
-
-            "info"
-        );
-    }
-}
-
-
-lightButton
-    ?.addEventListener(
-        "click",
-        () =>
-            setTheme(
-                "light",
-                true
-            )
-    );
-
-
-darkButton
-    ?.addEventListener(
-        "click",
-        () =>
-            setTheme(
-                "dark",
-                true
-            )
-    );
-
-
-setTheme(
-    state.theme
-);
-
-
-/* =========================================================
-   SETTINGS + PROFILE PANEL
-========================================================= */
-
-const settingsPanel =
-    document.getElementById(
-        "settingsPanel"
-    );
-
-
-const profilePanel =
-    document.getElementById(
-        "profilePanel"
-    );
-
-
-document
-    .getElementById(
-        "settingsButton"
-    )
-    ?.addEventListener(
-        "click",
-        event => {
-
-            event.stopPropagation();
-
-
-            profilePanel
-                ?.classList
-                .remove("show");
-
-
-            settingsPanel
-                ?.classList
-                .toggle("show");
-        }
-    );
-
-
-document
-    .getElementById(
-        "avatarButton"
-    )
-    ?.addEventListener(
-        "click",
-        event => {
-
-            event.stopPropagation();
-
-            if (!isUserLoggedIn()) {
-                requireAuth("profile");
-                return;
-            }
-
-            settingsPanel
-                ?.classList
-                .remove("show");
-
-
-            profilePanel
-                ?.classList
-                .toggle("show");
-        }
-    );
-
-
-settingsPanel
-    ?.addEventListener(
-        "click",
-        event =>
-            event.stopPropagation()
-    );
-
-
-profilePanel
-    ?.addEventListener(
-        "click",
-        event =>
-            event.stopPropagation()
-    );
-
-
-document.addEventListener(
-    "click",
-    () => {
-
-        settingsPanel
-            ?.classList
-            .remove("show");
-
-
-        profilePanel
-            ?.classList
-            .remove("show");
-    }
-);
-/* =========================================================
-   AUTH REQUEST
-========================================================= */
-
-
-// Module window exports
-if (typeof window !== 'undefined') window.apiProfileToState = apiProfileToState;
-if (typeof window !== 'undefined') window.loadProfileFromApi = loadProfileFromApi;
-if (typeof window !== 'undefined') window.showToast = showToast;
-if (typeof window !== 'undefined') window.buttonLoading = buttonLoading;
-if (typeof window !== 'undefined') window.setTheme = setTheme;

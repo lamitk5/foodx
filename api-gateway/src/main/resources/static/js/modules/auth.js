@@ -1,3 +1,65 @@
+/**
+ * FoodX module: auth.js
+ * Dang nhap, dang ky, JWT va phien nguoi dung.
+ * Cat tu app.js, van dung bien toan cuc de index.html goi duoc.
+ */
+/* =========================================================
+   TOKEN (JWT)
+========================================================= */
+
+const TOKEN_KEY = "foodx_token";
+
+function getToken() {
+    try {
+        return localStorage.getItem(TOKEN_KEY) || "";
+    } catch (error) {
+        return "";
+    }
+}
+
+function setToken(token) {
+    try {
+        if (token) {
+            localStorage.setItem(TOKEN_KEY, token);
+        } else {
+            localStorage.removeItem(TOKEN_KEY);
+        }
+    } catch (error) {
+    }
+}
+const DEFAULT_AVATAR =
+    "data:image/svg+xml," +
+    encodeURIComponent(`
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="200"
+            height="200"
+            viewBox="0 0 200 200">
+
+            <rect
+                width="200"
+                height="200"
+                rx="100"
+                fill="#E8F7EE"/>
+
+            <circle
+                cx="100"
+                cy="72"
+                r="34"
+                fill="#22A95B"/>
+
+            <path
+                d="M40 176c5-43 31-65 60-65s55 22 60 65"
+                fill="#22A95B"/>
+
+        </svg>
+    `);
+
+
+/* =========================================================
+   AUTH REQUEST
+========================================================= */
+
 async function authRequest(
     url,
     options = {}
@@ -140,11 +202,7 @@ function applyAuthResponse(data) {
         saveState();
         renderProfile();
         loadProfileFromApi(false);
-        if (typeof window.loadFridgeFromApi === 'function') {
-            window.loadFridgeFromApi(false);
-        } else if (typeof loadFridgeFromApi === 'function') {
-            loadFridgeFromApi(false);
-        }
+        loadFridgeFromApi(false);
         if (typeof loadHomeDashboard === 'function') loadHomeDashboard();
         if (typeof loadSocialFeed === 'function') loadSocialFeed();
 
@@ -207,7 +265,27 @@ function renderAuthSettings() {
 
     const adminMenuItem = document.getElementById("menuItemAdmin");
     if (adminMenuItem) {
-        adminMenuItem.style.display = (authState && authState.authenticated && authState.role === "ADMIN") ? "flex" : "none";
+        let isAdmin = false;
+        if (authState && authState.authenticated) {
+            if (authState.role === "ADMIN" || authState.username === "admin") {
+                isAdmin = true;
+            } else {
+                try {
+                    const token = getToken();
+                    if (token) {
+                        const parts = token.split('.');
+                        if (parts.length === 3) {
+                            const p = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+                            if (p.role === "ADMIN" || p.sub === "admin") {
+                                isAdmin = true;
+                                authState.role = "ADMIN";
+                            }
+                        }
+                    }
+                } catch (_) {}
+            }
+        }
+        adminMenuItem.style.display = isAdmin ? "flex" : "none";
     }
 
     if (
@@ -467,8 +545,6 @@ document
    LOGIN
 ========================================================= */
 
-let isLoggingIn = false;
-
 document
     .getElementById(
         "loginForm"
@@ -479,7 +555,6 @@ document
 
             event.preventDefault();
 
-            if (isLoggingIn) return;
 
             const submitButton =
                 event.submitter ||
@@ -488,8 +563,6 @@ document
                         'button[type="submit"]'
                     );
 
-            isLoggingIn = true;
-            if (submitButton) submitButton.disabled = true;
 
             const restore =
                 buttonLoading(
@@ -520,8 +593,6 @@ document
                 !password
             ) {
 
-                isLoggingIn = false;
-                if (submitButton) submitButton.disabled = false;
                 restore();
 
 
@@ -598,6 +669,7 @@ document
                     if (typeof renderHomeSummary === 'function') renderHomeSummary();
                     if (typeof loadHomeSummary === 'function') loadHomeSummary();
                     if (typeof renderAuthSettings === 'function') renderAuthSettings();
+                    if (typeof loadHomeDashboard === 'function') loadHomeDashboard();
                 } catch (e) {
                     console.error("Lỗi khi tải lại dữ liệu sau đăng nhập:", e);
                 }
@@ -621,40 +693,11 @@ document
 
 
             } finally {
-                isLoggingIn = false;
-                if (submitButton) submitButton.disabled = false;
+
                 restore();
             }
         }
     );
-
-document.getElementById("btnQuickDemoLogin")?.addEventListener("click", () => {
-    const emailInput = document.getElementById("loginEmail");
-    const passInput = document.getElementById("loginPassword");
-    if (emailInput) {
-        emailInput.value = "minhanh";
-        emailInput.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-    if (passInput) {
-        passInput.value = "123456";
-        passInput.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-    showToast("Đã điền tài khoản User: minhanh!", "info");
-});
-
-document.getElementById("btnQuickAdminLogin")?.addEventListener("click", () => {
-    const emailInput = document.getElementById("loginEmail");
-    const passInput = document.getElementById("loginPassword");
-    if (emailInput) {
-        emailInput.value = "admin";
-        emailInput.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-    if (passInput) {
-        passInput.value = "123456";
-        passInput.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-    showToast("Đã điền tài khoản Admin: admin!", "info");
-});
 
 
 /* =========================================================
@@ -732,65 +775,6 @@ document.getElementById("registerForm")?.addEventListener("submit", async event 
         restore();
     }
 });
-
-/* =========================================================
-   LIVE PASSWORD VALIDATION & EYE TOGGLE (KAN-37, KAN-39)
-========================================================= */
-
-const regPassInput = document.getElementById("registerPassword");
-const regConfirmInput = document.getElementById("registerConfirmPassword");
-const regPassFeedback = document.getElementById("registerPasswordFeedback");
-const regConfirmFeedback = document.getElementById("registerConfirmFeedback");
-
-function validateRegisterPasswordLive() {
-    if (!regPassInput) return;
-    const val = regPassInput.value;
-    if (val.length > 0 && val.length < 6) {
-        if (regPassFeedback) regPassFeedback.style.display = "block";
-    } else {
-        if (regPassFeedback) regPassFeedback.style.display = "none";
-    }
-}
-
-function validateRegisterConfirmLive() {
-    if (!regConfirmInput || !regPassInput) return;
-    const p = regPassInput.value;
-    const cp = regConfirmInput.value;
-    if (cp.length > 0 && cp !== p) {
-        if (regConfirmFeedback) regConfirmFeedback.style.display = "block";
-    } else {
-        if (regConfirmFeedback) regConfirmFeedback.style.display = "none";
-    }
-}
-
-regPassInput?.addEventListener("input", () => {
-    validateRegisterPasswordLive();
-    validateRegisterConfirmLive();
-});
-regConfirmInput?.addEventListener("input", validateRegisterConfirmLive);
-
-function initPasswordToggles() {
-    document.querySelectorAll('.btn-toggle-password').forEach(btn => {
-        if (btn.dataset.initialized) return;
-        btn.dataset.initialized = "true";
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const targetId = btn.getAttribute('data-target');
-            const input = document.getElementById(targetId);
-            if (input) {
-                const isPassword = input.type === 'password';
-                input.type = isPassword ? 'text' : 'password';
-                btn.textContent = isPassword ? '🙈' : '👁️';
-                btn.setAttribute('aria-label', isPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
-            }
-        });
-    });
-}
-initPasswordToggles();
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initPasswordToggles);
-}
 
 
 
@@ -874,64 +858,3 @@ document
         }
     );
 
-/* =========================================================
-   NAVIGATION
-========================================================= */
-
-
-function isUserLoggedIn() {
-    return Boolean((typeof getToken === 'function' ? getToken() : (window.getToken ? window.getToken() : '')) && window.authState && window.authState.authenticated);
-}
-
-function requireAuth(actionName, callback) {
-    if (isUserLoggedIn()) {
-        if (typeof callback === 'function') callback();
-        return true;
-    }
-    const modal = document.getElementById('loginModal');
-    if (modal) modal.classList.add('show');
-
-    let msg = 'Vui lòng đăng nhập hoặc đăng ký để sử dụng tính năng này!';
-    switch (actionName) {
-        case 'profile':
-            msg = 'Vui lòng đăng nhập để xem và quản lý hồ sơ dinh dưỡng!';
-            break;
-        case 'chat':
-            msg = 'Vui lòng đăng nhập để trò chuyện cùng Trợ lý AI FoodX!';
-            break;
-        case 'suggest':
-            msg = 'Vui lòng đăng nhập để nhận gợi ý món ăn thông minh từ AI!';
-            break;
-        case 'fridge':
-            msg = 'Vui lòng đăng nhập để theo dõi và quản lý tủ lạnh!';
-            break;
-        case 'plan':
-            msg = 'Vui lòng đăng nhập để lên kế hoạch bữa ăn!';
-            break;
-        case 'shopping':
-            msg = 'Vui lòng đăng nhập để quản lý danh sách đi chợ!';
-            break;
-        case 'recipe':
-        case 'create':
-            msg = 'Vui lòng đăng nhập để thêm / chia sẻ công thức mới!';
-            break;
-        case 'stats':
-            msg = 'Vui lòng đăng nhập để xem thống kê dinh dưỡng & nấu nướng!';
-            break;
-        default:
-            break;
-    }
-    if (typeof showToast === 'function') {
-        showToast(msg, 'warning');
-    }
-    return false;
-}
-
-// Module window exports
-if (typeof window !== 'undefined') window.isUserLoggedIn = isUserLoggedIn;
-if (typeof window !== 'undefined') window.requireAuth = requireAuth;
-if (typeof window !== 'undefined') window.authRequest = authRequest;
-if (typeof window !== 'undefined') window.applyAuthResponse = applyAuthResponse;
-if (typeof window !== 'undefined') window.renderAuthSettings = renderAuthSettings;
-if (typeof window !== 'undefined') window.loadAuthState = loadAuthState;
-if (typeof window !== 'undefined') window.openAuthModal = openAuthModal;

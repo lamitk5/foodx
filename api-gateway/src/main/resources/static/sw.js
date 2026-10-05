@@ -4,12 +4,20 @@
 // - Static (/css /js /icons /images /manifest): cache-first + refresh nền; lưu cả key có query.
 // - API (/api): network-first, fallback cache hoặc JSON báo offline.
 // Bump CACHE_NAME mỗi khi phát hành bản thay đổi shell/app.js để người dùng nhận bản mới.
-const CACHE_NAME = 'foodx-v6';
+const CACHE_NAME = 'foodx-v17';
 const PRECACHE_URLS = [
   '/',
   '/index.html',
   '/css/style.css',
   '/css/style.bundle.css',
+  '/js/modules/utils.js',
+  '/js/modules/state.js',
+  '/js/modules/auth.js',
+  '/js/modules/fridge.js',
+  '/js/modules/recipes.js',
+  '/js/modules/plan.js',
+  '/js/modules/shopping.js',
+  '/js/modules/chat.js',
   '/js/app.js',
   '/js/modules/admin.js',
   '/manifest.json',
@@ -76,33 +84,22 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Handle static assets: Cache first (khớp theo path, bỏ query), fallback to network
+  // Static assets: network first so a new app.js is used on the next load.
   if (isStaticAsset(url.pathname)) {
     const cleanKey = cacheKeyRequest(req);
     event.respondWith(
-      caches.match(cleanKey).then(cachedResp => {
-        if (cachedResp) {
-          // Fetch updated version in background to keep cache fresh
-          fetch(req).then(networkResp => {
-            if (networkResp && networkResp.status === 200) {
-              caches.open(CACHE_NAME).then(cache => {
-                cache.put(cleanKey, networkResp.clone());
-                cache.put(req, networkResp.clone());
-              });
-            }
-          }).catch(() => {});
-          return cachedResp;
+      fetch(req).then(networkResp => {
+        if (networkResp && networkResp.status === 200) {
+          const clone = networkResp.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(cleanKey, clone);
+            cache.put(req, networkResp.clone());
+          });
         }
-        return fetch(req).then(networkResp => {
-          if (networkResp && networkResp.status === 200) {
-            const clone = networkResp.clone();
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(cleanKey, clone);
-              cache.put(req, networkResp.clone());
-            });
-          }
-          return networkResp;
-        });
+        return networkResp;
+      }).catch(async () => {
+        const cache = await caches.open(CACHE_NAME);
+        return (await cache.match(cleanKey)) || (await cache.match(req));
       })
     );
     return;

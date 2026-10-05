@@ -1,3 +1,8 @@
+/**
+ * FoodX module: utils.js
+ * Tien ich dung chung: escape HTML, debounce, goi API, toast, trang thai nut bam.
+ * Cat tu app.js, van dung bien toan cuc de index.html goi duoc.
+ */
 function escapeHtml(str) {
     if (str === null || str === undefined) return '';
     return String(str)
@@ -13,59 +18,6 @@ const STORAGE_KEY = "foodXLocalV8";
 const FRIDGE_API = "/api/fridge";
 const PROFILE_API = "/api/profile";
 const AUTH_API = "/api/auth";
-
-/* =========================================================
-   TOKEN (JWT)
-========================================================= */
-
-const TOKEN_KEY = "foodx_token";
-
-function getToken() {
-    try {
-        return localStorage.getItem(TOKEN_KEY) || "";
-    } catch (error) {
-        return "";
-    }
-}
-
-function setToken(token) {
-    try {
-        if (token) {
-            localStorage.setItem(TOKEN_KEY, token);
-        } else {
-            localStorage.removeItem(TOKEN_KEY);
-        }
-    } catch (error) {
-    }
-}
-const DEFAULT_AVATAR =
-    "data:image/svg+xml," +
-    encodeURIComponent(`
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="200"
-            height="200"
-            viewBox="0 0 200 200">
-
-            <rect
-                width="200"
-                height="200"
-                rx="100"
-                fill="#E8F7EE"/>
-
-            <circle
-                cx="100"
-                cy="72"
-                r="34"
-                fill="#22A95B"/>
-
-            <path
-                d="M40 176c5-43 31-65 60-65s55 22 60 65"
-                fill="#22A95B"/>
-
-        </svg>
-    `);
-
 
 /* =========================================================
    HELPER
@@ -252,8 +204,13 @@ async function apiRequest(
                 await response.text();
 
             if (text) {
-                message +=
-                    ` - ${text}`;
+                try {
+                    const parsedErr = JSON.parse(text);
+                    if (parsedErr && parsedErr.message) message = parsedErr.message;
+                    else message += ` - ${text}`;
+                } catch (_) {
+                    message += ` - ${text}`;
+                }
             }
 
         } catch (error) {
@@ -299,25 +256,143 @@ async function apiRequest(
 
 
 /* =========================================================
-   CATALOG
+   TOAST
 ========================================================= */
 
+const toast =
+    document.getElementById(
+        "toast"
+    );
 
-// Module window exports
-if (typeof window !== 'undefined') window.getToken = getToken;
-if (typeof window !== 'undefined') window.setToken = setToken;
-if (typeof window !== 'undefined') window.normalize = normalize;
-if (typeof window !== 'undefined') window.futureDate = futureDate;
-if (typeof window !== 'undefined') window.daysLeft = daysLeft;
-if (typeof window !== 'undefined') window.formatNumber = formatNumber;
-if (typeof window !== 'undefined') window.escapeHTML = escapeHTML;
-if (typeof window !== 'undefined') window.setText = setText;
-if (typeof window !== 'undefined') window.toDateInputValue = toDateInputValue;
-if (typeof window !== 'undefined') window.apiRequest = apiRequest;
-if (typeof window !== 'undefined') {
-    window.STORAGE_KEY = STORAGE_KEY;
-    window.FRIDGE_API = FRIDGE_API;
-    window.PROFILE_API = PROFILE_API;
-    window.AUTH_API = AUTH_API;
-    window.DEFAULT_AVATAR = DEFAULT_AVATAR;
+let toastTimer;
+
+
+function showToast(
+    message,
+    type = "success"
+) {
+
+    if (!toast) {
+
+        console.log(message);
+
+        return;
+    }
+
+
+    clearTimeout(
+        toastTimer
+    );
+
+
+    const icons = {
+
+        success:
+            "✓",
+
+        error:
+            "!",
+
+        warning:
+            "⚠",
+
+        info:
+            "i"
+    };
+
+
+    toast.className =
+        `toast ${type}`;
+
+
+    toast.innerHTML = `
+
+        <span class="toast-icon">
+            ${icons[type] || "✓"}
+        </span>
+
+        <span>
+            ${message}
+        </span>
+
+    `;
+
+
+    requestAnimationFrame(
+        () =>
+            toast.classList.add(
+                "show"
+            )
+    );
+
+
+    toastTimer =
+        setTimeout(
+            () => {
+
+                toast.classList.remove(
+                    "show"
+                );
+
+            },
+            2800
+        );
 }
+
+
+/* =========================================================
+   BUTTON LOADING
+========================================================= */
+
+function buttonLoading(
+    button,
+    text = "Đang xử lý..."
+) {
+
+    if (!button) {
+
+        return () => {};
+    }
+
+
+    const oldHTML =
+        button.innerHTML;
+
+
+    button.disabled =
+        true;
+
+
+    button.classList.add(
+        "button-loading"
+    );
+
+
+    button.innerHTML = `
+
+        <span class="mini-spinner"></span>
+
+        ${text}
+    `;
+
+
+    return function restore(
+        html = null
+    ) {
+
+        button.disabled =
+            false;
+
+
+        button.classList.remove(
+            "button-loading"
+        );
+
+
+        button.innerHTML =
+            html ||
+            oldHTML;
+    };
+}
+
+

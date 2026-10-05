@@ -10,7 +10,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -30,7 +29,12 @@ public class AiProviderService {
 
     public String generateText(String prompt, String mimeType) {
         try {
-            String requestBody = objectMapper.writeValueAsString(Map.of("prompt", prompt, "mimeType", mimeType));
+            java.util.Map<String, String> payload = new java.util.HashMap<>();
+            payload.put("prompt", prompt == null ? "" : prompt);
+            if (mimeType != null && !mimeType.isBlank()) {
+                payload.put("mimeType", mimeType);
+            }
+            String requestBody = objectMapper.writeValueAsString(payload);
             HttpRequest req = HttpRequest.newBuilder()
                     .uri(URI.create(aiServiceUrl + "/api/ai/generate"))
                     .header("Content-Type", "application/json")

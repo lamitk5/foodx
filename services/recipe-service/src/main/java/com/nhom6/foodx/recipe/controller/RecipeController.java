@@ -77,7 +77,7 @@ public class RecipeController {
 
     @DeleteMapping("/{id:\\d+}")
     public ApiResponse<Void> delete(@PathVariable Long id) {
-        recipeService.delete(id);
+        recipeService.delete(id, securityUtils.getCurrentUser());
         return ApiResponse.success(null, "Xoá công thức thành công");
     }
 }

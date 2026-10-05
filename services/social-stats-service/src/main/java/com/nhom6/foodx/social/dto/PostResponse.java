@@ -26,6 +26,7 @@ public record PostResponse(
         long likeCount,
         boolean likedByMe,
         long commentCount,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        boolean savedByMe
 ) {
 }
