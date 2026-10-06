@@ -1,6 +1,7 @@
 package com.nhom6.foodx.recipe.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,6 +22,7 @@ public class RecipeIngredientItem {
     @NotBlank(message = "Tên nguyên liệu không được để trống")
     private String ingredientName;
 
+    @Positive(message = "Số lượng nguyên liệu phải lớn hơn 0")
     private Double quantity;
 
     @Size(max = 20)

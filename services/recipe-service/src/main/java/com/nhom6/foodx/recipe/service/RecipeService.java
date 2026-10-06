@@ -163,6 +163,13 @@ public class RecipeService {
         if (request.getTitle() == null || request.getTitle().isBlank()) {
             throw new BusinessException(400, "Tên công thức không được để trống");
         }
+        if (request.getIngredients() != null) {
+            for (RecipeIngredientItem item : request.getIngredients()) {
+                if (item != null && item.getQuantity() != null && item.getQuantity() <= 0) {
+                    throw new BusinessException(400, "Số lượng nguyên liệu phải lớn hơn 0");
+                }
+            }
+        }
         recipe.setTitle(request.getTitle().trim());
         recipe.setDescription(request.getDescription());
         recipe.setInstructions(request.getInstructions());

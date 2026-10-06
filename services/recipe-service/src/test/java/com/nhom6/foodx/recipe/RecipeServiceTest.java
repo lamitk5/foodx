@@ -76,6 +76,21 @@ class RecipeServiceTest {
     }
 
     @Test
+    void createRecipe_negativeQuantity_throwsBusinessException() {
+        RecipeRequest req = new RecipeRequest();
+        req.setTitle("Phở Bò");
+        req.setIngredients(java.util.List.of(
+                com.nhom6.foodx.recipe.dto.RecipeIngredientItem.builder()
+                        .ingredientName("Thịt bò")
+                        .quantity(-1.0)
+                        .build()
+        ));
+
+        BusinessException ex = assertThrows(BusinessException.class, () -> recipeService.create(req, author));
+        assertEquals(400, ex.getStatus());
+    }
+
+    @Test
     void updateRecipe_nonAuthor_throwsForbidden() {
         when(recipeRepository.findById(10L)).thenReturn(Optional.of(recipe));
         when(securityUtils.getCurrentUser()).thenReturn(otherUser);
