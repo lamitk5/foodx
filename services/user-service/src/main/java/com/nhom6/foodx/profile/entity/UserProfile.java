@@ -67,6 +67,10 @@ public class UserProfile {
     @Column(columnDefinition = "TEXT")
     private String dislikes;
 
+    /** Mục tiêu kcal/ngày do người dùng chọn trong cá nhân hóa. Null thì tính từ số đo. */
+    @Column(name = "daily_kcal")
+    private Integer dailyKcal;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

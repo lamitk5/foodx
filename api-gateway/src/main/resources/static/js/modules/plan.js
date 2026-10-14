@@ -94,21 +94,25 @@ function renderPlan(days) {
         const meals = byDay[key] || {};
         Object.keys(meals).forEach(function (s) { nMeals++; kcal += meals[s].recipeKcal || 0; });
     });
+    const dailyGoal = (typeof personalDailyKcal === 'function') ? personalDailyKcal() : 0;
     const sum = document.getElementById('planSummary');
     if (sum) {
         const plannedDays = days.filter(function (d) { const m = byDay[d2s(d)]; return m && Object.keys(m).length; }).length;
+        const avg = nMeals && plannedDays ? Math.round(kcal / plannedDays) : 0;
         sum.innerHTML =
             '<div class="stat-box"><b>' + nMeals + '/21</b><span>' + (nMeals === 21 ? 'Hoàn thành 100% kế hoạch 🎉' : 'bữa đã lên kế hoạch') + '</span></div>' +
-            '<div class="stat-box"><b>' + (nMeals && plannedDays ? Math.round(kcal / plannedDays) : 0) + '</b><span>kcal TB / ngày</span></div>';
+            '<div class="stat-box"><b>' + avg + (dailyGoal ? '/' + dailyGoal : '') + '</b><span>kcal TB / mục tiêu ngày</span></div>';
     }
     box.innerHTML = days.map(function (d) {
         const key = d2s(d);
         const meals = byDay[key] || {};
         const dayKcal = Object.keys(meals).reduce(function (s, sl) { return s + (meals[sl].recipeKcal || 0); }, 0);
+        const filledSlots = Object.keys(meals).length;
+        const offTarget = dailyGoal && filledSlots === 3 && Math.abs(dayKcal - dailyGoal) > dailyGoal * 0.12;
         return '<div class="day-card' + (key === today ? ' today' : '') + '">' +
             '<div class="day-head"><h4>' + DAYS_VI[d.getDay()] + ' · ' + d.getDate() + '/' + (d.getMonth() + 1) +
             (key === today ? '<span class="today-pill">HÔM NAY</span>' : '') + '</h4>' +
-            '<span class="day-kcal">' + dayKcal + ' kcal</span></div>' +
+            '<span class="day-kcal' + (offTarget ? ' off' : '') + '" title="Tổng calo so với mục tiêu cá nhân hóa">' + dayKcal + (dailyGoal ? '/' + dailyGoal : '') + ' kcal</span></div>' +
             ['morning', 'lunch', 'dinner'].map(function (slot) {
                 const e = meals[slot];
                 if (e) {
@@ -183,7 +187,8 @@ async function handleAiSuggestMeal(date, slot, btn) {
     const slotName = SLOT_TEXT[slot] || 'Bữa ăn';
 
     let fridgeIngs = (state && Array.isArray(state.fridge)) ? state.fridge.map(f => f.name || f.foodName).filter(Boolean) : [];
-    const prompt = 'Gợi ý 1 món ăn ngon, thanh đạm, phù hợp bữa ' + slotName + (fridgeIngs.length ? ', ưu tiên nguyên liệu tủ lạnh: ' + fridgeIngs.slice(0, 4).join(', ') : '');
+    const slotTarget = (typeof slotCalorieTargetForDay === 'function') ? slotCalorieTargetForDay(slot, date) : 0;
+    const prompt = 'Gợi ý 1 món khoảng ' + (slotTarget || 'vừa khẩu phần') + ' kcal, phù hợp bữa ' + slotName + (fridgeIngs.length ? ', ưu tiên nguyên liệu tủ lạnh: ' + fridgeIngs.slice(0, 4).join(', ') : '');
 
     try {
         let res = null;
@@ -194,7 +199,8 @@ async function handleAiSuggestMeal(date, slot, btn) {
                 body: JSON.stringify({
                     planDate: date,
                     slot: slot,
-                    prompt: prompt
+                    prompt: prompt,
+                    targetKcal: slotTarget || undefined
                 })
             });
         } catch (apiErr) {
@@ -202,15 +208,27 @@ async function handleAiSuggestMeal(date, slot, btn) {
         }
 
         let recipeTitle = res && res.recipeTitle;
-        let recipeKcal = (res && res.recipeKcal) || 450;
+        let recipeKcal = (res && res.recipeKcal) || slotTarget || 450;
         let recipeId = (res && res.recipeId) || null;
+        let usedLocalFallback = !!(res && res.fallback);
 
         if (!recipeTitle) {
             const allR = (typeof recipesCache !== 'undefined' && recipesCache.length ? recipesCache : (typeof recipes !== 'undefined' ? recipes : []));
-            const randomRecipe = allR.length ? allR[Math.floor(Math.random() * allR.length)] : { id: 8, title: 'Cơm chiên trứng kiểu Việt', kcal: 430 };
+            let randomRecipe = null;
+            let bestDelta = Infinity;
+            allR.forEach(function (recipe) {
+                const kcal = Number(recipe.kcal || recipe.calories) || 0;
+                const delta = Math.abs(kcal - (slotTarget || recipeKcal));
+                if (kcal > 0 && delta < bestDelta) {
+                    bestDelta = delta;
+                    randomRecipe = recipe;
+                }
+            });
+            if (!randomRecipe) randomRecipe = { id: 8, title: 'Cơm chiên trứng kiểu Việt', kcal: slotTarget || 430 };
             recipeTitle = randomRecipe.title || randomRecipe.name;
-            recipeKcal = randomRecipe.kcal || 450;
+            recipeKcal = randomRecipe.kcal || slotTarget || 450;
             recipeId = randomRecipe.id;
+            usedLocalFallback = true;
 
             try {
                 await apiRequest('/api/plan/custom-slot', {
@@ -238,8 +256,8 @@ async function handleAiSuggestMeal(date, slot, btn) {
             recipeId: recipeId,
             recipeTitle: recipeTitle,
             recipeKcal: recipeKcal,
-            tags: ["AI Gợi ý"],
-            isAiGenerated: true
+            tags: usedLocalFallback ? ["Dự phòng"] : ["AI Gợi ý"],
+            isAiGenerated: !usedLocalFallback
         };
         planEntries = [
             ...(planEntries || []).filter(e => !(e.planDate === date && e.slot === slot)),
@@ -256,15 +274,18 @@ async function handleAiSuggestMeal(date, slot, btn) {
                 [slot]: {
                     name: recipeTitle,
                     calories: recipeKcal,
-                    tags: ["AI Gợi ý"],
-                    isAiGenerated: true,
+                    tags: usedLocalFallback ? ["Dự phòng"] : ["AI Gợi ý"],
+                    isAiGenerated: !usedLocalFallback,
                     recipeId: recipeId,
                     id: newSuggestEntry.id
                 }
             }
         }));
 
-        showToast('✨ AI đã thêm món "' + recipeTitle + '" (' + recipeKcal + ' kcal) cho bữa ' + slotName + '! 🎉', 'success');
+        showToast(usedLocalFallback
+            ? 'AI không trả lời, đang dùng món dự phòng "' + recipeTitle + '" cho bữa ' + slotName
+            : '✨ AI đã thêm món "' + recipeTitle + '" (' + recipeKcal + ' kcal) cho bữa ' + slotName + '!',
+            usedLocalFallback ? 'warning' : 'success');
         renderPlan(weekDays(planOffset));
     } catch (e) {
         console.error('[MealPlan] handleAiSuggestMeal error:', e);
@@ -317,7 +338,8 @@ function openAddMeal(date, slot) {
     }
 
     const SLOT_NAME = { morning: 'Bữa SÁNG', lunch: 'Bữa TRƯA', dinner: 'Bữa TỐI' };
-    const SLOT_KCALS = { morning: 420, lunch: 650, dinner: 550 };
+    const slotTarget = (typeof slotCalorieTargetForDay === 'function') ? slotCalorieTargetForDay(slot, date) : 450;
+    const dailyGoal = (typeof personalDailyKcal === 'function') ? personalDailyKcal() : 0;
     const dateObj = new Date(date);
     const DAYS_VI = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
     const dateStr = DAYS_VI[dateObj.getDay()] + ' - ' + dateObj.getDate() + '/' + (dateObj.getMonth() + 1);
@@ -325,18 +347,18 @@ function openAddMeal(date, slot) {
     const titleEl = document.getElementById('pmmTitle');
     const subEl = document.getElementById('pmmSubtitle');
     if (titleEl) titleEl.textContent = '🍽️ ' + (SLOT_NAME[slot] || 'Bữa ăn') + ' · ' + dateStr;
-    if (subEl) subEl.textContent = 'Chọn món từ Kho công thức / Yêu thích, hoặc tự gõ tên món & calo';
+    if (subEl) subEl.textContent = 'Mục tiêu bữa này khoảng ' + slotTarget + ' kcal' + (dailyGoal ? ' trong ' + dailyGoal + ' kcal/ngày' : '');
 
     // Reset inputs
     const aiTargetKcal = document.getElementById('pmmAiTargetKcal');
-    if (aiTargetKcal) aiTargetKcal.value = SLOT_KCALS[slot] || 450;
+    if (aiTargetKcal) aiTargetKcal.value = slotTarget;
     const aiPrompt = document.getElementById('pmmAiPrompt');
     if (aiPrompt) aiPrompt.value = '';
 
     const customTitle = document.getElementById('pmmCustomTitle');
     if (customTitle) customTitle.value = '';
     const customKcal = document.getElementById('pmmCustomKcal');
-    if (customKcal) customKcal.value = SLOT_KCALS[slot] || 450;
+    if (customKcal) customKcal.value = slotTarget;
     const customProtein = document.getElementById('pmmCustomProtein');
     if (customProtein) customProtein.value = 25;
     const customCarb = document.getElementById('pmmCustomCarb');
@@ -487,8 +509,15 @@ async function renderPmmRecipes(filterText) {
 async function autoPlan() {
     const days = weekDays(planOffset);
     try {
-        const res = await apiRequest('/api/plan/auto?start=' + d2s(days[0]) + '&end=' + d2s(days[6]), { method: 'POST' });
-        showToast(res && res.added ? '✨ AI đã lên kế hoạch ' + res.added + ' bữa!' : 'Kế hoạch tuần đã đầy ✨', 'success');
+        const goal = (typeof personalDailyKcal === 'function') ? personalDailyKcal() : 0;
+        const res = await apiRequest('/api/plan/auto?start=' + d2s(days[0]) + '&end=' + d2s(days[6]) + (goal ? '&dailyKcal=' + goal : ''), { method: 'POST' });
+        const fallback = !!(res && res.fallback);
+        showToast(res && res.added
+            ? (fallback
+                ? 'AI không trả lời, đã xếp ' + res.added + ' bữa bằng thực đơn dự phòng'
+                : '✨ AI đã lên kế hoạch ' + res.added + ' bữa!')
+            : 'Kế hoạch tuần đã đầy',
+            fallback ? 'warning' : 'success');
         loadPlan();
     } catch (e) {
         showToast('Cần đăng nhập.', 'error');

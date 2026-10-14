@@ -18,6 +18,9 @@ public class SuggestResponse {
 
     private List<Suggestion> suggestions;
 
+    /** true khi chưa có API key và danh sách là dữ liệu mẫu. */
+    private boolean fallback;
+
     @Data
     @Builder
     @NoArgsConstructor

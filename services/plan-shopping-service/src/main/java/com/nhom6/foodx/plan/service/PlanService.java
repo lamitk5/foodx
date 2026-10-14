@@ -8,6 +8,7 @@ import com.nhom6.foodx.common.client.RecipeServiceClient;
 import com.nhom6.foodx.common.dto.RecipeDraftDto;
 import com.nhom6.foodx.common.dto.RecipeSummaryDto;
 import com.nhom6.foodx.common.exception.BusinessException;
+import com.nhom6.foodx.common.food.DailyCalorieGoal;
 import com.nhom6.foodx.common.utils.StringUtils;
 import com.nhom6.foodx.plan.dto.CustomSlotRequest;
 import com.nhom6.foodx.plan.dto.EstimateDishRequest;
@@ -27,11 +28,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -151,22 +154,36 @@ public class PlanService {
     }
 
     @Transactional
-    public int autoFill(Long userId, LocalDate start, LocalDate end) {
-        // ai-service chết thì AiServiceClient trả Optional.empty() — tương đương generateText trả null
-        // trước đây, nên luồng dự phòng thuật toán bên dưới vẫn chạy y như cũ.
+    public AutoFillOutcome autoFill(Long userId, LocalDate start, LocalDate end, Integer dailyKcal) {
+        int goal = resolveDailyGoal(userId, dailyKcal);
+        int aiResult = 0;
         try {
-            int aiResult = autoFillWithAi(userId, start, end);
+            aiResult = autoFillWithAi(userId, start, end, goal);
             if (aiResult > 0) {
-                log.info("AI đã lên thành công {} bữa ăn cho người dùng {}", aiResult, userId);
-                return aiResult;
+                int gaps = fillSlots(userId, start, end, goal, false);
+                log.info("AI đã lên {} bữa, bổ sung {} bữa cho khớp mục tiêu {} kcal của người dùng {}",
+                        aiResult, gaps, goal, userId);
+                return new AutoFillOutcome(aiResult + gaps, false);
             }
         } catch (Exception ex) {
             log.warn("AI lên kế hoạch gặp lỗi ({}), tự động dùng thuật toán dự phòng thông minh.", ex.getMessage());
         }
-        return autoFillWithSmartFallback(userId, start, end);
+        return new AutoFillOutcome(fillSlots(userId, start, end, goal, true), true);
     }
 
-    private int autoFillWithAi(Long userId, LocalDate start, LocalDate end) {
+    /** Ưu tiên số kcal giao diện đang hiển thị, không có thì lấy từ hồ sơ. */
+    private int resolveDailyGoal(Long userId, Integer dailyKcal) {
+        if (dailyKcal != null && dailyKcal >= DailyCalorieGoal.MIN_KCAL && dailyKcal <= DailyCalorieGoal.MAX_KCAL) {
+            return DailyCalorieGoal.roundToTen(dailyKcal);
+        }
+        return profileLookupService.getDailyKcalGoal(userId);
+    }
+
+    /** Số bữa đã xếp và cờ cho biết thực đơn đến từ thuật toán dự phòng. */
+    public record AutoFillOutcome(int added, boolean fallback) {
+    }
+
+    private int autoFillWithAi(Long userId, LocalDate start, LocalDate end, int dailyGoal) {
         String diet = profileLookupService.getDiet(userId);
         if (diet.isBlank()) diet = "Bình thường, cân bằng dinh dưỡng";
         String allergies = profileLookupService.getAllergies(userId);
@@ -186,6 +203,12 @@ public class PlanService {
                 .limit(20)
                 .collect(Collectors.joining(", "));
 
+        int morningKcal = DailyCalorieGoal.slotShare(dailyGoal, "morning");
+        int lunchKcal = DailyCalorieGoal.slotShare(dailyGoal, "lunch");
+        int dinnerKcal = DailyCalorieGoal.slotShare(dailyGoal, "dinner");
+        int dayMin = DailyCalorieGoal.roundToTen(dailyGoal * 0.90);
+        int dayMax = DailyCalorieGoal.roundToTen(dailyGoal * 1.10);
+
         String prompt = String.format("""
                 Bạn là chuyên gia dinh dưỡng và bếp trưởng AI FoodX.
                 Hãy lên kế hoạch thực đơn chi tiết cho người dùng từ ngày %s đến ngày %s (mỗi ngày đủ 3 bữa: morning, lunch, dinner).
@@ -196,9 +219,12 @@ public class PlanService {
                 - Món ghét: %s
                 - Nguyên liệu sẵn có trong tủ lạnh: %s
                 - Món ăn có sẵn trong hệ thống: %s
+                - Mục tiêu năng lượng cá nhân: %d kcal/ngày.
                 
                 Yêu cầu:
-                1. Đảm bảo calo khoa học: Bữa sáng 350-500 kcal, Bữa trưa 550-750 kcal, Bữa tối 450-650 kcal (Tổng 1.600 - 2.000 kcal/ngày).
+                1. Tổng 3 bữa mỗi ngày phải nằm trong khoảng %d–%d kcal, sát %d kcal.
+                   morning khoảng %d kcal, lunch khoảng %d kcal, dinner khoảng %d kcal.
+                   Trường kcal của từng món phải đúng mục tiêu của đúng bữa đó, không dùng một số cố định cho mọi bữa.
                 2. Tuyệt đối không lặp lại món trong cùng 1 ngày. Các ngày liền kề đổi mới món liên tục.
                 3. Bạn có thể dùng món có sẵn HOẶC tự sáng tạo món ăn mới chuẩn vị Việt hoặc Healthy Eat Clean phù hợp với nguyên liệu trong tủ lạnh.
                 4. Trả về DUY NHẤT một mảng JSON thuần túy (không kèm markdown ```json hay text giải thích), cấu trúc:
@@ -209,7 +235,7 @@ public class PlanService {
                     "recipeTitle": "Tên món ăn hấp dẫn",
                     "description": "Mô tả ngắn gọn hương vị và dinh dưỡng",
                     "instructions": "Bước 1: Sơ chế... Bước 2: Nấu... Bước 3: Hoàn thành",
-                    "kcal": 450,
+                    "kcal": %d,
                     "protein": 30.0,
                     "carb": 50.0,
                     "fat": 14.0,
@@ -221,23 +247,16 @@ public class PlanService {
                   }
                 ]
                 Mỗi món phải có ít nhất 4 nguyên liệu thật, đúng với tên món, kèm số lượng và đơn vị.
-                """, start, end, diet, allergies, dislikes, fridgeList, existingTitles);
+                """, start, end, diet, allergies, dislikes, fridgeList, existingTitles,
+                dailyGoal, dayMin, dayMax, dailyGoal, morningKcal, lunchKcal, dinnerKcal, morningKcal);
 
         String rawJson = aiServiceClient.generate(prompt, "application/json").orElse(null);
         if (rawJson == null || rawJson.isBlank()) {
             return 0;
         }
 
-        String cleanJson = cleanJson(rawJson);
-        List<AiMealPlanItem> items;
-        try {
-            items = objectMapper.readValue(cleanJson, new TypeReference<List<AiMealPlanItem>>() {});
-        } catch (Exception e) {
-            log.warn("Không parse được JSON từ AI: {}", e.getMessage());
-            return 0;
-        }
-
-        if (items == null || items.isEmpty()) {
+        List<AiMealPlanItem> items = parseMealPlanItems(rawJson);
+        if (items.isEmpty()) {
             return 0;
         }
 
@@ -253,6 +272,12 @@ public class PlanService {
                 continue;
             }
             if (planDate.isBefore(start) || planDate.isAfter(end)) {
+                continue;
+            }
+            int expected = DailyCalorieGoal.slotShare(dailyGoal, item.getSlot());
+            int kcal = item.getKcal() == null ? 0 : item.getKcal();
+            if (kcal < Math.round(expected * 0.80) || kcal > Math.round(expected * 1.20)) {
+                log.info("Bỏ món AI {} kcal vì lệch mục tiêu {} kcal của bữa {}", kcal, expected, item.getSlot());
                 continue;
             }
 
@@ -284,7 +309,12 @@ public class PlanService {
         return added;
     }
 
-    private int autoFillWithSmartFallback(Long userId, LocalDate start, LocalDate end) {
+    /**
+     * Xếp món có sẵn sao cho mỗi bữa sát phần calo của mục tiêu ngày.
+     *
+     * @param overwrite true thì thay món đã có; false thì chỉ lấp ô còn trống
+     */
+    private int fillSlots(Long userId, LocalDate start, LocalDate end, int dailyGoal, boolean overwrite) {
         List<RecipeSummaryDto> recipes = recipeServiceClient.getAllRecipes();
         if (recipes.isEmpty()) {
             return 0;
@@ -300,23 +330,37 @@ public class PlanService {
 
         while (!day.isAfter(end)) {
             Set<Long> usedTodayRecipeIds = new HashSet<>();
-
-            RecipeSummaryDto morningRecipe = pickRecipeWithoutDuplicate(morningPool, dayIndex, usedTodayRecipeIds);
-            saveSlotIfAbsent(userId, day, "morning", morningRecipe);
-            if (morningRecipe != null) usedTodayRecipeIds.add(morningRecipe.id());
-
-            RecipeSummaryDto lunchRecipe = pickRecipeWithoutDuplicate(lunchPool, dayIndex + 2, usedTodayRecipeIds);
-            saveSlotIfAbsent(userId, day, "lunch", lunchRecipe);
-            if (lunchRecipe != null) usedTodayRecipeIds.add(lunchRecipe.id());
-
-            RecipeSummaryDto dinnerRecipe = pickRecipeWithoutDuplicate(dinnerPool, dayIndex + 5, usedTodayRecipeIds);
-            saveSlotIfAbsent(userId, day, "dinner", dinnerRecipe);
-
-            added += 3;
+            added += placeCalorieSlot(userId, day, "morning", morningPool, dailyGoal, dayIndex, usedTodayRecipeIds, overwrite);
+            added += placeCalorieSlot(userId, day, "lunch", lunchPool, dailyGoal, dayIndex + 3, usedTodayRecipeIds, overwrite);
+            added += placeCalorieSlot(userId, day, "dinner", dinnerPool, dailyGoal, dayIndex + 7, usedTodayRecipeIds, overwrite);
             day = day.plusDays(1);
             dayIndex++;
         }
         return added;
+    }
+
+    private int placeCalorieSlot(Long userId, LocalDate day, String slot, List<RecipeSummaryDto> pool,
+                                 int dailyGoal, int salt, Set<Long> usedIds, boolean overwrite) {
+        Optional<MealPlanEntry> existing = planRepository.findByUserIdAndPlanDateAndSlot(userId, day, slot);
+        if (existing.isPresent() && existing.get().getRecipeId() != null) {
+            usedIds.add(existing.get().getRecipeId());
+            if (!overwrite) {
+                return 0;
+            }
+        }
+        RecipeSummaryDto recipe = pickClosestKcal(pool, DailyCalorieGoal.slotShare(dailyGoal, slot), usedIds, salt);
+        if (recipe == null) {
+            return 0;
+        }
+        MealPlanEntry entry = existing.orElseGet(() -> MealPlanEntry.builder()
+                .userId(userId)
+                .planDate(day)
+                .slot(slot)
+                .build());
+        entry.setRecipeId(recipe.id());
+        planRepository.save(entry);
+        usedIds.add(recipe.id());
+        return 1;
     }
 
     private List<RecipeSummaryDto> filterBySlot(List<RecipeSummaryDto> recipes, String slot) {
@@ -326,15 +370,46 @@ public class PlanService {
         return pool.isEmpty() ? recipes : pool;
     }
 
-    private RecipeSummaryDto pickRecipeWithoutDuplicate(List<RecipeSummaryDto> pool, int seed, Set<Long> usedIds) {
-        if (pool.isEmpty()) return null;
-        for (int i = 0; i < pool.size(); i++) {
-            RecipeSummaryDto r = pool.get((Math.abs(seed) + i) % pool.size());
-            if (!usedIds.contains(r.id())) {
-                return r;
+    /** Chọn món gần mục tiêu kcal của bữa; trong nhóm sát nhất thì xoay theo ngày để thực đơn không lặp. */
+    private RecipeSummaryDto pickClosestKcal(List<RecipeSummaryDto> pool, int target, Set<Long> usedIds, int salt) {
+        if (pool == null || pool.isEmpty()) {
+            return null;
+        }
+        int window = Math.max(80, (int) Math.round(target * 0.18));
+        List<RecipeSummaryDto> close = new ArrayList<>();
+        RecipeSummaryDto closest = null;
+        int bestDelta = Integer.MAX_VALUE;
+        for (RecipeSummaryDto recipe : pool) {
+            if (recipe == null || recipe.id() == null || usedIds.contains(recipe.id())) {
+                continue;
+            }
+            int kcal = recipe.kcal() == null ? 0 : recipe.kcal();
+            if (kcal <= 0) {
+                continue;
+            }
+            int delta = Math.abs(kcal - target);
+            if (delta < bestDelta) {
+                bestDelta = delta;
+                closest = recipe;
+            }
+            if (delta <= window) {
+                close.add(recipe);
             }
         }
-        return pool.get(Math.abs(seed) % pool.size());
+        if (!close.isEmpty()) {
+            close.sort(Comparator.comparingInt(recipe -> Math.abs((recipe.kcal() == null ? target : recipe.kcal()) - target)));
+            int limit = Math.min(4, close.size());
+            return close.get(Math.floorMod(salt, limit));
+        }
+        if (closest != null) {
+            return closest;
+        }
+        for (RecipeSummaryDto recipe : pool) {
+            if (recipe != null && recipe.id() != null && !usedIds.contains(recipe.id())) {
+                return recipe;
+            }
+        }
+        return pool.get(Math.floorMod(salt, pool.size()));
     }
 
     @Transactional
@@ -348,14 +423,34 @@ public class PlanService {
 
         List<MealPlanEntry> dayEntries = planRepository.findByUserIdAndPlanDateBetweenOrderByPlanDateAsc(
                 userId, request.planDate(), request.planDate());
-        String otherMealsToday = dayEntries.stream()
-                .filter(e -> !e.getSlot().equals(request.slot()))
-                .map(e -> {
-                    RecipeSummaryDto r = recipeServiceClient.getRecipe(e.getRecipeId()).orElse(null);
-                    return r != null ? r.title() : "";
-                })
-                .filter(s -> !s.isBlank())
-                .collect(Collectors.joining(", "));
+        int otherKcal = 0;
+        Set<String> filledOther = new HashSet<>();
+        List<String> otherTitles = new ArrayList<>();
+        for (MealPlanEntry entry : dayEntries) {
+            if (entry.getSlot().equals(request.slot())) {
+                continue;
+            }
+            filledOther.add(entry.getSlot());
+            RecipeSummaryDto other = recipeServiceClient.getRecipe(entry.getRecipeId()).orElse(null);
+            if (other == null) {
+                continue;
+            }
+            if (other.title() != null && !other.title().isBlank()) {
+                otherTitles.add(other.title());
+            }
+            if (other.kcal() != null) {
+                otherKcal += other.kcal();
+            }
+        }
+        String otherMealsToday = otherTitles.isEmpty() ? "" : String.join(", ", otherTitles);
+        List<String> emptyOther = new ArrayList<>();
+        for (String slot : List.of("morning", "lunch", "dinner")) {
+            if (!slot.equals(request.slot()) && !filledOther.contains(slot)) {
+                emptyOther.add(slot);
+            }
+        }
+        int dailyGoal = profileLookupService.getDailyKcalGoal(userId);
+        int computedTarget = DailyCalorieGoal.targetForSlot(dailyGoal, request.slot(), otherKcal, emptyOther);
 
         String diet = profileLookupService.getDiet(userId);
         if (diet.isBlank()) diet = "Cân bằng dinh dưỡng";
@@ -365,26 +460,26 @@ public class PlanService {
         Set<String> fridgeNames = fridgeFoodNames(userId);
         String fridgeList = fridgeNames.stream().sorted().collect(Collectors.joining(", "));
 
-        String slotVi = switch (request.slot()) {
-            case "morning" -> "Bữa Sáng (350-500 kcal)";
-            case "lunch" -> "Bữa Trưa (550-750 kcal)";
-            case "dinner" -> "Bữa Tối (450-650 kcal)";
-            default -> "Bữa ăn";
-        };
-
         String userPrompt = request.prompt() != null && !request.prompt().isBlank()
                 ? request.prompt().trim()
                 : "Món ngon, bổ dưỡng, chuẩn vị Việt hoặc Healthy";
         int targetKcal = request.targetKcal() != null && request.targetKcal() > 0
                 ? request.targetKcal()
-                : (request.slot().equals("morning") ? 420 : (request.slot().equals("lunch") ? 650 : 550));
+                : computedTarget;
+        String slotVi = switch (request.slot()) {
+            case "morning" -> "Bữa Sáng (khoảng " + targetKcal + " kcal)";
+            case "lunch" -> "Bữa Trưa (khoảng " + targetKcal + " kcal)";
+            case "dinner" -> "Bữa Tối (khoảng " + targetKcal + " kcal)";
+            default -> "Bữa ăn (khoảng " + targetKcal + " kcal)";
+        };
 
         String prompt = String.format("""
                 Bạn là chuyên gia dinh dưỡng và bếp trưởng AI FoodX.
                 Hãy gợi ý DUY NHẤT 1 món ăn lý tưởng cho %s ngày %s.
                 
                 Yêu cầu của người dùng: %s
-                Mục tiêu calo: khoảng %d kcal.
+                Mục tiêu calo của bữa này: khoảng %d kcal.
+                Mục tiêu cả ngày của người dùng: %d kcal. Các bữa đã có đang chiếm %d kcal.
                 Chế độ ăn: %s. Dị ứng cần tránh: %s.
                 Các món khác đã có trong ngày hôm đó (tránh trùng lặp): %s.
                 Nguyên liệu sẵn có trong tủ lạnh: %s.
@@ -405,9 +500,11 @@ public class PlanService {
                   ]
                 }
                 Món phải có ít nhất 4 nguyên liệu đúng với tên món.
-                """, slotVi, request.planDate(), userPrompt, targetKcal, diet, allergies, otherMealsToday, fridgeList, targetKcal);
+                kcal trong JSON phải nằm trong khoảng ±15%% so với %d.
+                """, slotVi, request.planDate(), userPrompt, targetKcal, dailyGoal, otherKcal, diet, allergies, otherMealsToday, fridgeList, targetKcal, targetKcal);
 
         RecipeSummaryDto recipe = null;
+        boolean fallback = false;
         try {
             String rawJson = aiServiceClient.generate(prompt, "application/json").orElse(null);
             if (rawJson != null && !rawJson.isBlank()) {
@@ -416,7 +513,10 @@ public class PlanService {
                 if (f >= 0 && l > f) clean = clean.substring(f, l + 1);
 
                 AiMealPlanItem item = objectMapper.readValue(clean, AiMealPlanItem.class);
-                if (item != null && item.getRecipeTitle() != null && !item.getRecipeTitle().isBlank()) {
+                int returnedKcal = item == null || item.getKcal() == null ? 0 : item.getKcal();
+                boolean onTarget = returnedKcal >= Math.round(targetKcal * 0.80)
+                        && returnedKcal <= Math.round(targetKcal * 1.20);
+                if (item != null && item.getRecipeTitle() != null && !item.getRecipeTitle().isBlank() && onTarget) {
                     recipe = recipeServiceClient.ensureRecipe(new RecipeDraftDto(
                             item.getRecipeTitle().trim(),
                             item.getDescription(),
@@ -435,10 +535,9 @@ public class PlanService {
         }
 
         if (recipe == null) {
+            fallback = true;
             List<RecipeSummaryDto> pool = filterBySlot(recipeServiceClient.getAllRecipes(), request.slot());
-            if (!pool.isEmpty()) {
-                recipe = pool.get(new Random().nextInt(pool.size()));
-            }
+            recipe = pickClosestKcal(pool, targetKcal, Set.of(), request.planDate().getDayOfYear());
         }
 
         if (recipe == null) {
@@ -452,7 +551,7 @@ public class PlanService {
                         .slot(request.slot())
                         .build());
         entry.setRecipeId(recipe.id());
-        return toResponse(planRepository.save(entry), recipe, fridgeFoodNames(userId));
+        return toResponse(planRepository.save(entry), recipe, fridgeFoodNames(userId), fallback);
     }
 
     public EstimateDishResponse estimateDish(EstimateDishRequest request) {
@@ -480,13 +579,24 @@ public class PlanService {
                 String clean = cleanJson(rawJson);
                 int f = clean.indexOf('{'), l = clean.lastIndexOf('}');
                 if (f >= 0 && l > f) clean = clean.substring(f, l + 1);
-                return objectMapper.readValue(clean, EstimateDishResponse.class);
+                com.fasterxml.jackson.databind.JsonNode node = objectMapper.readTree(clean);
+                if (node != null && node.has("kcal")) {
+                    return new EstimateDishResponse(
+                            node.path("dishName").asText(dish),
+                            node.path("kcal").asInt(450),
+                            node.path("protein").asDouble(22.0),
+                            node.path("carb").asDouble(50.0),
+                            node.path("fat").asDouble(13.0),
+                            node.path("category").asText("Món chính"),
+                            node.path("description").asText(""),
+                            false);
+                }
             }
         } catch (Exception e) {
             log.warn("AI chấm calo thất bại ({}), dùng giá trị ước tính mặc định", e.getMessage());
         }
 
-        return new EstimateDishResponse(dish, 450, 22.0, 50.0, 13.0, "Món chính", "Món ăn cân bằng dinh dưỡng");
+        return new EstimateDishResponse(dish, 450, 22.0, 50.0, 13.0, "Món chính", "Món ăn cân bằng dinh dưỡng", true);
     }
 
     @Transactional
@@ -528,18 +638,6 @@ public class PlanService {
         return toResponse(planRepository.save(entry), recipe, fridgeFoodNames(userId));
     }
 
-    private void saveSlotIfAbsent(Long userId, LocalDate day, String slot, RecipeSummaryDto recipe) {
-        if (recipe == null) return;
-        MealPlanEntry entry = planRepository.findByUserIdAndPlanDateAndSlot(userId, day, slot)
-                .orElseGet(() -> MealPlanEntry.builder()
-                        .userId(userId)
-                        .planDate(day)
-                        .slot(slot)
-                        .build());
-        entry.setRecipeId(recipe.id());
-        planRepository.save(entry);
-    }
-
     /** Tên thực phẩm trong tủ lạnh — nay hỏi inventory-service qua HTTP nội bộ. */
     private Set<String> fridgeFoodNames(Long userId) {
         if (userId == null) {
@@ -549,6 +647,10 @@ public class PlanService {
     }
 
     private PlanEntryResponse toResponse(MealPlanEntry entry, RecipeSummaryDto recipe, Set<String> fridgeNames) {
+        return toResponse(entry, recipe, fridgeNames, false);
+    }
+
+    private PlanEntryResponse toResponse(MealPlanEntry entry, RecipeSummaryDto recipe, Set<String> fridgeNames, boolean fallback) {
         List<PlanEntryResponse.IngredientTag> tags = List.of();
         if (recipe != null && recipe.ingredientNames() != null) {
             tags = recipe.ingredientNames().stream()
@@ -568,7 +670,8 @@ public class PlanService {
                 recipe != null ? recipe.protein() : null,
                 recipe != null ? recipe.carb() : null,
                 recipe != null ? recipe.fat() : null,
-                tags
+                tags,
+                fallback
         );
     }
 
@@ -601,9 +704,42 @@ public class PlanService {
         return clean.trim();
     }
 
+    private List<AiMealPlanItem> parseMealPlanItems(String rawJson) {
+        String clean = cleanJson(rawJson);
+        int firstArr = clean.indexOf('[');
+        int lastArr = clean.lastIndexOf(']');
+        if (firstArr >= 0 && lastArr > firstArr) {
+            try {
+                List<AiMealPlanItem> list = objectMapper.readValue(
+                        clean.substring(firstArr, lastArr + 1),
+                        new TypeReference<List<AiMealPlanItem>>() {});
+                if (list != null && !list.isEmpty()) {
+                    return list;
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        try {
+            com.fasterxml.jackson.databind.JsonNode root = objectMapper.readTree(clean);
+            if (root != null && root.isObject()) {
+                var fields = root.elements();
+                while (fields.hasNext()) {
+                    com.fasterxml.jackson.databind.JsonNode child = fields.next();
+                    if (child.isArray()) {
+                        return objectMapper.convertValue(child, new TypeReference<List<AiMealPlanItem>>() {});
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Không parse được JSON từ AI: {}", e.getMessage());
+        }
+        return List.of();
+    }
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
     public static class AiMealPlanItem {
         private String date;
         private String slot;
@@ -620,9 +756,11 @@ public class PlanService {
 
     @lombok.Data
     @lombok.NoArgsConstructor
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
     public static class AiIngredient {
         private String name;
         private Double quantity;
+        private String unit;
     }
 }
 

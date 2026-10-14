@@ -5,8 +5,22 @@
 .gitignore
 .github
 
-# Kết quả build (được tạo lại trong image)
-**/target/
+# Kết quả build: bỏ class/test, giữ jar để image chỉ COPY (Maven không chạy trong Docker)
+**/target/**
+!api-gateway/target/
+!api-gateway/target/*.jar
+!services/user-service/target/
+!services/user-service/target/*.jar
+!services/inventory-service/target/
+!services/inventory-service/target/*.jar
+!services/recipe-service/target/
+!services/recipe-service/target/*.jar
+!services/plan-shopping-service/target/
+!services/plan-shopping-service/target/*.jar
+!services/ai-service/target/
+!services/ai-service/target/*.jar
+!services/social-stats-service/target/
+!services/social-stats-service/target/*.jar
 
 # IDE / công cụ
 .idea
@@ -25,6 +39,7 @@ uploads
 scratch_img
 scripts
 tests
+tools
 katalon
 db
 *.md

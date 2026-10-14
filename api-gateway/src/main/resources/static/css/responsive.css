@@ -512,7 +512,10 @@ button:active {
 .fridge-header-actions {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
     gap: 10px;
+    max-width: 100%;
 }
 
 .selected-ai-top {
@@ -776,7 +779,7 @@ body.dark .custom-food-grid label > span {
     color: var(--text, #ECFDF5);
 }
 
-body.dark .plan-day-card, body.dark .kpi, body.dark .insight, body.dark .waste-box {
+body.dark .kpi, body.dark .insight, body.dark .waste-box {
     background: var(--card);
     border-color: var(--border);
 }
@@ -842,4 +845,4 @@ body.dark .badge-danger {
     border-color: rgba(52, 211, 153, 0.4);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
-
+

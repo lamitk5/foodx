@@ -356,14 +356,16 @@ function fakeAI(question) {
     ) {
 
         const calories =
-            calculateCalories(
-                state.profile.gender,
-                state.profile.age,
-                state.profile.weight,
-                state.profile.height,
-                state.profile.activity,
-                state.profile.target
-            );
+            (typeof personalDailyKcal === 'function')
+                ? personalDailyKcal()
+                : calculateCalories(
+                    state.profile.gender,
+                    state.profile.age,
+                    state.profile.weight,
+                    state.profile.height,
+                    state.profile.activity,
+                    state.profile.target
+                );
 
 
         return (
@@ -1868,9 +1870,28 @@ function chatRetryHtml(msg) {
     return '<br><button type="button" class="secondary-button" onclick="askFromTag(\'' + safeMsg + '\')" style="margin-top:8px;font-size:12px;padding:4px 8px;">🔄 Thử lại tin nhắn này</button>';
 }
 
-function showAiReply(replyText, steps) {
-    addMsg(formatAiReply(replyText || ''), 'ai', null, replyText || '');
+const CHAT_MAINTENANCE = 'chat AI đang bảo trì';
+
+function markChatMaintenance() {
+    const statusText = document.getElementById('chatStatusText');
+    const dot = document.getElementById('chatDot');
+    if (statusText) statusText.textContent = CHAT_MAINTENANCE;
+    if (dot) dot.classList.remove('live');
+}
+
+function showChatMaintenance(msg) {
+    markChatMaintenance();
+    addMsg(CHAT_MAINTENANCE + chatRetryHtml(msg), 'ai');
+}
+
+function showAiReply(replyText, steps, meta) {
+    let html = formatAiReply(replyText || '');
+    if (meta && meta.fallback) {
+        html = '<blockquote class="ai-quote">Câu trả lời mẫu — chưa có API key Groq/Gemini.</blockquote>' + html;
+    }
+    addMsg(html, 'ai', null, replyText || '');
     if (steps && steps.length) addSteps(steps);
+    if (typeof loadAiStatus === 'function') loadAiStatus();
 }
 
 async function sendChatDirect(msg, ings) {
@@ -1888,12 +1909,15 @@ async function sendChatDirect(msg, ings) {
         requireAuth('chat');
         return 'auth';
     }
-    const j = await res.json();
+    const j = await res.json().catch(function () { return null; });
     if (j && j.success && j.data && (j.data.reply || (j.data.steps && j.data.steps.length))) {
-        showAiReply(j.data.reply || '', j.data.steps);
+        showAiReply(j.data.reply || '', j.data.steps, j.data);
         return 'ok';
     }
-    return 'fail';
+    if (res.status === 400) {
+        return 'validation:' + ((j && j.message) ? j.message : 'Câu hỏi không hợp lệ.');
+    }
+    return 'maintenance';
 }
 
 async function doSend(msg) {
@@ -1940,26 +1964,40 @@ async function doSend(msg) {
                 return;
             }
 
-            const j = await res.json();
+            const j = await res.json().catch(function () { return null; });
             if (j && j.success && j.data) {
-                showAiReply(j.data.reply || '', j.data.steps);
+                showAiReply(j.data.reply || '', j.data.steps, j.data);
                 fetchChatSessions(false);
                 return;
             }
+            if (res.status === 400) {
+                addMsg(escapeHtml((j && j.message) ? j.message : 'Câu hỏi không hợp lệ.'), 'ai');
+                return;
+            }
+            showChatMaintenance(msg);
+            return;
         }
 
         const direct = await sendChatDirect(msg, ings);
         if (direct === 'ok' || direct === 'auth') return;
-        addMsg('⚠️ Trợ lý AI chưa trả lời được.' + chatRetryHtml(msg), 'ai');
+        if (typeof direct === 'string' && direct.indexOf('validation:') === 0) {
+            addMsg(escapeHtml(direct.slice('validation:'.length)), 'ai');
+            return;
+        }
+        showChatMaintenance(msg);
     } catch (err) {
         console.error('Chat AI lỗi:', err?.message || err);
         try {
             const direct = await sendChatDirect(msg, ings);
             if (direct === 'ok' || direct === 'auth') return;
+            if (typeof direct === 'string' && direct.indexOf('validation:') === 0) {
+                addMsg(escapeHtml(direct.slice('validation:'.length)), 'ai');
+                return;
+            }
         } catch (directErr) {
             console.error('Chat trực tiếp lỗi:', directErr?.message || directErr);
         }
-        addMsg('⚠️ Không thể kết nối đến máy chủ AI.' + chatRetryHtml(msg), 'ai');
+        showChatMaintenance(msg);
     } finally {
         typing(false);
         if (btn) btn.disabled = false;

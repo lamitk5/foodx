@@ -2,6 +2,7 @@ package com.nhom6.foodx.ai.service;
 
 import com.nhom6.foodx.common.client.InventoryServiceClient;
 import com.nhom6.foodx.common.client.UserServiceClient;
+import com.nhom6.foodx.common.food.DailyCalorieGoal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -90,16 +91,24 @@ public class AiContextService {
                     && !"Ăn linh tinh".equals(profile.diet())) {
                 parts.add("chế độ ăn: " + profile.diet());
             }
-            if (parts.isEmpty()) {
-                return;
+            if (!parts.isEmpty()) {
+                sb.append("Hồ sơ người dùng: ").append(String.join(", ", parts)).append(".\n");
             }
-            sb.append("Hồ sơ người dùng: ").append(String.join(", ", parts)).append(".\n");
             if (profile.allergies() != null && !profile.allergies().isBlank()) {
                 sb.append("Dị ứng cần tránh tuyệt đối: ").append(profile.allergies().trim()).append(".\n");
             }
             if (profile.dislikes() != null && !profile.dislikes().isBlank()) {
                 sb.append("Món người dùng không thích: ").append(profile.dislikes().trim()).append(".\n");
             }
+            int goal = DailyCalorieGoal.resolve(profile);
+            sb.append("Mục tiêu năng lượng: ").append(goal).append(" kcal/ngày. ");
+            sb.append("Khi gợi ý cả ngày, tổng 3 bữa phải sát mức này: sáng khoảng ")
+                    .append(DailyCalorieGoal.slotShare(goal, "morning"))
+                    .append(" kcal, trưa khoảng ")
+                    .append(DailyCalorieGoal.slotShare(goal, "lunch"))
+                    .append(" kcal, tối khoảng ")
+                    .append(DailyCalorieGoal.slotShare(goal, "dinner"))
+                    .append(" kcal.\n");
         });
 
         // Tủ lạnh: inventory-service trả sẵn danh sách tên thực phẩm đã lọc trùng.

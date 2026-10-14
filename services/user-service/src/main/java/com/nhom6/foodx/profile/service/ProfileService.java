@@ -120,6 +120,13 @@ public class ProfileService {
         }
         profile.setAllergies(request.allergies() == null ? "" : request.allergies().trim());
         profile.setDislikes(request.dislikes() == null ? "" : request.dislikes().trim());
+        if (request.dailyKcal() != null) {
+            int kcal = request.dailyKcal();
+            if (kcal < 1200 || kcal > 4000) {
+                throw new BusinessException(400, "Mục tiêu calo phải từ 1200 đến 4000");
+            }
+            profile.setDailyKcal(kcal);
+        }
 
         userRepository.save(user);
         profileRepository.save(profile);
@@ -205,7 +212,8 @@ public class ProfileService {
                 profile.getActivity(),
                 profile.getDiet(),
                 profile.getAllergies(),
-                profile.getDislikes()
+                profile.getDislikes(),
+                profile.getDailyKcal()
         );
     }
 }

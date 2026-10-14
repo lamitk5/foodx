@@ -1,6 +1,10 @@
 package com.nhom6.foodx.ai.service;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import com.nhom6.foodx.ai.dto.ChatTurn;
+import com.nhom6.foodx.ai.util.PromptTemplate;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
@@ -22,13 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class GeminiService {
 
-    private static final String SYSTEM_PROMPT = """
-            Bạn là trợ lý nấu ăn FoodX. Trả lời bằng tiếng Việt, ngắn gọn, chính xác, thân thiện.
-            Ưu tiên dùng nguyên liệu người dùng đang có. Tuyệt đối tránh nguyên liệu họ dị ứng.
-            Không bịa số liệu dinh dưỡng nếu không chắc chắn. Nếu không liên quan ẩm thực, từ chối lịch sự.
-            Khi được yêu cầu JSON, chỉ trả về JSON hợp lệ, không markdown, không giải thích thêm.
-            """;
-
     private final GeminiConfig geminiConfig;
     private final WebClient webClient;
 
@@ -46,14 +43,44 @@ public class GeminiService {
         return generateText(prompt, null);
     }
 
+    public String generateChat(String prompt, List<ChatTurn> history) {
+        List<GeminiRequest.Content> contents = new ArrayList<>();
+        if (history != null) {
+            for (ChatTurn turn : history) {
+                if (turn == null || turn.content() == null || turn.content().isBlank()) {
+                    continue;
+                }
+                String role = "assistant".equals(turn.role()) ? "model" : "user";
+                contents.add(GeminiRequest.Content.builder()
+                        .role(role)
+                        .parts(List.of(GeminiRequest.Part.builder().text(turn.content()).build()))
+                        .build());
+            }
+        }
+        contents.add(GeminiRequest.Content.builder()
+                .role("user")
+                .parts(List.of(GeminiRequest.Part.builder().text(prompt).build()))
+                .build());
+        return complete(contents, null, 0.75);
+    }
+
     public String generateText(String prompt, String responseMimeType) {
+        boolean jsonMode = responseMimeType != null && !responseMimeType.isBlank();
+        List<GeminiRequest.Content> contents = List.of(GeminiRequest.Content.builder()
+                .role("user")
+                .parts(List.of(GeminiRequest.Part.builder().text(prompt).build()))
+                .build());
+        return complete(contents, responseMimeType, jsonMode ? 0.2 : 0.6);
+    }
+
+    private String complete(List<GeminiRequest.Content> contents, String responseMimeType, double temperature) {
         if (!isConfigured()) {
             throw new BusinessException(503, "Gemini API key chưa được cấu hình");
         }
 
         boolean jsonMode = responseMimeType != null && !responseMimeType.isBlank();
         GeminiRequest.GenerationConfig.GenerationConfigBuilder configBuilder = GeminiRequest.GenerationConfig.builder()
-                .temperature(jsonMode ? 0.2 : 0.6)
+                .temperature(temperature)
                 .maxOutputTokens(2048);
 
         if (jsonMode) {
@@ -62,11 +89,9 @@ public class GeminiService {
 
         GeminiRequest request = GeminiRequest.builder()
                 .systemInstruction(GeminiRequest.Content.builder()
-                        .parts(List.of(GeminiRequest.Part.builder().text(SYSTEM_PROMPT).build()))
+                        .parts(List.of(GeminiRequest.Part.builder().text(PromptTemplate.COOKING_SYSTEM_PROMPT).build()))
                         .build())
-                .contents(List.of(GeminiRequest.Content.builder()
-                        .parts(List.of(GeminiRequest.Part.builder().text(prompt).build()))
-                        .build()))
+                .contents(contents)
                 .generationConfig(configBuilder.build())
                 .build();
 

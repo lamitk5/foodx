@@ -12,8 +12,8 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 
     List<ChatMessage> findBySession_IdOrderByCreatedAtAsc(Long sessionId);
 
-    /** 8 tin nhắn mới nhất (mới trước) — dùng để dựng context AI. */
-    List<ChatMessage> findTop8BySession_IdOrderByCreatedAtDesc(Long sessionId);
+    /** 12 tin nhắn mới nhất (mới trước) — dùng để dựng lịch sử chat. */
+    List<ChatMessage> findTop12BySession_IdOrderByCreatedAtDesc(Long sessionId);
 
     void deleteBySession_Id(Long sessionId);
 

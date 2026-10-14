@@ -53,6 +53,17 @@ function futureDate(days) {
 }
 
 
+function isExpiredFood(date) {
+    if (!date) return false;
+    return daysLeft(date) < 0;
+}
+
+function isUseSoonFood(date) {
+    if (!date) return false;
+    const days = daysLeft(date);
+    return days >= 0 && days <= 3;
+}
+
 function daysLeft(date) {
     if (!date) {
         return 0;

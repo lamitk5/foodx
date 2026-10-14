@@ -292,8 +292,8 @@ body.dark .hero-overlay {
 
 
 .stat-icon {
-    width: 48px;
-    height: 48px;
+    width: 36px;
+    height: 36px;
 
     display: flex;
     align-items: center;
@@ -301,21 +301,34 @@ body.dark .hero-overlay {
 
     flex-shrink: 0;
 
-    border-radius: 14px;
+    border-radius: 12px;
 
     background: var(--green-light);
 
-    font-size: 22px;
+    color: var(--green);
+}
+
+.stat-icon .icon {
+    width: 18px;
+    height: 18px;
 }
 
 
 .stat-icon.orange {
     background: var(--orange-light);
+    color: var(--orange);
 }
 
 
 .stat-icon.purple {
     background: var(--purple-light);
+    color: var(--purple);
+}
+
+
+.stat-icon.green {
+    background: var(--green-light);
+    color: var(--green);
 }
 
 
@@ -359,7 +372,7 @@ body.dark .hero-overlay {
 
     margin-top: 20px;
 
-    align-items: start;
+    align-items: stretch;
 }
 
 
@@ -1896,4 +1909,4 @@ body.dark .guest-more-bottom-btn:hover {
 }
 
 
-
+

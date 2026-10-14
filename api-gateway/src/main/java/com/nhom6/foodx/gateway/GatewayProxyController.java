@@ -15,6 +15,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -32,6 +34,10 @@ public class GatewayProxyController {
             .executor(java.util.concurrent.Executors.newFixedThreadPool(
                     100, java.util.concurrent.Executors.defaultThreadFactory()))
             .build();
+    private final HttpClient voiceClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(5))
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .build();
 
     private static final Set<String> HOP_BY_HOP_HEADERS = Set.of(
             "connection", "keep-alive", "proxy-authenticate", "proxy-authorization",
@@ -44,6 +50,9 @@ public class GatewayProxyController {
             @RequestBody(required = false) byte[] body) {
 
         String path = request.getRequestURI();
+        if ("/api/voice/vi".equals(path) && "GET".equalsIgnoreCase(request.getMethod())) {
+            return speakVietnamese(request.getParameter("q"));
+        }
         String targetBaseUrl = resolveTargetService(path);
 
         if (targetBaseUrl == null) {
@@ -146,5 +155,38 @@ public class GatewayProxyController {
             }
         }
         return null;
+    }
+
+    /**
+     * Máy người dùng thường chỉ có giọng tiếng Anh, nên đọc bước nấu qua proxy này
+     * để trình duyệt nhận file tiếng Việt cùng nguồn, không bị chặn referer.
+     */
+    private ResponseEntity<byte[]> speakVietnamese(String raw) {
+        String text = raw == null ? "" : raw.trim().replaceAll("\\s+", " ");
+        if (text.isEmpty() || text.length() > 180) {
+            return ResponseEntity.badRequest().build();
+        }
+        try {
+            String url = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=vi&q="
+                    + URLEncoder.encode(text, StandardCharsets.UTF_8);
+            HttpRequest voiceRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(12))
+                    .header("User-Agent", "Mozilla/5.0")
+                    .GET()
+                    .build();
+            HttpResponse<byte[]> voiceResponse = voiceClient.send(voiceRequest, HttpResponse.BodyHandlers.ofByteArray());
+            byte[] audio = voiceResponse.body();
+            if (voiceResponse.statusCode() != 200 || audio == null || audio.length < 500) {
+                return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
+            }
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, "audio/mpeg")
+                    .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                    .body(audio);
+        } catch (Exception ex) {
+            log.warn("Vietnamese voice proxy failed: {}", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
+        }
     }
 }

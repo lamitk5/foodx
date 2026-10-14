@@ -8,7 +8,9 @@ import org.springframework.stereotype.Service;
 
 import com.nhom6.foodx.ai.dto.ChatRequest;
 import com.nhom6.foodx.ai.dto.ChatResponse;
+import com.nhom6.foodx.ai.dto.ChatTurn;
 import com.nhom6.foodx.ai.util.PromptTemplate;
+import com.nhom6.foodx.common.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +37,14 @@ public class ChatService {
         return aiProviderService.getActiveProvider();
     }
 
+    public boolean isDegraded() {
+        return aiProviderService.isDegraded();
+    }
+
+    public String getLastProviderError() {
+        return aiProviderService.getLastProviderError();
+    }
+
     public ChatResponse chat(ChatRequest request) {
         return chat(request, null);
     }
@@ -44,48 +54,61 @@ public class ChatService {
      * Nếu {@code extraContext} rỗng/null thì hành vi như {@link #chat(ChatRequest)}.
      */
     public ChatResponse chat(ChatRequest request, String extraContext) {
+        return chat(request, extraContext, List.of());
+    }
+
+    /**
+     * Chat có bối cảnh và lịch sử hội thoại dạng lượt riêng (chỉ mode chat).
+     */
+    public ChatResponse chat(ChatRequest request, String extraContext, List<ChatTurn> history) {
         String reply;
         List<String> steps = null;
 
         boolean stepMode = "step".equalsIgnoreCase(request.getMode());
+        boolean substituteMode = "substitute".equalsIgnoreCase(request.getMode());
         String context = extraContext == null ? "" : extraContext;
+        List<ChatTurn> turns = history == null ? List.of() : history;
 
+        boolean fallback = false;
         if (aiProviderService.isMockMode()) {
-            // ---- Chế độ mock (test không cần AI) ----
-            if (stepMode) {
+            // Chưa có API key: trả câu mẫu và đánh dấu để giao diện không hiện như AI thật.
+            fallback = true;
+            if (substituteMode) {
+                reply = "{\"items\":[]}";
+            } else if (stepMode) {
                 steps = mockAiDataService.stepReply(request.getMessage(), request.getAvailableIngredients());
                 reply = "Mình đã chia sẻ các bước nấu món \"" + request.getMessage() + "\" cho bạn dưới đây:";
             } else {
                 reply = mockAiDataService.chatReply(request.getMessage(), request.getAvailableIngredients());
             }
         } else {
-            // ---- Chế độ dùng AI thật (Groq, dự phòng Gemini) ----
             try {
-                String prompt = stepMode
+                String prompt = substituteMode
+                        ? PromptTemplate.substitutePrompt(request.getMessage(), request.getAvailableIngredients(), context)
+                        : stepMode
                         ? PromptTemplate.stepByStepPrompt(request.getMessage(), request.getAvailableIngredients(), context)
                         : PromptTemplate.chatPrompt(request.getMessage(), request.getAvailableIngredients(), context);
-                // Gọi 1 lần duy nhất cho cả reply và steps (tiết kiệm quota gói free)
-                String text = aiProviderService.generateText(prompt);
+                String text = (!stepMode && !substituteMode)
+                        ? aiProviderService.generateChat(prompt, turns)
+                        : aiProviderService.generateText(prompt);
                 if (stepMode) {
                     steps = parseSteps(text);
                     reply = "Mình đã hướng dẫn từng bước nấu món \"" + request.getMessage() + "\" cho bạn dưới đây:";
                 } else {
                     reply = text;
                 }
+            } catch (BusinessException ex) {
+                throw ex;
             } catch (Exception ex) {
-                log.error("Nhà cung cấp AI lỗi, dùng câu trả lời mẫu: {}", ex.getMessage(), ex);
-                if (stepMode) {
-                    steps = mockAiDataService.stepReply(request.getMessage(), request.getAvailableIngredients());
-                    reply = "Mình tạm dùng hướng dẫn mẫu cho món \"" + request.getMessage() + "\" vì trợ lý AI đang bận:";
-                } else {
-                    reply = mockAiDataService.chatReply(request.getMessage(), request.getAvailableIngredients());
-                }
+                log.error("Nhà cung cấp AI lỗi: {}", ex.getMessage(), ex);
+                throw new BusinessException(502, "Trợ lý AI đang lỗi. Thử lại sau ít giây.");
             }
         }
 
         return ChatResponse.builder()
                 .reply(reply)
                 .steps(steps)
+                .fallback(fallback)
                 .timestamp(LocalDateTime.now())
                 .build();
     }

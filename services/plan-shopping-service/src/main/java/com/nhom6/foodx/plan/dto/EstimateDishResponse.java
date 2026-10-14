@@ -7,6 +7,7 @@ public record EstimateDishResponse(
         Double carb,
         Double fat,
         String category,
-        String description
+        String description,
+        boolean fallback
 ) {
 }

@@ -209,6 +209,11 @@ var communityFeedPosts = [];
 
 function apiProfileToState(data) {
 
+    const previous =
+        (typeof state !== "undefined" && state && state.profile)
+            ? state.profile
+            : {};
+
     return {
 
         name:
@@ -260,7 +265,19 @@ function apiProfileToState(data) {
 
         dislikes:
             data.dislikes ||
-            ""
+            "",
+
+        dailyKcal:
+            data.dailyKcal != null && Number(data.dailyKcal) >= 1200
+                ? Number(data.dailyKcal)
+                : (Number(previous.dailyKcal) >= 1200
+                    ? Number(previous.dailyKcal)
+                    : (previous.onboarding && Number(previous.onboarding.calo) >= 1200
+                        ? Number(previous.onboarding.calo)
+                        : null)),
+
+        onboarding:
+            previous.onboarding || null
     };
 }
 

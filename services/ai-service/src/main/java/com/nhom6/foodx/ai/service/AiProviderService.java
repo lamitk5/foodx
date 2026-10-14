@@ -1,9 +1,12 @@
 package com.nhom6.foodx.ai.service;
 
+import com.nhom6.foodx.ai.dto.ChatTurn;
 import com.nhom6.foodx.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * Định tuyến provider AI: ưu tiên Groq, tự động fallback sang Gemini khi Groq lỗi.
@@ -23,6 +26,7 @@ public class AiProviderService {
 
     private volatile long groqFailUntil = 0L;
     private volatile long geminiFailUntil = 0L;
+    private volatile String lastProviderError;
 
     public String getActiveProvider() {
         if (groqAvailable()) {
@@ -44,6 +48,18 @@ public class AiProviderService {
         return !groqService.isConfigured() && !geminiService.isConfigured();
     }
 
+    /** Có key nhưng cả hai provider đang cooldown sau lỗi gần nhất. */
+    public boolean isDegraded() {
+        return !isMockMode()
+                && lastProviderError != null
+                && !groqAvailable()
+                && !geminiAvailable();
+    }
+
+    public String getLastProviderError() {
+        return lastProviderError;
+    }
+
     private boolean groqAvailable() {
         return groqService.isConfigured() && System.currentTimeMillis() >= groqFailUntil;
     }
@@ -58,6 +74,7 @@ public class AiProviderService {
 
     private void markGroqOk() {
         groqFailUntil = 0L;
+        lastProviderError = null;
     }
 
     private void markGeminiFailed() {
@@ -66,6 +83,11 @@ public class AiProviderService {
 
     private void markGeminiOk() {
         geminiFailUntil = 0L;
+        lastProviderError = null;
+    }
+
+    private void rememberFailure(Exception ex) {
+        lastProviderError = friendlyProviderError(ex);
     }
 
     private static String clampPrompt(String prompt) {
@@ -109,6 +131,56 @@ public class AiProviderService {
         return aiRequestGate.call("generateText", () -> doGenerateText(p, responseMimeType));
     }
 
+    /** Chat hội thoại: temperature cao hơn và lịch sử là message riêng. */
+    public String generateChat(String prompt, List<ChatTurn> history) {
+        String p = clampPrompt(prompt);
+        List<ChatTurn> turns = history == null ? List.of() : history;
+        return aiRequestGate.call("generateChat", () -> doGenerateChat(p, turns));
+    }
+
+    private String doGenerateChat(String prompt, List<ChatTurn> history) {
+        if (groqAvailable()) {
+            try {
+                String result = groqService.generateChat(prompt, history);
+                markGroqOk();
+                return result;
+            } catch (Exception groqEx) {
+                markGroqFailed();
+                rememberFailure(groqEx);
+                log.warn("Groq lỗi ({}), thử Gemini.", groqEx.getMessage());
+            }
+        }
+
+        if (geminiAvailable()) {
+            try {
+                String result = geminiService.generateChat(prompt, history);
+                markGeminiOk();
+                return result;
+            } catch (Exception gemEx) {
+                markGeminiFailed();
+                rememberFailure(gemEx);
+                log.warn("Gemini lỗi ({}).", gemEx.getMessage());
+                if (groqService.isConfigured()) {
+                    throw new BusinessException(502, "Cả Groq và Gemini đều lỗi: " + friendlyProviderError(gemEx));
+                }
+                throw new BusinessException(502, "Gemini lỗi: " + friendlyProviderError(gemEx));
+            }
+        }
+
+        if (groqService.isConfigured()) {
+            try {
+                String result = groqService.generateChat(prompt, history);
+                markGroqOk();
+                return result;
+            } catch (Exception groqEx) {
+                markGroqFailed();
+                rememberFailure(groqEx);
+                throw new BusinessException(502, friendlyProviderError(groqEx));
+            }
+        }
+        throw new BusinessException(503, "Chưa cấu hình AI (Groq/Gemini) - không thể sinh phản hồi");
+    }
+
     private String doGenerateText(String prompt, String responseMimeType) {
         if (groqAvailable()) {
             try {
@@ -117,6 +189,7 @@ public class AiProviderService {
                 return result;
             } catch (Exception groqEx) {
                 markGroqFailed();
+                rememberFailure(groqEx);
                 log.warn("Groq lỗi ({}), thử Gemini.", groqEx.getMessage());
             }
         }
@@ -128,8 +201,8 @@ public class AiProviderService {
                 return result;
             } catch (Exception gemEx) {
                 markGeminiFailed();
+                rememberFailure(gemEx);
                 log.warn("Gemini lỗi ({}).", gemEx.getMessage());
-                // Nếu Groq đang cooldown nhưng Gemini cũng fail — ném lỗi rõ
                 if (groqService.isConfigured()) {
                     throw new BusinessException(502, "Cả Groq và Gemini đều lỗi: " + friendlyProviderError(gemEx));
                 }
@@ -137,9 +210,16 @@ public class AiProviderService {
             }
         }
 
-        // Groq cooldown + Gemini không khả dụng: thử lại Groq một lần
         if (groqService.isConfigured()) {
-            return groqService.generateText(prompt, responseMimeType);
+            try {
+                String result = groqService.generateText(prompt, responseMimeType);
+                markGroqOk();
+                return result;
+            } catch (Exception groqEx) {
+                markGroqFailed();
+                rememberFailure(groqEx);
+                throw new BusinessException(502, friendlyProviderError(groqEx));
+            }
         }
         throw new BusinessException(503, "Chưa cấu hình AI (Groq/Gemini) - không thể sinh phản hồi");
     }
@@ -157,6 +237,7 @@ public class AiProviderService {
                 return result;
             } catch (Exception groqEx) {
                 markGroqFailed();
+                rememberFailure(groqEx);
                 log.warn("Groq JSON lỗi ({}), thử Gemini.", groqEx.getMessage());
             }
         }
@@ -168,6 +249,7 @@ public class AiProviderService {
                 return result;
             } catch (Exception gemEx) {
                 markGeminiFailed();
+                rememberFailure(gemEx);
                 log.warn("Gemini JSON lỗi ({}).", gemEx.getMessage());
                 if (groqService.isConfigured()) {
                     throw new BusinessException(502, "Cả Groq và Gemini đều lỗi: " + friendlyProviderError(gemEx));
@@ -177,7 +259,15 @@ public class AiProviderService {
         }
 
         if (groqService.isConfigured()) {
-            return groqService.generateJson(prompt, type);
+            try {
+                T result = groqService.generateJson(prompt, type);
+                markGroqOk();
+                return result;
+            } catch (Exception groqEx) {
+                markGroqFailed();
+                rememberFailure(groqEx);
+                throw new BusinessException(502, friendlyProviderError(groqEx));
+            }
         }
         throw new BusinessException(503, "Chưa cấu hình AI (Groq/Gemini) - không thể sinh phản hồi");
     }

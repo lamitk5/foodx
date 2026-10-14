@@ -31,7 +31,7 @@ public class UserDataInitializer implements CommandLineRunner {
         User admin = User.builder()
                 .username("admin")
                 .email("admin@foodx.com")
-                .password(passwordEncoder.encode("Admin@123"))
+                .password(passwordEncoder.encode("123456"))
                 .fullName("Quản Trị Viên")
                 .role(User.Role.ADMIN)
                 .createdAt(now)
@@ -62,6 +62,6 @@ public class UserDataInitializer implements CommandLineRunner {
         userRepository.save(minhanh);
         userRepository.save(demo);
 
-        log.info("Da khoi tao thanh cong 3 tai khoan: admin (Admin@123), minhanh (123456), demo (123456)");
+        log.info("Da khoi tao thanh cong 3 tai khoan: admin (123456), minhanh (123456), demo (123456)");
     }
 }

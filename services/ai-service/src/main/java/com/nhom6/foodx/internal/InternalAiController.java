@@ -111,7 +111,7 @@ public class InternalAiController {
      * của foodx-common, phục vụ tính năng "quét ảnh hoá đơn / tủ lạnh". Cùng logic với
      * {@code POST /api/ai/scan-food-image} đang phục vụ giao diện.</p>
      *
-     * @return danh sách thực phẩm nhận diện được (dữ liệu mẫu nếu chưa cấu hình Gemini)
+     * @return danh sách thực phẩm nhận diện được; rỗng nếu AI không nhận diện được
      */
     @PostMapping(value = "/scan-food-image", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ScanFoodImageItemDto> scanFoodImage(@RequestBody(required = false) ScanRequest request) {

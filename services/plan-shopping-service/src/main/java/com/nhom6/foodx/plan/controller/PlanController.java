@@ -70,14 +70,22 @@ public class PlanController {
     @PostMapping("/auto")
     public ApiResponse<Map<String, Object>> autoFill(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
-        int added = planService.autoFill(SecurityUtils.getCurrentUserId(), start, end);
-        return ApiResponse.success(Map.of("added", added), "AI đã lên kế hoạch " + added + " bữa");
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+            @RequestParam(required = false) Integer dailyKcal) {
+        PlanService.AutoFillOutcome result = planService.autoFill(
+                SecurityUtils.getCurrentUserId(), start, end, dailyKcal);
+        String message = result.fallback()
+                ? "AI không trả lời, đã dùng thực đơn dự phòng cho " + result.added() + " bữa"
+                : "AI đã lên kế hoạch " + result.added() + " bữa";
+        return ApiResponse.success(
+                Map.<String, Object>of("added", result.added(), "fallback", result.fallback()),
+                message);
     }
 
     @PostMapping("/suggest-slot")
     public ApiResponse<PlanEntryResponse> suggestSlot(@RequestBody com.nhom6.foodx.plan.dto.SuggestSlotRequest request) {
-        return ApiResponse.success(planService.suggestSlot(SecurityUtils.getCurrentUserId(), request), "AI đã gợi ý món ăn thành công");
+        return ApiResponse.success(planService.suggestSlot(SecurityUtils.getCurrentUserId(), request),
+                "Đã gợi ý món ăn");
     }
 
     @PostMapping("/estimate-dish")

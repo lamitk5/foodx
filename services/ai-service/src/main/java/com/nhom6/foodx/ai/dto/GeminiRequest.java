@@ -30,6 +30,7 @@ public class GeminiRequest {
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Content {
+        private String role;
         private List<Part> parts;
     }
 

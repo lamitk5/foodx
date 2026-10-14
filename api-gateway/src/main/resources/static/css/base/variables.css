@@ -96,6 +96,8 @@ body.dark {
     --success: #34d399;
     --success-light: #0D3321;
     --pink-light: #2A1218;
+    --orange-light: #2A1C0D;
+    --purple-light: #1C1530;
     --warning-border: #92400E;
     --info: #60A5FA;
     --green: #34d399;
@@ -114,4 +116,4 @@ body.dark {
     --shadow-green: 0 8px 24px rgba(52, 211, 153, .15);
 }
 
-
+

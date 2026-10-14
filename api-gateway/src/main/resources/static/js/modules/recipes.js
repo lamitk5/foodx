@@ -318,27 +318,79 @@ function suggestionCatalog() {
     });
 }
 
+function pickMealsForDailyTarget(list, ingredients, dateKey) {
+    const source = Array.isArray(list) ? list : [];
+    const daily = (typeof personalDailyKcal === 'function') ? personalDailyKcal() : 2000;
+    const slots = ['morning', 'lunch', 'dinner'];
+    const used = {};
+    const picked = [];
+    const salt = String(dateKey || (typeof localDateKey === 'function' ? localDateKey() : '')) + '|' + daily;
+    const fridge = (Array.isArray(ingredients) ? ingredients : [])
+        .map(function (name) { return normalize(name); })
+        .filter(Boolean);
+
+    slots.forEach(function (slot) {
+        const target = (typeof slotCalorieTarget === 'function')
+            ? slotCalorieTarget(slot, daily)
+            : Math.round(daily / 3);
+        const ranked = [];
+        source.forEach(function (recipe) {
+            if (!recipe || used[recipe.id]) return;
+            const safeRecipe = Object.assign({}, recipe, {
+                ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
+                tags: Array.isArray(recipe.tags) ? recipe.tags : []
+            });
+            if (typeof isRecipeSafeForProfile === 'function' && !isRecipeSafeForProfile(safeRecipe)) return;
+            const kcal = Number(recipe.kcal || recipe.calories) || 0;
+            if (kcal <= 0) return;
+            const delta = Math.abs(kcal - target);
+            const closeness = delta / Math.max(1, target);
+            let score = (typeof recipeScore === 'function') ? recipeScore(safeRecipe) : 40;
+            if (fridge.length) {
+                const names = (typeof normalizeIngredientList === 'function'
+                    ? normalizeIngredientList(recipe.ingredients || [])
+                    : (recipe.ingredients || []))
+                    .map(function (item) {
+                        return normalize(typeof item === 'string' ? item : ((item && (item.ingredientName || item.name)) || ''));
+                    })
+                    .filter(Boolean);
+                let hit = 0;
+                names.forEach(function (name) {
+                    if (fridge.some(function (food) { return food.includes(name) || name.includes(food); })) hit++;
+                });
+                if (names.length) score += (hit / names.length) * 24;
+            }
+            ranked.push({
+                recipe: recipe,
+                score: score,
+                delta: delta,
+                close: closeness <= 0.18
+            });
+        });
+        ranked.sort(function (a, b) {
+            if (a.close !== b.close) return a.close ? -1 : 1;
+            if (a.close && b.score !== a.score) return b.score - a.score;
+            if (a.delta !== b.delta) return a.delta - b.delta;
+            return b.score - a.score;
+        });
+        if (!ranked.length) return;
+        const bestDelta = ranked[0].delta;
+        const top = ranked.filter(function (row) {
+            return row.close === ranked[0].close && row.delta <= bestDelta + 80;
+        }).slice(0, 4);
+        const hash = (typeof dailySuggestHash === 'function') ? dailySuggestHash(salt + '|' + slot) : 0;
+        const choice = top[hash % top.length];
+        used[choice.recipe.id] = true;
+        picked.push(Object.assign({}, choice.recipe, {
+            score: Math.max(1, Math.min(99, Math.round(choice.score)))
+        }));
+    });
+    return picked;
+}
+
 function suggestedRecipes() {
-    const fridgeIngredients = (state.fridge || [])
-        .flatMap(item => [item.name, ...(item.ingredients || [])])
-        .filter(Boolean)
-        .map(normalize);
-
-    const scored = suggestionCatalog()
-        .filter(isRecipeSafeForProfile)
-        .map(recipe => ({ ...recipe, score: recipeScore(recipe) }))
-        .sort((a, b) => b.score - a.score);
-
-    if (!fridgeIngredients.length) {
-        return scored.slice(0, 3);
-    }
-
-    const matched = scored.filter(recipe => recipe.ingredients.some(name => {
-        const value = normalize(name);
-        return value && fridgeIngredients.some(fridge => fridge.includes(value) || value.includes(fridge));
-    }));
-    const rest = scored.filter(recipe => matched.indexOf(recipe) === -1);
-    return matched.concat(rest).slice(0, 3);
+    const picked = pickMealsForDailyTarget(suggestionCatalog());
+    return picked.slice(0, 3);
 }
 
 
@@ -664,9 +716,13 @@ function renderRecipes() {
     }
 
 
+    const goalKcal = (typeof personalDailyKcal === 'function') ? personalDailyKcal() : 0;
+    const goalText = goalKcal && typeof formatNumber === 'function'
+        ? ' • khoảng ' + formatNumber(goalKcal) + ' kcal/ngày'
+        : '';
     setText(
         "suggestionText",
-        `${getGoal()} • ${diet} • ưu tiên nguyên liệu đang có`
+        `${getGoal()} • ${diet}${goalText}`
     );
 }
 
@@ -2545,8 +2601,12 @@ function renderRecipeDetail() {
     }
 
     const ings = normalizeIngredientList(r.ingredients);
+    const missingNames = [];
     document.getElementById('rdIng').innerHTML = ings.length
         ? '<ul class="rd-ing-list">' + ings.map(function (i) {
+            const ingLabel = i.ingredientName || i.name || '';
+            const have = hasIngredientInFridge(i);
+            if (!have && ingLabel) missingNames.push(ingLabel);
             const rawQty = i.baseQuantity != null && i.baseQuantity !== '' ? i.baseQuantity : i.quantity;
             let qtyHtml = '';
 
@@ -2580,9 +2640,14 @@ function renderRecipeDetail() {
                 qtyHtml = '<div class="qty-group"><span class="qty qty-opt">' + escapeHtml(i.unit) + '</span></div>';
             }
 
-            return '<li><span class="ing-name">' + escapeHtml(i.ingredientName || i.name || '') + '</span>' + qtyHtml + '</li>';
-        }).join('') + '</ul>'
+            return '<li class="' + (have ? 'ing-have' : 'ing-miss') + '"><span class="ing-name">' + escapeHtml(ingLabel) +
+                (have ? '' : '<em class="ing-miss-tag">Thiếu</em>') + '</span>' + qtyHtml + '</li>';
+        }).join('') + '</ul>' +
+        (missingNames.length
+            ? '<div class="rd-sub-box"><button type="button" class="secondary-button" id="rdSubstituteBtn" onclick="suggestFridgeSubstitutes()">🔄 Thay bằng đồ trong tủ</button><div id="rdSubResult"></div></div>'
+            : '<div class="recipe-ready-box">✓ Đã có đủ nguyên liệu trong tủ.</div>')
         : '<div class="empty-state"><span class="es-icon">🧺</span><b>Chưa cập nhật nguyên liệu</b></div>';
+    r._missingNames = missingNames;
 
     const steps = String(r.instructions || '').split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
     document.getElementById('rdSteps').innerHTML = steps.length
@@ -2660,6 +2725,187 @@ function renderRelated(r) {
     document.querySelectorAll('[data-related]').forEach(function (el) {
         el.addEventListener('click', function () { openRecipeDetail(+el.getAttribute('data-related')); });
     });
+}
+
+const FRIDGE_SWAP_GROUPS = [
+    ['nước mắm', 'xì dầu', 'nước tương', 'tương', 'muối'],
+    ['đường', 'mật ong', 'sữa đặc'],
+    ['hành tím', 'hành lá', 'hành tây', 'tỏi'],
+    ['tỏi', 'hành tím', 'hành lá'],
+    ['thịt bò', 'thịt heo', 'ba chỉ', 'ức gà', 'đùi gà'],
+    ['ức gà', 'đùi gà', 'thịt gà', 'thịt heo', 'ba chỉ'],
+    ['cá hồi', 'cá', 'tôm', 'mực'],
+    ['bánh phở', 'bún', 'mì', 'hủ tiếu'],
+    ['bún', 'mì', 'hủ tiếu', 'bánh phở'],
+    ['dầu hào', 'nước tương', 'xì dầu', 'nước mắm'],
+    ['sả', 'gừng'],
+    ['gừng', 'sả', 'tỏi'],
+    ['măng tây', 'bông cải', 'đậu que'],
+    ['rau muống', 'rau cải', 'bông cải', 'cải ngọt'],
+    ['trứng', 'đậu hũ', 'đậu phụ'],
+    ['sữa tươi', 'sữa chua', 'sữa'],
+    ['bơ', 'dầu ăn', 'dầu'],
+    ['cà chua', 'cà rốt'],
+    ['chanh', 'cà chua', 'dứa', 'me'],
+    ['muối', 'nước mắm', 'xì dầu', 'nước tương', 'hạt nêm']
+];
+
+function fridgeItemNames() {
+    const list = (typeof state !== 'undefined' && Array.isArray(state.fridge)) ? state.fridge : [];
+    return list.map(function (f) {
+        return (f && (f.name || (f.food && f.food.name))) || '';
+    }).filter(Boolean);
+}
+
+function sameFood(a, b) {
+    const x = normalize(a || '');
+    const y = normalize(b || '');
+    if (!x || !y) return false;
+    if (x === y) return true;
+    const shorter = x.length <= y.length ? x : y;
+    const longer = x.length <= y.length ? y : x;
+    if (shorter.length < 3) return false;
+    const parts = longer.split(/[^a-z0-9]+/).filter(Boolean);
+    if (parts.some(function (p) { return p === shorter; })) return true;
+    return shorter.length >= 4 && longer.includes(shorter);
+}
+
+function localFridgeSwap(missingName, fridge) {
+    const target = normalize(missingName);
+    const group = FRIDGE_SWAP_GROUPS.find(function (g) {
+        return g.some(function (n) { return sameFood(target, n); });
+    });
+    if (!group) return null;
+    for (let i = 0; i < fridge.length; i++) {
+        const fname = fridge[i];
+        if (sameFood(fname, missingName)) continue;
+        const hit = group.some(function (n) { return sameFood(fname, n); });
+        if (hit) return fname;
+    }
+    return null;
+}
+
+function parseSubstituteItems(text) {
+    const raw = String(text || '');
+    const start = raw.indexOf('{');
+    const end = raw.lastIndexOf('}');
+    if (start < 0 || end <= start) return [];
+    try {
+        const obj = JSON.parse(raw.slice(start, end + 1));
+        return Array.isArray(obj.items) ? obj.items : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function swapAllowed(missing, use) {
+    const groups = FRIDGE_SWAP_GROUPS.filter(function (g) {
+        return g.some(function (n) { return sameFood(missing, n); });
+    });
+    if (!groups.length) return false;
+    return groups.some(function (g) {
+        return g.some(function (n) { return sameFood(use, n); });
+    });
+}
+
+function matchFridgeName(useName, fridge) {
+    const hit = fridge.find(function (f) { return sameFood(f, useName); });
+    return hit || '';
+}
+
+function renderSubstituteResult(swaps, unmatched) {
+    const box = document.getElementById('rdSubResult');
+    if (!box) return;
+    if (curRecipe) curRecipe.substituteSwaps = swaps;
+    if (!swaps.length) {
+        box.innerHTML = '<p class="rd-sub-note">Tủ không có món thay phù hợp. Có thể dùng nút Mua đồ thiếu.</p>';
+        return;
+    }
+    box.innerHTML = '<div class="rd-sub-list">' + swaps.map(function (s) {
+        return '<div class="rd-sub-row"><span>' + escapeHtml(s.missing) + ' →</span><b>' + escapeHtml(s.use) + '</b>' +
+            (s.note ? '<span class="rd-sub-note">' + escapeHtml(s.note) + '</span>' : '') + '</div>';
+    }).join('') + '</div>' +
+        (unmatched.length ? '<p class="rd-sub-note">Chưa đổi được: ' + escapeHtml(unmatched.join(', ')) + '</p>' : '') +
+        '<button type="button" class="primary-button" onclick="cookWithSubstitutes()">🍳 Nấu với món thay</button>';
+}
+
+async function suggestFridgeSubstitutes() {
+    if (!isUserLoggedIn()) {
+        requireAuth('recipes');
+        return;
+    }
+    if (!curRecipe) return;
+    const missing = (curRecipe._missingNames || []).slice();
+    const fridge = fridgeItemNames();
+    const btn = document.getElementById('rdSubstituteBtn');
+    if (!fridge.length) {
+        showToast('Tủ lạnh chưa có nguyên liệu để đổi.', 'warning');
+        return;
+    }
+    if (!missing.length) {
+        showToast('Món này đã có đủ nguyên liệu trong tủ.', 'success');
+        return;
+    }
+    const swaps = [];
+    const unmatched = [];
+    missing.forEach(function (name) {
+        const use = localFridgeSwap(name, fridge);
+        if (use) swaps.push({ missing: name, use: use, note: 'Đang có trong tủ' });
+        else unmatched.push(name);
+    });
+    renderSubstituteResult(swaps, unmatched);
+    if (!unmatched.length) return;
+
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Đang hỏi AI...';
+    }
+    try {
+        const dish = curRecipe.title || curRecipe.name || 'món ăn';
+        const msg = 'Món: ' + dish + '\nThiếu: ' + unmatched.join(', ') + '\nTủ lạnh: ' + fridge.slice(0, 30).join(', ');
+        const res = await fetch('/api/ai/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            },
+            body: JSON.stringify({
+                message: msg.slice(0, 1800),
+                mode: 'substitute',
+                availableIngredients: fridge.slice(0, 30)
+            })
+        });
+        if (!res.ok) throw new Error('ai');
+        const j = await res.json();
+        if (!j || !j.success || !j.data) throw new Error('ai');
+        const items = parseSubstituteItems(j.data.reply || '');
+        const still = [];
+        unmatched.forEach(function (name) {
+            const hit = items.find(function (it) { return sameFood(it.missing, name) || sameFood(name, it.missing); });
+            const use = hit ? matchFridgeName(hit.use, fridge) : '';
+            if (use && !sameFood(use, name) && swapAllowed(name, use)) {
+                swaps.push({ missing: name, use: use, note: (hit && hit.note) || 'Gợi ý từ đồ trong tủ' });
+            } else {
+                still.push(name);
+            }
+        });
+        renderSubstituteResult(swaps, still);
+    } catch (err) {
+        if (!swaps.length) showToast('chat AI đang bảo trì', 'warning');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = '🔄 Thay bằng đồ trong tủ';
+        }
+    }
+}
+
+function cookWithSubstitutes() {
+    if (!curRecipe || !curRecipe.substituteSwaps || !curRecipe.substituteSwaps.length) {
+        showToast('Chưa có món thay để nấu.', 'warning');
+        return;
+    }
+    cookNow();
 }
 
 

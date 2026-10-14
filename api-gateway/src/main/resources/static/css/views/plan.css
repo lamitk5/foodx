@@ -74,6 +74,11 @@ body.dark .day-card.today {
     border-radius: 999px;
 }
 
+.day-kcal.off {
+    color: #b45309;
+    background: #fff7ed;
+}
+
 body.dark .day-kcal {
     background: var(--card);
 }
@@ -274,41 +279,3 @@ body.dark .meal-kcal-badge {
 
 .plan-add-card { display:flex; flex-wrap:wrap; gap:10px; align-items:center; padding:14px; margin-top:16px; }
 .plan-add-card select { height:40px; padding:0 10px; border:1px solid var(--border); border-radius:10px; background:var(--bg); font-family:inherit; font-size:12.5px; color:var(--text); }
-
-
-/* ==========================================================
-   PLAN V2 — 7-day tabs, meal cards, nutrition gauge
-========================================================== */
-.plan-day-tabs { display:flex; gap:8px; overflow-x:auto; padding:4px 2px 10px; scrollbar-width:thin; }
-.plan-day-tab { display:flex; flex-direction:column; align-items:center; gap:2px; min-width:86px; padding:10px 12px; border:1px solid var(--border); border-radius:999px; background:var(--card); color:var(--text-soft); font-family:inherit; font-size:11px; cursor:pointer; transition:all .2s ease; }
-.plan-day-tab .pdt-name { font-weight:800; color:var(--text); }
-.plan-day-tab .pdt-date { font-size:10px; }
-.plan-day-tab .pdt-kcal { font-size:9.5px; color:var(--green); font-weight:700; }
-.plan-day-tab:hover { border-color:var(--green); }
-.plan-day-tab.active { background:var(--green); border-color:var(--green); box-shadow:var(--shadow-green); }
-.plan-day-tab.active .pdt-name, .plan-day-tab.active .pdt-date, .plan-day-tab.active .pdt-kcal { color:#fff; }
-.plan-day-tab.is-today:not(.active) { border-color:var(--green); }
-.plan-day-content { display:flex; flex-direction:column; gap:14px; }
-.meal-card { display:flex; gap:14px; background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden; padding:14px; box-shadow:var(--shadow-sm); transition:transform .2s, box-shadow .2s; }
-.meal-card:hover { transform:translateY(-2px); box-shadow:var(--shadow); }
-.meal-card-empty { border-style:dashed; opacity:.85; }
-.meal-img { width:110px; height:96px; border-radius:12px; object-fit:cover; flex-shrink:0; background:var(--green-light); }
-.meal-img-emoji { width:110px; height:96px; border-radius:12px; flex-shrink:0; display:grid; place-items:center; font-size:38px; background:var(--grad-green-soft); }
-.meal-card-body { flex:1; display:flex; flex-direction:column; gap:8px; min-width:0; }
-.meal-card-head { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-.meal-name { font-size:15px; font-weight:800; color:var(--text); cursor:pointer; }
-.meal-name:hover { color:var(--green); }
-.meal-meta { display:flex; flex-wrap:wrap; gap:6px 12px; font-size:11.5px; color:var(--text-soft); }
-.meal-tags { display:flex; flex-wrap:wrap; gap:6px; }
-.ing-tag { display:inline-flex; align-items:center; gap:3px; padding:3px 9px; border-radius:999px; font-size:10.5px; font-weight:700; }
-.ing-tag.in-fridge { background:var(--green-light); color:var(--green-dark); }
-.ing-tag.need-buy { background:var(--warning-light); color:var(--warning); }
-.meal-tags-empty { font-size:11px; color:var(--text-muted); font-style:italic; }
-.meal-empty-actions { display:flex; gap:8px; margin-top:4px; }
-.nutrition-gauge { padding:16px; border:1px solid var(--border); border-radius:16px; background:var(--card); box-shadow:var(--shadow-sm); }
-.ng-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
-.ng-head span { color:var(--text-soft); font-size:12.5px; font-weight:700; }
-.ng-head b { color:var(--text); font-size:15px; }
-.ng-bar { height:12px; border-radius:999px; background:var(--border-light); overflow:hidden; }
-.ng-fill { height:100%; border-radius:999px; background:var(--grad-green); transition:width .4s ease; }
-.ng-meta { display:flex; justify-content:space-between; margin-top:8px; font-size:11px; color:var(--text-soft); }

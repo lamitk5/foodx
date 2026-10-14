@@ -530,6 +530,7 @@ input, select, textarea { font-family: var(--font); }
 
 .home-expiring, .home-suggest, .home-today { padding: 16px 18px; }
 .he-head, .hs-head, .ht-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 13.5px; }
+.he-head.danger strong { color: var(--danger); }
 .he-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
 .he-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 12px; background: var(--bg); font-size: 13px; }
 .he-item .he-name { flex: 1; }

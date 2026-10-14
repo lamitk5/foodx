@@ -16,6 +16,7 @@ public record ProfileResponse(
         Double activity,
         String diet,
         String allergies,
-        String dislikes
+        String dislikes,
+        Integer dailyKcal
 ) {
 }

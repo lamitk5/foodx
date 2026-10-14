@@ -742,7 +742,7 @@
 }
 
 .auth-input-wrap {
-    min-height: 50px;
+    min-height: 46px;
 
     display: flex;
     align-items: center;
@@ -750,10 +750,10 @@
 
     padding: 0 14px;
 
-    border: 1.5px solid var(--border, #E2ECE6);
-    border-radius: 14px;
+    border: 1.5px solid #B7C9BE;
+    border-radius: 12px;
 
-    background: var(--bg-input, #FFFFFF);
+    background: #F3F6F4;
 
     transition:
             border-color .18s ease,
@@ -764,7 +764,7 @@
 .auth-input-wrap:focus-within {
     border-color: var(--green, #059669);
 
-    background: var(--card, #FFFFFF);
+    background: #FFFFFF;
 
     box-shadow:
             0 0 0 4px rgba(5, 150, 105, .12);
@@ -796,7 +796,16 @@
 }
 
 .auth-input-wrap input::placeholder {
-    color: var(--text-muted, #9CA8A0);
+    color: var(--text-soft, #6B7C72);
+}
+
+.auth-input-wrap input:-webkit-autofill,
+.auth-input-wrap input:-webkit-autofill:hover,
+.auth-input-wrap input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--text, #14532D);
+    caret-color: var(--text, #14532D);
+    box-shadow: 0 0 0 1000px #F3F6F4 inset;
+    transition: background-color 9999s ease-out;
 }
 
 .btn-toggle-password {
@@ -985,6 +994,14 @@ body.dark .auth-input-wrap input {
 
 body.dark .auth-input-wrap input::placeholder {
     color: var(--text-muted, #7A9B8A);
+}
+
+body.dark .auth-input-wrap input:-webkit-autofill,
+body.dark .auth-input-wrap input:-webkit-autofill:hover,
+body.dark .auth-input-wrap input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--text, #ECFDF5);
+    caret-color: var(--text, #ECFDF5);
+    box-shadow: 0 0 0 1000px #112019 inset;
 }
 
 body.dark .auth-brand-icon {

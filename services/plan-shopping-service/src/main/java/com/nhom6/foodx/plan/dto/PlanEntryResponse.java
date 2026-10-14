@@ -20,7 +20,8 @@ public record PlanEntryResponse(
         Double protein,
         Double carb,
         Double fat,
-        List<IngredientTag> ingredients
+        List<IngredientTag> ingredients,
+        boolean fallback
 ) {
     /** Tag nguyên liệu: name + trạng thái đã có trong tủ hay cần mua. */
     public record IngredientTag(String name, boolean inFridge) {

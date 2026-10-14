@@ -51,6 +51,7 @@ public class InternalProfileController {
                 profile.getActivity(),
                 profile.getDiet(),
                 profile.getAllergies(),
-                profile.getDislikes());
+                profile.getDislikes(),
+                profile.getDailyKcal());
     }
 }

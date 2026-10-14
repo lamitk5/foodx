@@ -45,9 +45,33 @@ public class FoodImageSearchService {
     private static final String USER_AGENT =
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
-    private static final String SRC_IMG_DIR  = "src/main/resources/static/images/foods";
-    private static final String TARGET_IMG_DIR = "target/classes/static/images/foods";
-    private static final String PLACEHOLDER = "/images/placeholder.jpg";
+    /** Ảnh tải về nằm trên volume dùng chung, gateway phục vụ tại /uploads/**. */
+    private static final String UPLOAD_IMG_DIR = "uploads/foods";
+    /** Bản cũ ghi vào đĩa riêng của inventory-service, gateway không đọc được. */
+    private static final String LEGACY_IMG_DIR = "src/main/resources/static/images/foods";
+    private static final String PLACEHOLDER = "/images/foods/placeholder.jpg";
+
+    /** File đã đóng gói trong api-gateway. URL ngoài tập này mà trỏ /images/foods/ sẽ 404. */
+    private static final Set<String> BUNDLED_FILES = Set.of(
+            "avocado.jpg", "banana.jpg", "banh-cuon-nong-cha-lua.jpg", "banh-mi-trung-op-la-bo-toi.jpg",
+            "banh-mi.jpg", "beef.jpg", "bo-xao-bong-cai-xanh.jpg", "broccoli.jpg",
+            "bun-bo-hue-bap-bo-cha-cua.jpg", "bun-cha-ha-noi-nuong-than.jpg", "bun-cha-ha-noi.jpg",
+            "bun-moc-suon-non-doc-mung.jpg", "ca-chep.jpg", "ca-hoi-ap-chao-mang-tay-sot-chanh-leo.jpg",
+            "ca-ngu.jpg", "canh-chua-ca-loc-mien-tay-ca-kho-to.jpg", "canh-suon-ham-rau-cu-ngu-sac-com.jpg",
+            "carrot.jpg", "chao-ga-xe-gung-hanh-hoa.jpg", "cheese.jpg", "chicken.jpg",
+            "com-bo-luc-lac-khoai-tay-sot-tieu.jpg", "com-chien-trung-xuc-xich-kieu-viet.jpg",
+            "com-nguoi.jpg", "com-suon-non-rim-chua-ngot.jpg", "com-tam-suon-nuong-mat-ong.jpg",
+            "com-uc-ga-ap-chao-sot-bo-toi-bong-cai.jpg", "dau-hu-don-thit-sot-ca-chua-com.jpg",
+            "egg.jpg", "ga-ham-sot-ca-chua-sua-tuoi-kem-bong-cai-xanh-va-com-gao-lut.jpg",
+            "ga-hap-la-chanh-canh-bi-dao-tom-tuoi.jpg", "garlic.jpg", "ginger.jpg",
+            "hu-tieu-nam-vang-tom-thit.jpg", "khoai-lang.jpg",
+            "mi-y-ga-xao-sot-ca-chua-kem-bong-cai-xanh.jpg", "mi-y-sot-bo-bam-ca-chua-pho-mai.jpg",
+            "milk.jpg", "pho-bo-tai-ha-noi.jpg", "placeholder.jpg", "pork.jpg", "potato.jpg",
+            "rau-muong.jpg", "rice.jpg", "salad-tom-nuong-qua-bo-sot-me-rang.jpg", "salmon.jpg",
+            "shallot.jpg", "shrimp.jpg", "thit-bo-xao-can-toi-canh-rong-bien-dau-hu.jpg",
+            "tofu.jpg", "tomato.jpg", "trung-chien-xanh-ca-chua-omelette-rau-xanh-ca-chua.jpg",
+            "yen-mach-hoa-qua-hat-chia-sua-chua.jpg", "yogurt.jpg"
+    );
 
     // Danh sách tên slug CHÍNH XÁC đã có ảnh mặc định sẵn
     private static final Set<String> EXACT_BASIC_SLUGS = Set.of(
@@ -169,21 +193,34 @@ public class FoodImageSearchService {
     //  Public API
     // -----------------------------------------------------------------------
 
+    /** Ảnh /images/foods/... chỉ hiện được khi file đã có trong gateway. */
+    public boolean isBundledFoodImage(String imageUrl) {
+        if (imageUrl == null || !imageUrl.startsWith("/images/foods/") || !imageUrl.endsWith(".jpg")) {
+            return false;
+        }
+        return BUNDLED_FILES.contains(imageUrl.substring("/images/foods/".length()));
+    }
+
     public String findOrDownloadImage(String rawFoodName) {
         if (rawFoodName == null || rawFoodName.isBlank()) return PLACEHOLDER;
 
         String cleanName = rawFoodName.trim();
         String slug      = toSlug(cleanName);
-        String relPath   = "/images/foods/" + slug + ".jpg";
+        String uploadRel = "/uploads/foods/" + slug + ".jpg";
 
-        // 1. File đã có sẵn
-        Path srcFile = Paths.get(SRC_IMG_DIR, slug + ".jpg");
-        if (Files.exists(srcFile)) {
-            syncToTarget(srcFile, slug + ".jpg");
-            return relPath;
+        // 1. Ảnh đã nằm trên volume dùng chung
+        Path uploadFile = Paths.get(UPLOAD_IMG_DIR, slug + ".jpg");
+        if (isReadableImage(uploadFile)) {
+            return uploadRel;
         }
 
-        // 2. Khớp ảnh mặc định chính xác
+        // 2. Bản tải cũ nằm trong container inventory — chép sang volume rồi mới trả URL
+        Path legacyFile = Paths.get(LEGACY_IMG_DIR, slug + ".jpg");
+        if (isReadableImage(legacyFile) && copyToUploads(legacyFile, slug + ".jpg")) {
+            return uploadRel;
+        }
+
+        // 3. Khớp ảnh mặc định đã đóng gói trong gateway
         String basic = matchExactBasicImage(slug);
         if (basic != null) return basic;
 
@@ -194,8 +231,8 @@ public class FoodImageSearchService {
 
             if (url != null) {
                 downloadAndSaveImage(url, slug + ".jpg");
-                log.info("✅ Đã lưu ảnh: {}", relPath);
-                return relPath;
+                log.info("✅ Đã lưu ảnh: {}", uploadRel);
+                return uploadRel;
             } else {
                 log.warn("⚠️ Không tìm được ảnh nào trên mạng cho: '{}'", cleanName);
             }
@@ -315,22 +352,30 @@ public class FoodImageSearchService {
         if (conn.getResponseCode() != 200) {
             throw new RuntimeException("HTTP " + conn.getResponseCode() + " cho: " + imageUrl);
         }
-        Path srcPath = Paths.get(SRC_IMG_DIR, fileName);
-        Files.createDirectories(srcPath.getParent());
+        Path dest = Paths.get(UPLOAD_IMG_DIR, fileName);
+        Files.createDirectories(dest.getParent());
         try (InputStream in = conn.getInputStream()) {
-            Files.copy(in, srcPath, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(in, dest, StandardCopyOption.REPLACE_EXISTING);
         }
-        syncToTarget(srcPath, fileName);
     }
 
-    private void syncToTarget(Path srcPath, String fileName) {
+    private boolean copyToUploads(Path source, String fileName) {
         try {
-            if (!Files.exists(Paths.get("target/classes"))) return;
-            Path targetPath = Paths.get(TARGET_IMG_DIR, fileName);
-            Files.createDirectories(targetPath.getParent());
-            Files.copy(srcPath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+            Path dest = Paths.get(UPLOAD_IMG_DIR, fileName);
+            Files.createDirectories(dest.getParent());
+            Files.copy(source, dest, StandardCopyOption.REPLACE_EXISTING);
+            return isReadableImage(dest);
         } catch (Exception e) {
-            log.debug("syncToTarget warning: {}", e.getMessage());
+            log.debug("copyToUploads warning: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean isReadableImage(Path path) {
+        try {
+            return Files.isRegularFile(path) && Files.size(path) > 500;
+        } catch (Exception e) {
+            return false;
         }
     }
 
@@ -348,7 +393,8 @@ public class FoodImageSearchService {
     }
 
     private String matchExactBasicImage(String slug) {
-        if (!EXACT_BASIC_SLUGS.contains(slug)) return null;
+        if (slug.equals("gao") || slug.startsWith("gao-")) return "/images/foods/rice.jpg";
+        if (slug.equals("com") || slug.equals("com-trang") || slug.equals("com-nguoi")) return "/images/foods/rice.jpg";
         if (slug.contains("trung")) return "/images/foods/egg.jpg";
         if (slug.equals("ga") || slug.contains("uc-ga") || slug.contains("thit-ga")) return "/images/foods/chicken.jpg";
         if (slug.equals("bo") || slug.contains("thit-bo")) return "/images/foods/beef.jpg";

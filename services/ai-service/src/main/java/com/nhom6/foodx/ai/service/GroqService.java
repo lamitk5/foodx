@@ -1,6 +1,10 @@
 package com.nhom6.foodx.ai.service;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import com.nhom6.foodx.ai.dto.ChatTurn;
+import com.nhom6.foodx.ai.util.PromptTemplate;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
@@ -25,13 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class GroqService {
 
-    private static final String SYSTEM_PROMPT = """
-            Bạn là trợ lý nấu ăn FoodX. Trả lời bằng tiếng Việt, ngắn gọn, chính xác, thân thiện.
-            Ưu tiên dùng nguyên liệu người dùng đang có. Tuyệt đối tránh nguyên liệu họ dị ứng.
-            Không bịa số liệu dinh dưỡng nếu không chắc chắn. Nếu không liên quan ẩm thực, từ chối lịch sự.
-            Khi được yêu cầu JSON, chỉ trả về JSON hợp lệ, không markdown, không giải thích thêm.
-            """;
-
     private final GroqConfig groqConfig;
     private final WebClient webClient;
 
@@ -49,12 +46,40 @@ public class GroqService {
         return generateText(prompt, null);
     }
 
+    public String generateChat(String prompt, List<ChatTurn> history) {
+        List<GroqRequest.Message> messages = new ArrayList<>();
+        messages.add(GroqRequest.Message.builder()
+                .role("system")
+                .content(PromptTemplate.COOKING_SYSTEM_PROMPT)
+                .build());
+        if (history != null) {
+            for (ChatTurn turn : history) {
+                if (turn == null || turn.content() == null || turn.content().isBlank()) {
+                    continue;
+                }
+                String role = "assistant".equals(turn.role()) ? "assistant" : "user";
+                messages.add(GroqRequest.Message.builder().role(role).content(turn.content()).build());
+            }
+        }
+        messages.add(GroqRequest.Message.builder().role("user").content(prompt).build());
+        return complete(messages, null, 0.75);
+    }
+
     public String generateText(String prompt, String responseMimeType) {
+        boolean jsonMode = "application/json".equals(responseMimeType);
+        List<GroqRequest.Message> messages = List.of(
+                GroqRequest.Message.builder().role("system").content(PromptTemplate.COOKING_SYSTEM_PROMPT).build(),
+                GroqRequest.Message.builder().role("user").content(prompt).build());
+        return complete(messages, responseMimeType, jsonMode ? 0.2 : 0.6);
+    }
+
+    private String complete(List<GroqRequest.Message> messages, String responseMimeType, double temperature) {
         if (!isConfigured()) {
             throw new BusinessException(503, "Groq API key chua duoc cau hinh");
         }
 
         boolean jsonMode = "application/json".equals(responseMimeType);
+        boolean enforceJsonObject = jsonMode;
         String currentModel = groqConfig.getModel();
         int maxRetries = 2;
         int attempt = 0;
@@ -62,13 +87,11 @@ public class GroqService {
         while (attempt <= maxRetries) {
             GroqRequest.GroqRequestBuilder requestBuilder = GroqRequest.builder()
                     .model(currentModel)
-                    .messages(List.of(
-                            GroqRequest.Message.builder().role("system").content(SYSTEM_PROMPT).build(),
-                            GroqRequest.Message.builder().role("user").content(prompt).build()))
-                    .temperature(jsonMode ? 0.2 : 0.6)
+                    .messages(messages)
+                    .temperature(temperature)
                     .maxTokens(2048);
 
-            if (jsonMode) {
+            if (enforceJsonObject) {
                 requestBuilder.responseFormat(GroqRequest.ResponseFormat.builder().type("json_object").build());
             }
 
@@ -92,6 +115,12 @@ public class GroqService {
                 return response.getChoices().get(0).getMessage().getContent();
             } catch (WebClientResponseException ex) {
                 int status = ex.getStatusCode().value();
+                String body = ex.getResponseBodyAsString();
+                if (status == 400 && enforceJsonObject && body != null && body.contains("json_validate_failed")) {
+                    log.warn("Groq không ép được JSON object, gọi lại để mô hình tự trả JSON.");
+                    enforceJsonObject = false;
+                    continue;
+                }
                 if (status == 429 || status == 503) {
                     log.warn("Groq Rate Limit/503. Attempt {}/{}", attempt + 1, maxRetries + 1);
                     if (attempt == 0) {

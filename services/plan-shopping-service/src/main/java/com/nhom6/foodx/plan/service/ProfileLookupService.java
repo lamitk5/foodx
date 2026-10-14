@@ -2,6 +2,7 @@ package com.nhom6.foodx.plan.service;
 
 import com.nhom6.foodx.common.client.UserServiceClient;
 import com.nhom6.foodx.common.dto.UserProfileDto;
+import com.nhom6.foodx.common.food.DailyCalorieGoal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,26 +14,26 @@ import java.util.function.Function;
  * <p>Trước đây là {@code ProfileFacadeImpl} đọc thẳng bảng {@code profiles} bằng JPA.
  * Nay bảng đó thuộc user-service, service này chỉ được hỏi qua HTTP nội bộ.</p>
  *
- * <p>Công thức Mifflin-St Jeor và mặc định 2000 kcal được giữ <b>nguyên</b> như bản cũ;
- * khi user-service không trả về hồ sơ (chưa tạo hoặc service chết) thì dùng mặc định.</p>
+ * <p>Mục tiêu kcal lấy từ số người dùng đã lưu; chưa có thì tính giống màn hồ sơ.
+ * Khi user-service không trả về hồ sơ thì dùng 2000 kcal.</p>
  */
 @Service
 @RequiredArgsConstructor
 public class ProfileLookupService {
 
-    private static final int DEFAULT_KCAL = 2000;
-
     private final UserServiceClient userServiceClient;
 
-    /** Mục tiêu calo mỗi ngày (tính theo Mifflin-St Jeor từ hồ sơ). Mặc định 2000 nếu chưa có hồ sơ. */
+    /**
+     * Mục tiêu calo mỗi ngày. Ưu tiên số người dùng lưu trong cá nhân hóa,
+     * không có thì tính Mifflin-St Jeor giống màn hồ sơ.
+     */
     public Integer getDailyKcalGoal(Long userId) {
         if (userId == null) {
-            return DEFAULT_KCAL;
+            return DailyCalorieGoal.DEFAULT_KCAL;
         }
         return userServiceClient.getProfile(userId)
-                .map(this::computeDailyKcal)
-                .filter(kcal -> kcal > 0)
-                .orElse(DEFAULT_KCAL);
+                .map(DailyCalorieGoal::resolve)
+                .orElse(DailyCalorieGoal.DEFAULT_KCAL);
     }
 
     public String getDiet(Long userId) {
@@ -56,17 +57,5 @@ public class ProfileLookupService {
                 .map(getter)
                 .filter(value -> value != null && !value.isBlank())
                 .orElse("");
-    }
-
-    /** Mifflin-St Jeor: BMR = 10*W + 6.25*H - 5*Age + (nam +5 / nữ -161), nhân hệ số vận động. */
-    private Integer computeDailyKcal(UserProfileDto p) {
-        double weight = p.weight() == null ? 60.0 : p.weight();
-        double height = p.height() == null ? 165.0 : p.height();
-        int age = p.age() == null ? 25 : p.age();
-        double activity = p.activity() == null ? 1.2 : p.activity();
-
-        double bmr = 10.0 * weight + 6.25 * height - 5.0 * age;
-        bmr += ("female".equalsIgnoreCase(p.gender())) ? -161.0 : 5.0;
-        return (int) Math.round(bmr * activity);
     }
 }

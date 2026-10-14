@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhom6.foodx.ai.dto.ChatRequest;
 import com.nhom6.foodx.ai.dto.ChatResponse;
+import com.nhom6.foodx.ai.dto.ChatTurn;
 import com.nhom6.foodx.ai.service.AiContextService;
 import com.nhom6.foodx.ai.service.ChatService;
 import com.nhom6.foodx.chat.dto.MessageResponse;
@@ -21,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -101,29 +103,18 @@ public class ChatSessionService {
         String mode = request.mode() == null ? "chat" : request.mode();
         String message = request.message().trim();
 
-        // ---- Bối cảnh: hồ sơ/tủ (cache) + 8 tin gần nhất, mỗi tin cắt 240 ký tự ----
-        List<ChatMessage> recent = messageRepository.findTop8BySession_IdOrderByCreatedAtDesc(id);
-        StringBuilder context = new StringBuilder(aiContextService.buildContext(userId));
-        if (!recent.isEmpty()) {
-            context.append("\nLịch sử hội thoại gần đây trong phiên này:\n");
-            for (int i = recent.size() - 1; i >= 0; i--) {
-                ChatMessage m = recent.get(i);
-                String content = m.getContent() == null ? "" : m.getContent().replace("\n", " ");
-                if (content.length() > 240) {
-                    content = content.substring(0, 240) + "…";
-                }
-                context
-                        .append("user".equals(m.getRole()) ? "Người dùng: " : "Trợ lý FoodX: ")
-                        .append(content)
-                        .append("\n");
-            }
-        }
+        // Hồ sơ + tủ lạnh. Mode chat gửi 12 tin gần nhất thành message riêng (mỗi tin tối đa 600 ký tự).
+        List<ChatMessage> recent = messageRepository.findTop12BySession_IdOrderByCreatedAtDesc(id);
+        String profileContext = aiContextService.buildContext(userId);
+        boolean chatMode = "chat".equalsIgnoreCase(mode);
+        List<ChatTurn> history = chatMode ? toTurns(recent) : List.of();
+        String context = chatMode ? profileContext : profileContext + flattenHistory(recent);
 
         ChatResponse ai = chatService.chat(ChatRequest.builder()
                 .message(message)
                 .mode(mode)
                 .availableIngredients(request.availableIngredients())
-                .build(), context.toString());
+                .build(), context, history);
 
         messageRepository.save(ChatMessage.builder()
                 .session(session)
@@ -176,6 +167,49 @@ public class ChatSessionService {
         int sessions = sessionRepository.deleteByUserId(userId);
         log.info("Đã dọn dữ liệu chat của người dùng {}: {} tin nhắn, {} phiên", userId, messages, sessions);
         return messages + sessions;
+    }
+
+    private List<ChatTurn> toTurns(List<ChatMessage> newestFirst) {
+        List<ChatTurn> turns = new ArrayList<>();
+        if (newestFirst == null || newestFirst.isEmpty()) {
+            return turns;
+        }
+        for (int i = newestFirst.size() - 1; i >= 0; i--) {
+            ChatMessage message = newestFirst.get(i);
+            String content = clip(message.getContent(), 600);
+            if (content.isBlank()) {
+                continue;
+            }
+            String role = "assistant".equals(message.getRole()) ? "assistant" : "user";
+            turns.add(new ChatTurn(role, content));
+        }
+        return turns;
+    }
+
+    private String flattenHistory(List<ChatMessage> newestFirst) {
+        if (newestFirst == null || newestFirst.isEmpty()) {
+            return "";
+        }
+        StringBuilder context = new StringBuilder("\nLịch sử hội thoại gần đây trong phiên này:\n");
+        for (int i = newestFirst.size() - 1; i >= 0; i--) {
+            ChatMessage message = newestFirst.get(i);
+            String content = clip(message.getContent(), 600);
+            if (content.isBlank()) {
+                continue;
+            }
+            context.append("user".equals(message.getRole()) ? "Người dùng: " : "Trợ lý FoodX: ")
+                    .append(content)
+                    .append("\n");
+        }
+        return context.toString();
+    }
+
+    private static String clip(String content, int max) {
+        String text = content == null ? "" : content.replace("\n", " ").trim();
+        if (text.length() <= max) {
+            return text;
+        }
+        return text.substring(0, max) + "…";
     }
 
     private ChatSession findSession(Long userId, Long id) {

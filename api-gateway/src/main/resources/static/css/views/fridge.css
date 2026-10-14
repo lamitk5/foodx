@@ -20,7 +20,7 @@
 .plan-page-header h1 {
     margin-bottom: 7px;
 
-    font-size: 32px;
+    font-size: 24px;
 }
 
 
@@ -50,14 +50,14 @@
 
 
 .fridge-summary-card {
-    min-height: 103px;
+    min-height: 78px;
 
     display: flex;
     align-items: center;
 
-    gap: 14px;
+    gap: 12px;
 
-    padding: 17px;
+    padding: 12px;
 
     border:
             1px solid var(--border);
@@ -78,8 +78,8 @@
 
 
 .fridge-summary-icon {
-    width: 48px;
-    height: 48px;
+    width: 36px;
+    height: 36px;
 
     display: flex;
     align-items: center;
@@ -87,29 +87,38 @@
 
     flex-shrink: 0;
 
-    border-radius: 14px;
+    border-radius: 12px;
 
-    font-size: 21px;
+    color: var(--green);
+}
+
+.fridge-summary-icon .icon {
+    width: 18px;
+    height: 18px;
 }
 
 
 .fridge-summary-icon.green {
     background: var(--green-lighter);
+    color: var(--green);
 }
 
 
 .fridge-summary-icon.orange {
     background: var(--orange-light);
+    color: var(--orange);
 }
 
 
 .fridge-summary-icon.purple {
     background: var(--purple-light);
+    color: var(--purple);
 }
 
 
 .fridge-summary-icon.pink {
     background: var(--pink-light);
+    color: var(--pink);
 }
 
 
@@ -123,9 +132,9 @@
 .fridge-summary-card strong {
     display: block;
 
-    margin: 3px 0;
+    margin: 2px 0;
 
-    font-size: 22px;
+    font-size: 18px;
 }
 
 
@@ -264,7 +273,7 @@
 .fridge-food-image-wrap {
     position: relative;
 
-    height: 175px;
+    height: 128px;
 
     overflow: hidden;
 
@@ -891,4 +900,4 @@ body.dark .selected-fridge-info strong {
     border-left: 4px solid var(--danger) !important;
     background: rgba(239, 68, 68, 0.03);
 }
-
+

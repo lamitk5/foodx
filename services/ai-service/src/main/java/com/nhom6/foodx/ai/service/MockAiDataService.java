@@ -28,7 +28,15 @@ public class MockAiDataService {
                 : "Nguyên liệu bạn sẵn có: **" + String.join(", ", availableIngredients) + "**.";
 
         String reply;
-        if (msg.contains("cá kho") || msg.contains("kho tiêu")) {
+        if (isGreeting(msg)) {
+            reply = "Chào bạn, mình là trợ lý bếp của FoodX. Hôm nay bạn muốn nấu món gì, hay để mình xem tủ lạnh rồi gợi ý?";
+        } else if (msg.contains("tủ") && (msg.contains("trống") || msg.contains("hết") || msg.contains("không có"))) {
+            reply = "Tủ đang trống thì mình gợi ý món đơn giản: trứng chiên hành hoặc mì xào rau. Cần mua thêm trứng, hành lá và mì nếu bạn chưa có.";
+        } else if (msg.contains("dị ứng")) {
+            reply = "Mình sẽ tránh nguyên liệu bạn dị ứng. Nói mình bạn dị ứng gì, hoặc kể những gì còn trong tủ, để mình đổi sang món khác.";
+        } else if (msg.contains("ăn gì") || msg.contains("nấu gì")) {
+            reply = "Bạn rảnh khoảng bao lâu, và ăn mấy người? Nếu muốn nhanh, mình có thể gợi ý 2 món từ nguyên liệu đang có.\n\n> 💡 *" + ings + "*";
+        } else if (msg.contains("cá kho") || msg.contains("kho tiêu")) {
             reply = "**Cá Kho Tiêu — Món cá kho đậm đà, thơm lừng vị tiêu đen**\n\n" +
                     "### 1. Nguyên liệu gợi ý\n\n" +
                     "| Nguyên liệu | Lượng (cho 2–3 người) |\n" +
@@ -88,6 +96,14 @@ public class MockAiDataService {
                     "> 💡 *" + ings + "*";
         }
         return reply;
+    }
+
+    private static boolean isGreeting(String msg) {
+        String t = msg.trim();
+        return t.equals("hi") || t.equals("hello") || t.equals("hey")
+                || t.equals("chào") || t.equals("chào bạn") || t.equals("xin chào")
+                || t.startsWith("xin chào") || t.startsWith("chào ")
+                || t.contains("cảm ơn") || t.contains("tam biet") || t.contains("tạm biệt");
     }
 
     /**

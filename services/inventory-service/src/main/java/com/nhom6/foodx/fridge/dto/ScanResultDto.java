@@ -16,6 +16,8 @@ import java.util.List;
 @AllArgsConstructor
 public class ScanResultDto {
     private boolean autoSaved;
+    /** true khi AI không nhận diện được và danh sách là dữ liệu dự phòng. */
+    private boolean fallback;
     private int totalDetected;
     private int savedCount;
     private List<ScannedItemDetail> detectedItems;

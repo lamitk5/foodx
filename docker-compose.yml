@@ -32,6 +32,12 @@ x-app-env: &app-env
   # Khoá ký JWT — PHẢI giống nhau ở mọi service
   APP_JWT_SECRET: ${APP_JWT_SECRET:-dev-super-secret-key-please-change-this-key-32bytes!!}
   APP_JWT_ISSUER: ${APP_JWT_ISSUER:-foodx}
+  # JVM chỉ thấy số nhân bằng trần CPU bên dưới, không thấy cả 12 nhân của máy host.
+  JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75 -XX:ActiveProcessorCount=1 -Dfile.encoding=UTF-8"
+
+# Trần CPU (CFS quota, tương đương `docker run --cpus`). Tổng trần = 8.5 / 12 nhân,
+# phần còn lại dành cho hệ điều hành và container khác.
+#   mysql 1.0 · redis 0.5 · gateway 0.5 · 5 service nghiệp vụ 1.0 · ai-service 1.5
 
 services:
 
@@ -42,6 +48,7 @@ services:
     image: mysql:8.0
     container_name: foodx-mysql
     restart: unless-stopped
+    cpus: "1.0"
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
     ports:
@@ -63,6 +70,7 @@ services:
     image: redis:7-alpine
     container_name: foodx-redis
     restart: unless-stopped
+    cpus: "0.5"
     command: ["redis-server", "--appendonly", "yes"]
     ports:
       - "6379:6379"
@@ -87,12 +95,15 @@ services:
       args:
         MODULE: api-gateway
         PORT: 8080
+        JAR_FILE: api-gateway.jar
     image: foodx/api-gateway:local
     container_name: foodx-api-gateway
     restart: unless-stopped
+    cpus: "0.5"
     ports:
       - "8080:8080"
     environment:
+      <<: *app-env
       # Bảng định tuyến trỏ tới tên service trong mạng Docker (DNS nội bộ)
       GATEWAY_SERVICES_USER_SERVICE: "http://user-service:8081"
       GATEWAY_SERVICES_INVENTORY_SERVICE: "http://inventory-service:8082"
@@ -136,9 +147,11 @@ services:
       args:
         MODULE: services/user-service
         PORT: 8081
+        JAR_FILE: user-service.jar
     image: foodx/user-service:local
     container_name: foodx-user-service
     restart: unless-stopped
+    cpus: "1.0"
     ports:
       - "8081:8081"   # PROD: bỏ dòng này, chỉ public qua gateway
     environment:
@@ -169,9 +182,11 @@ services:
       args:
         MODULE: services/inventory-service
         PORT: 8082
+        JAR_FILE: inventory-service.jar
     image: foodx/inventory-service:local
     container_name: foodx-inventory-service
     restart: unless-stopped
+    cpus: "1.0"
     ports:
       - "8082:8082"   # PROD: bỏ dòng này
     environment:
@@ -198,9 +213,11 @@ services:
       args:
         MODULE: services/recipe-service
         PORT: 8083
+        JAR_FILE: recipe-service.jar
     image: foodx/recipe-service:local
     container_name: foodx-recipe-service
     restart: unless-stopped
+    cpus: "1.0"
     ports:
       - "8083:8083"   # PROD: bỏ dòng này
     environment:
@@ -226,9 +243,11 @@ services:
       args:
         MODULE: services/plan-shopping-service
         PORT: 8084
+        JAR_FILE: plan-shopping-service.jar
     image: foodx/plan-shopping-service:local
     container_name: foodx-plan-shopping-service
     restart: unless-stopped
+    cpus: "1.0"
     ports:
       - "8084:8084"   # PROD: bỏ dòng này
     environment:
@@ -258,9 +277,11 @@ services:
       args:
         MODULE: services/ai-service
         PORT: 8085
+        JAR_FILE: ai-service.jar
     image: foodx/ai-service:local
     container_name: foodx-ai-service
     restart: unless-stopped
+    cpus: "1.5"
     ports:
       - "8085:8085"   # PROD: bỏ dòng này
     environment:
@@ -272,6 +293,7 @@ services:
       FOODX_SERVICES_INVENTORY_SERVICE: "http://inventory-service:8082"
       GROQ_API_KEY: "${GROQ_API_KEY:-}"
       GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75 -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8"
       APP_AI_MAX_CONCURRENT: "12"
       APP_RATE_LIMIT_PER_MINUTE: "120"
     depends_on:
@@ -291,9 +313,11 @@ services:
       args:
         MODULE: services/social-stats-service
         PORT: 8086
+        JAR_FILE: social-stats-service.jar
     image: foodx/social-stats-service:local
     container_name: foodx-social-stats-service
     restart: unless-stopped
+    cpus: "1.0"
     ports:
       - "8086:8086"   # PROD: bỏ dòng này
     environment:

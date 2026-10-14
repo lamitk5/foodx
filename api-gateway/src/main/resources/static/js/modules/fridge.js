@@ -603,48 +603,94 @@ async function addFoodToFridge(
    FRIDGE HELPERS
 ========================================================= */
 
+const SHIPPED_FOOD_IMAGES = new Set([
+    "avocado.jpg", "banana.jpg", "banh-cuon-nong-cha-lua.jpg", "banh-mi-trung-op-la-bo-toi.jpg",
+    "banh-mi.jpg", "beef.jpg", "bo-xao-bong-cai-xanh.jpg", "broccoli.jpg",
+    "bun-bo-hue-bap-bo-cha-cua.jpg", "bun-cha-ha-noi-nuong-than.jpg", "bun-cha-ha-noi.jpg",
+    "bun-moc-suon-non-doc-mung.jpg", "ca-chep.jpg", "ca-hoi-ap-chao-mang-tay-sot-chanh-leo.jpg",
+    "ca-ngu.jpg", "canh-chua-ca-loc-mien-tay-ca-kho-to.jpg", "canh-suon-ham-rau-cu-ngu-sac-com.jpg",
+    "carrot.jpg", "chao-ga-xe-gung-hanh-hoa.jpg", "cheese.jpg", "chicken.jpg",
+    "com-bo-luc-lac-khoai-tay-sot-tieu.jpg", "com-chien-trung-xuc-xich-kieu-viet.jpg",
+    "com-nguoi.jpg", "com-suon-non-rim-chua-ngot.jpg", "com-tam-suon-nuong-mat-ong.jpg",
+    "com-uc-ga-ap-chao-sot-bo-toi-bong-cai.jpg", "dau-hu-don-thit-sot-ca-chua-com.jpg",
+    "egg.jpg", "ga-ham-sot-ca-chua-sua-tuoi-kem-bong-cai-xanh-va-com-gao-lut.jpg",
+    "ga-hap-la-chanh-canh-bi-dao-tom-tuoi.jpg", "garlic.jpg", "ginger.jpg",
+    "hu-tieu-nam-vang-tom-thit.jpg", "khoai-lang.jpg",
+    "mi-y-ga-xao-sot-ca-chua-kem-bong-cai-xanh.jpg", "mi-y-sot-bo-bam-ca-chua-pho-mai.jpg",
+    "milk.jpg", "pho-bo-tai-ha-noi.jpg", "placeholder.jpg", "pork.jpg", "potato.jpg",
+    "rau-muong.jpg", "rice.jpg", "salad-tom-nuong-qua-bo-sot-me-rang.jpg", "salmon.jpg",
+    "shallot.jpg", "shrimp.jpg", "thit-bo-xao-can-toi-canh-rong-bien-dau-hu.jpg",
+    "tofu.jpg", "tomato.jpg", "trung-chien-xanh-ca-chua-omelette-rau-xanh-ca-chua.jpg",
+    "yen-mach-hoa-qua-hat-chia-sua-chua.jpg", "yogurt.jpg"
+]);
+
+function localFoodImage(name) {
+    const n = normalize(name || "").toLowerCase();
+    if (!n) return "";
+    if (n === "trung" || n.includes("trung")) return "/images/foods/egg.jpg";
+    if (n === "gao" || n.startsWith("gao ") || n.includes(" gao")) return "/images/foods/rice.jpg";
+    if (n === "ga" || n.startsWith("ga ") || n.endsWith(" ga") || n.includes("uc ga") || n.includes("thit ga")) return "/images/foods/chicken.jpg";
+    if (n === "bo" || n.includes("thit bo")) return "/images/foods/beef.jpg";
+    if (n.includes("heo") || n.includes("thit lon") || n.includes("ba chi")) return "/images/foods/pork.jpg";
+    if (n.includes("ca hoi")) return "/images/foods/salmon.jpg";
+    if (n === "tom" || n.includes("tom tuoi")) return "/images/foods/shrimp.jpg";
+    if (n.includes("ca chua")) return "/images/foods/tomato.jpg";
+    if (n.includes("bong cai") || n.includes("sup lo")) return "/images/foods/broccoli.jpg";
+    if (n.includes("ca rot")) return "/images/foods/carrot.jpg";
+    if (n.includes("khoai tay")) return "/images/foods/potato.jpg";
+    if (n.includes("khoai lang")) return "/images/foods/khoai-lang.jpg";
+    if (n.includes("hanh tim")) return "/images/foods/shallot.jpg";
+    if (n === "toi" || n.startsWith("toi ")) return "/images/foods/garlic.jpg";
+    if (n === "gung" || n.startsWith("gung ")) return "/images/foods/ginger.jpg";
+    if (n.includes("sua chua")) return "/images/foods/yogurt.jpg";
+    if (n === "sua" || n.includes("sua tuoi")) return "/images/foods/milk.jpg";
+    if (n.includes("qua bo") || n.includes("trai bo")) return "/images/foods/avocado.jpg";
+    if (n === "chuoi" || n.startsWith("chuoi ")) return "/images/foods/banana.jpg";
+    if (n === "com" || n.startsWith("com ") || n.includes("com trang")) return "/images/foods/rice.jpg";
+    if (n.includes("dau hu") || n.includes("dau phu")) return "/images/foods/tofu.jpg";
+    if (n.includes("pho mai")) return "/images/foods/cheese.jpg";
+    if (n.includes("rau muong")) return "/images/foods/rau-muong.jpg";
+    if (n.includes("ca chep")) return "/images/foods/ca-chep.jpg";
+    if (n === "banh mi" || n.startsWith("banh mi ")) return "/images/foods/banh-mi.jpg";
+    return "";
+}
+
+function isServedFoodImage(url) {
+    const value = String(url || "").trim();
+    if (!value) return false;
+    if (/^https?:/i.test(value) || value.startsWith("/uploads/")) return true;
+    const file = value.match(/^\/images\/foods\/([^/]+\.jpg)$/i);
+    if (file) return SHIPPED_FOOD_IMAGES.has(file[1]);
+    return value.startsWith("/images/") && !value.includes("/images/foods/");
+}
+
 function getFridgeImage(item) {
-    if (item.image && item.image.trim() !== '' && !item.image.includes('unsplash.com/photo-1542838132') && !item.image.includes('photo-1540420773420')) {
-        return item.image;
+    const stored = String((item && (item.image || item.imageUrl)) || "").trim();
+    const badStock = stored.includes("unsplash.com/photo-1542838132") || stored.includes("photo-1540420773420");
+    if (stored && !badStock && isServedFoodImage(stored)) {
+        return stored;
     }
 
-    const food = catalog.find(f => f.id === item.sourceId || (f.id && item.sourceKey === f.id));
-    if (food?.image) {
+    const food = typeof catalog !== "undefined"
+        ? catalog.find(f => f.id === item.sourceId || (f.id && item.sourceKey === f.id))
+        : null;
+    if (food && food.image && isServedFoodImage(food.image)) {
         return food.image;
     }
 
-    const n = normalize(item.name || item.ingredientName || '').toLowerCase();
-    if (n === 'trung' || n.includes('trung ga') || n.includes('trung vit')) return '/images/foods/egg.jpg';
-    if (n === 'ga' || n.includes('uc ga') || n.includes('thit ga')) return '/images/foods/chicken.jpg';
-    if (n === 'bo' || n.includes('thit bo')) return '/images/foods/beef.jpg';
-    if (n === 'heo' || n.includes('thit heo') || n.includes('thit lon')) return '/images/foods/pork.jpg';
-    if (n.includes('ca hoi')) return '/images/foods/salmon.jpg';
-    if (n === 'tom' || n.includes('tom tuoi')) return '/images/foods/shrimp.jpg';
-    if (n.includes('ca chua')) return '/images/foods/tomato.jpg';
-    if (n.includes('bong cai') || n.includes('sup lo') || n.includes('broccoli')) return '/images/foods/broccoli.jpg';
-    if (n.includes('ca rot')) return '/images/foods/carrot.jpg';
-    if (n.includes('khoai tay')) return '/images/foods/potato.jpg';
-    if (n.includes('hanh tim')) return '/images/foods/shallot.jpg';
-    if (n === 'toi') return '/images/foods/garlic.jpg';
-    if (n === 'gung') return '/images/foods/ginger.jpg';
-    if (n.includes('sua chua')) return '/images/foods/yogurt.jpg';
-    if (n === 'sua' || n.includes('sua tuoi')) return '/images/foods/milk.jpg';
-    if (n.includes('qua bo') || n.includes('trai bo')) return '/images/foods/avocado.jpg';
-    if (n === 'chuoi') return '/images/foods/banana.jpg';
-    if (n.includes('com') || n === 'gao') return '/images/foods/rice.jpg';
-    if (n.includes('dau hu') || n.includes('dau phu')) return '/images/foods/tofu.jpg';
-    if (n.includes('pho mai')) return '/images/foods/cheese.jpg';
+    const local = localFoodImage(item && (item.name || item.ingredientName));
+    if (local) return local;
 
-    // Nếu là món tự thêm có tên riêng (như "cá chép"), sinh đường dẫn ảnh slug tương ứng
-    const slug = (item.name || '').toLowerCase().trim()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        .replace(/đ/g, 'd').replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-    if (slug) {
-        return `/images/foods/${slug}.jpg`;
+    return "/images/foods/placeholder.jpg";
+}
+
+function fridgeImageFallback(img) {
+    if (!img) return;
+    img.onerror = null;
+    const fallback = "/images/foods/placeholder.jpg";
+    if (!String(img.src || "").includes("placeholder.jpg")) {
+        img.src = fallback;
     }
-
-    return '/images/placeholder.jpg';
 }
 
 
@@ -871,8 +917,10 @@ function renderFridge() {
                     true;
 
 
-                if (filter === "soon") {
-                    matchFilter = daysLeft(item.expiresAt) <= 3;
+                if (filter === "expired") {
+                    matchFilter = isExpiredFood(item.expiresAt);
+                } else if (filter === "soon") {
+                    matchFilter = isUseSoonFood(item.expiresAt);
                 } else if (filter === "meat") {
                     const raw = (item.name || "").toLowerCase() + " " + (item.type || "").toLowerCase();
                     const clean = normalize(raw);
@@ -1021,13 +1069,17 @@ function renderFridge() {
 
 
                         let expiryRingClass = "expiry-safe";
-                        if (days <= 0) {
+                        if (days < 0) {
+                            expiryRingClass = "expiry-danger";
+                            statusClass = "danger";
+                            statusText = "Đã hết hạn";
+                        } else if (days === 0) {
                             expiryRingClass = "expiry-danger";
                             statusClass = "danger";
                             statusText = "Cần dùng ngay";
-                        } else if (days <= 2) {
+                        } else if (days <= 3) {
                             expiryRingClass = "expiry-soon";
-                            statusClass = "danger";
+                            statusClass = "soon";
                         } else if (days <= 4) {
                             expiryRingClass = "expiry-warning";
                             statusClass = "soon";
@@ -1075,7 +1127,8 @@ function renderFridge() {
                                 <img
                                     class="fridge-food-image"
                                     src="${getFridgeImage(item)}"
-                                    alt="${escapeHtml(item.name)}">
+                                    alt="${escapeHtml(item.name)}"
+                                    onerror="fridgeImageFallback(this)">
 
                                 <span
                                     class="fridge-status ${statusClass}">
@@ -1251,10 +1304,7 @@ function renderFridge() {
 
     const expiring =
         state.fridge.filter(
-            item =>
-                daysLeft(
-                    item.expiresAt
-                ) <= 3
+            item => isUseSoonFood(item.expiresAt)
         );
 
 
@@ -1646,7 +1696,7 @@ function openIngredientDetail(id) {
     body.innerHTML = `
         <div class="ingredient-detail-layout">
             <div>
-                <img class="ingredient-detail-image" src="${getFridgeImage(item)}" alt="${escapeHtml(item.name)}">
+                <img class="ingredient-detail-image" src="${getFridgeImage(item)}" alt="${escapeHtml(item.name)}" onerror="fridgeImageFallback(this)">
                 
                 <div class="ingredient-expiry-box" style="margin-top: 12px; padding: 14px; border: 1px solid var(--border); border-radius: 14px; background: var(--bg);">
                     <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 12px; color: var(--text);">📅 Hạn sử dụng</label>

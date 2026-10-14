@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.nhom6.foodx.ai.dto.SuggestRequest;
 import com.nhom6.foodx.ai.dto.SuggestResponse;
 import com.nhom6.foodx.ai.util.PromptTemplate;
+import com.nhom6.foodx.common.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,17 +34,22 @@ public class SuggestionService {
             if (!suggestions.isEmpty()) {
                 SuggestResponse response = new SuggestResponse();
                 response.setSuggestions(limit(suggestions, request.getMaxSuggestions()));
+                response.setFallback(false);
                 return response;
             }
-            log.warn("AI không trả món gợi ý, dùng dữ liệu mẫu");
+            log.warn("AI không trả món gợi ý");
+            throw new BusinessException(502, "AI không trả được món gợi ý. Thử lại sau.");
+        } catch (BusinessException ex) {
+            throw ex;
         } catch (Exception ex) {
-            log.warn("Gợi ý AI lỗi, dùng dữ liệu mẫu: {}", ex.getMessage());
+            log.warn("Gợi ý AI lỗi: {}", ex.getMessage());
+            throw new BusinessException(502, "Gợi ý AI đang lỗi. Thử lại sau ít giây.");
         }
-        return mockResponse(request);
     }
 
     private SuggestResponse mockResponse(SuggestRequest request) {
         SuggestResponse response = new SuggestResponse();
+        response.setFallback(true);
         java.util.List<String> ingredients = request == null ? null : request.getAvailableIngredients();
         String preference = request == null ? null : request.getPreference();
         String mealType = request == null ? null : request.getMealType();

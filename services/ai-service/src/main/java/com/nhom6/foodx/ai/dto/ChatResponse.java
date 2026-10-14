@@ -23,5 +23,11 @@ public class ChatResponse {
     /** Các bước nấu (nếu chế độ 'step'). */
     private List<String> steps;
 
+    /**
+     * true khi chưa có API key và câu trả lời là dữ liệu mẫu.
+     * Lỗi Groq/Gemini không đi qua cờ này — API trả lỗi để giao diện hiện thông báo.
+     */
+    private boolean fallback;
+
     private LocalDateTime timestamp;
 }

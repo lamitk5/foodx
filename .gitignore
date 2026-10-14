@@ -58,6 +58,8 @@ api-gateway/src/main/resources/static/js_backup/
 __pycache__/
 test-reports/
 scratch_img/
+docker/jars/
+tools/
 detail_paras.txt
 yellow_paras.txt
 *.png

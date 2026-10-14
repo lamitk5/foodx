@@ -504,12 +504,33 @@ public class FridgeService {
                 .orElseThrow(() -> new BusinessException(404, "Không tìm thấy thực phẩm trong tủ lạnh"));
     }
 
+    /**
+     * Ảnh tự tải trước đây trỏ /images/foods/{slug}.jpg nhưng file không nằm trên gateway,
+     * nên thẻ ảnh vỡ. Chép sang /uploads hoặc ảnh có sẵn rồi ghi lại.
+     */
+    private String repairFoodImage(Food food) {
+        String img = food.getImageUrl();
+        boolean missing = img == null || img.isBlank()
+                || img.contains("unsplash.com/photo-1542838132")
+                || img.contains("photo-1540420773420")
+                || (img.startsWith("/images/foods/") && !foodImageSearchService.isBundledFoodImage(img));
+        if (!missing) {
+            return img;
+        }
+        String resolved = foodImageSearchService.findOrDownloadImage(food.getName());
+        if (resolved == null || resolved.isBlank()) {
+            return img;
+        }
+        if (!resolved.equals(img)) {
+            food.setImageUrl(resolved);
+            foodRepository.save(food);
+        }
+        return resolved;
+    }
+
     private FridgeItemResponse toResponse(FridgeItem item) {
         Food food = item.getFood();
-        String img = food.getImageUrl();
-        if (img == null || img.isBlank() || img.contains("unsplash.com/photo-1542838132") || img.contains("photo-1540420773420")) {
-            img = foodImageSearchService.findOrDownloadImage(food.getName());
-        }
+        String img = repairFoodImage(food);
 
         Double kcal = food.getKcal();
         Double protein = food.getProtein();
@@ -607,7 +628,8 @@ public class FridgeService {
         List<com.nhom6.foodx.common.dto.ScanFoodImageItemDto> detectedList =
                 aiServiceClient.scanFoodImage(base64, mimeType);
 
-        if (detectedList == null || detectedList.isEmpty()) {
+        boolean fallback = detectedList == null || detectedList.isEmpty();
+        if (fallback) {
             detectedList = fallbackScannedItems();
         }
 
@@ -656,6 +678,7 @@ public class FridgeService {
 
         return ScanResultDto.builder()
                 .autoSaved(autoSave)
+                .fallback(fallback)
                 .totalDetected(details.size())
                 .savedCount(savedItems.size())
                 .detectedItems(details)

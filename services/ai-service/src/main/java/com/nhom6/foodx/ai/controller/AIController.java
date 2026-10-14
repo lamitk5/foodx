@@ -45,14 +45,22 @@ public class AIController {
     public ApiResponse<Map<String, Object>> status() {
         String provider = chatService.getActiveProvider();
         boolean mock = chatService.isMockMode();
+        boolean degraded = chatService.isDegraded();
+        String providerError = chatService.getLastProviderError();
         String message = switch (provider) {
-            case "groq" -> "Đang dùng Groq AI thật (tự động chuyển sang Gemini nếu Groq lỗi).";
-            case "gemini" -> "Đang dùng Gemini AI thật (dự phòng khi Groq không khả dụng).";
-            default -> "Đang chạy chế độ dữ liệu mẫu (mock) — chưa cấu hình Groq/Gemini API key.";
+            case "groq" -> degraded
+                    ? "Groq/Gemini đang lỗi: " + providerError
+                    : "Đang dùng Groq AI thật (tự động chuyển sang Gemini nếu Groq lỗi).";
+            case "gemini" -> degraded
+                    ? "Gemini đang lỗi: " + providerError
+                    : "Đang dùng Gemini AI thật (dự phòng khi Groq không khả dụng).";
+            default -> "Chưa cấu hình Groq/Gemini API key — chat đang trả câu mẫu.";
         };
         Map<String, Object> payload = new java.util.LinkedHashMap<>();
         payload.put("mock", mock);
+        payload.put("degraded", degraded);
         payload.put("provider", provider);
+        payload.put("providerError", providerError);
         payload.put("message", message);
         payload.put("bulkhead", aiRequestGate.metrics());
         return ApiResponse.success(payload, "Trạng thái AI");
@@ -60,6 +68,11 @@ public class AIController {
 
     @PostMapping("/suggest")
     public ApiResponse<SuggestResponse> suggest(@Valid @RequestBody SuggestRequest request) {
+        String context = aiContextService.buildContext(SecurityUtils.getCurrentUserId());
+        if (context != null && !context.isBlank()) {
+            String preference = request.getPreference() == null ? "" : request.getPreference().trim();
+            request.setPreference(preference.isBlank() ? context : preference + "\n" + context);
+        }
         return ApiResponse.success(suggestionService.suggest(request), "Gợi ý thành công");
     }
 
@@ -77,7 +90,12 @@ public class AIController {
             return Map.of("title", "Công thức mới", "ingredients", java.util.List.of());
         }
         return recipeExtractionService.extractWithAi(prompt)
-                .orElseGet(() -> recipeExtractionService.fallback(prompt));
+                .orElseGet(() -> {
+                    java.util.Map<String, Object> fallback = new java.util.LinkedHashMap<>(
+                            recipeExtractionService.fallback(prompt));
+                    fallback.put("fallback", true);
+                    return fallback;
+                });
     }
 
     @PostMapping("/scan-food-image")

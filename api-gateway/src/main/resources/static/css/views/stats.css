@@ -1,15 +1,22 @@
 /* ==========================================================
    STATS
 ========================================================== */
-.kpi-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:16px; }
-.kpi{ text-align:center; padding:16px; border:1px solid var(--border); border-radius:16px; background:var(--card); }
-.kpi .k-ic{ font-size:22px; display:block; margin-bottom:6px; }
-.kpi b{ display:block; font-size:24px; color:var(--green); }
+.kpi-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-bottom:12px; }
+.kpi{ text-align:center; padding:12px; border:1px solid var(--border); border-radius:14px; background:var(--card); }
+.kpi .k-ic{ font-size:18px; display:block; margin-bottom:4px; }
+.kpi b{ display:block; font-size:20px; color:var(--green); }
 .kpi span{ color:var(--text-soft); font-size:11px; }
-.stats-card{ padding:18px; margin-bottom:16px; }
-.stats-card h3{ font-size:14.5px; margin-bottom:12px; }
-.stats-svg{ width:100%; height:auto; }
+.stats-split{ display:grid; grid-template-columns:minmax(0,640px) minmax(220px,1fr); gap:12px; align-items:start; margin-bottom:12px; }
+.stats-card{ padding:14px; margin-bottom:0; }
+.stats-card h3{ font-size:14px; margin-bottom:8px; }
+.stats-chart-card{ max-width:640px; }
+.stats-svg{ width:100%; max-width:640px; height:150px; display:block; }
 .stats-line{ fill:none; stroke:var(--green); stroke-width:2.5; stroke-linejoin:round; stroke-linecap:round; }
+.stats-waste{ display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; }
+@media (max-width:900px){
+  .stats-split{ grid-template-columns:1fr; }
+  .stats-chart-card{ max-width:none; }
+}
 .stats-dot{ fill:var(--green); }
 .stats-empty-text{ fill:var(--text-soft); font-size:12px; }
 .stats-labels{ display:flex; justify-content:space-between; margin-top:6px; }
@@ -18,4 +25,4 @@
 .top-emoji{ font-size:20px; }
 .top-name{ flex:1; font-weight:600; }
 .top-cnt{ color:var(--text-soft); font-size:11px; }
-
+

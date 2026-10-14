@@ -44,27 +44,31 @@ public class FoodImageScanService {
     /**
      * @param base64Data ảnh đã mã hoá Base64 (không kèm tiền tố data URI)
      * @param mimeType   ví dụ {@code image/jpeg}
-     * @return thực phẩm nhận diện được; nếu chưa cấu hình Gemini hoặc lỗi thì trả dữ liệu mẫu
-     *         để luồng quét ảnh vẫn dùng được khi chạy offline
+     * @return thực phẩm nhận diện được; danh sách rỗng nếu chưa cấu hình Gemini hoặc AI lỗi.
+     *         Bên gọi (inventory-service) tự gắn danh sách dự phòng và cờ {@code fallback}.
      */
     public List<ScanFoodImageItemDto> scan(String base64Data, String mimeType) {
         if (base64Data == null || base64Data.isBlank()) {
             return List.of();
         }
 
-        if (geminiService.isConfigured()) {
-            try {
-                String jsonStr = geminiService.analyzeImage(base64Data, mimeType, PROMPT);
-                List<ScanFoodImageItemDto> parsed = parse(jsonStr);
-                if (!parsed.isEmpty()) {
-                    return parsed;
-                }
-            } catch (Exception ex) {
-                log.warn("Nhận diện thực phẩm từ ảnh thất bại: {}", ex.getMessage());
-            }
+        if (!geminiService.isConfigured()) {
+            log.info("Chưa cấu hình Gemini — không nhận diện ảnh, trả danh sách rỗng");
+            return List.of();
         }
 
-        return fallback();
+        try {
+            String jsonStr = geminiService.analyzeImage(base64Data, mimeType, PROMPT);
+            List<ScanFoodImageItemDto> parsed = parse(jsonStr);
+            if (!parsed.isEmpty()) {
+                return parsed;
+            }
+            log.warn("AI không trả thực phẩm nào từ ảnh");
+        } catch (Exception ex) {
+            log.warn("Nhận diện thực phẩm từ ảnh thất bại: {}", ex.getMessage());
+        }
+
+        return List.of();
     }
 
     private List<ScanFoodImageItemDto> parse(String jsonStr) {
@@ -90,13 +94,4 @@ public class FoodImageScanService {
         }
     }
 
-    /** Dữ liệu mẫu khi chạy offline / chưa cấu hình API key. */
-    private List<ScanFoodImageItemDto> fallback() {
-        return List.of(
-                new ScanFoodImageItemDto("Trứng gà", 10.0, "quả", "Trứng & Sữa", 14, 0.98),
-                new ScanFoodImageItemDto("Thịt ba chỉ heo", 500.0, "g", "Thịt", 3, 0.95),
-                new ScanFoodImageItemDto("Rau muống", 1.0, "bó", "Rau củ", 4, 0.92),
-                new ScanFoodImageItemDto("Cà chua", 4.0, "quả", "Rau củ", 7, 0.90),
-                new ScanFoodImageItemDto("Sữa tươi có đường", 1.0, "hộp", "Trứng & Sữa", 10, 0.96));
-    }
 }
